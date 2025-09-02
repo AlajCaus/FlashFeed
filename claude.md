@@ -1,5 +1,7 @@
 # Claude Coding Rules für FlashFeed
 
+✅ **Git Setup erfolgreich abgeschlossen!**
+
 1. Denke zunächst über das Problem nach, suche in der Codebasis nach relevanten Dateien und schreibe einen Plan in tasks/todo.md.
 2. Der Plan sollte eine Liste mit Aufgaben enthalten, die du abhaken kannst, sobald du sie erledigt hast.
 3. Bevor du mit der Arbeit beginnst, melde dich bei mir, damit ich den Plan überprüfen kann.
