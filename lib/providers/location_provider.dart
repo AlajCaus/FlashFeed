@@ -2,7 +2,6 @@
 // Basis-Implementierung (wird in Task 5b-5c für PLZ-Features erweitert)
 
 import 'package:flutter/material.dart';
-import '../repositories/retailers_repository.dart';
 
 class LocationProvider extends ChangeNotifier {
   // Location State

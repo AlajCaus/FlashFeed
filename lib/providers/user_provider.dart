@@ -30,7 +30,7 @@ class UserProvider extends ChangeNotifier {
   bool _locationTrackingEnabled = false;
   bool _darkModeEnabled = false;
   double _maxDistanceKm = 10.0;  // Max. Entfernung für Filialen
-  List<String> _favoriteRetailers = [];
+  final List<String> _favoriteRetailers = [];
   
   // Premium Features Access
   bool _hasUnlimitedOffers = false;
