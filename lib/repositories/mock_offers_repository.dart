@@ -107,11 +107,11 @@ class MockOffersRepository implements OffersRepository {
     ),
     Offer(
       id: 'netto_001', 
-      retailer: 'Netto',
+      retailer: 'Netto Marken-Discount',
       productName: 'Apfelsaft 1L',
       originalCategory: 'Getränke',
       price: 1.29,
-      storeAddress: 'Netto, Teststraße 50, 10121 Berlin',
+      storeAddress: 'Netto Marken-Discount, Teststraße 50, 10121 Berlin',
       storeId: 'netto_berlin_01',
       validUntil: DateTime.now().add(Duration(days: 7)),
       storeLat: 52.5100,

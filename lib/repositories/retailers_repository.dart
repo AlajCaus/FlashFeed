@@ -23,18 +23,22 @@ abstract class RetailersRepository {
 
 /// Händler Model-Klasse
 class Retailer {
-  final String name;
+  final String name;            // Backend-ID (eindeutig)
+  final String displayName;     // UI-Text (kann doppelt sein)
   final String logoUrl;
-  final String brandColor; // Hex-Color für UI
+  final String brandColor;      // Hex-Color für UI
+  final String? iconUrl;        // Zusätzliches Icon (z.B. Scottie)
   final String description;
   final List<String> categories; // Verfügbare Produktkategorien
-  final bool isPremiumPartner; // Für Freemium-Features
+  final bool isPremiumPartner;   // Für Freemium-Features
   final String websiteUrl;
 
   Retailer({
     required this.name,
+    required this.displayName,
     required this.logoUrl,
     required this.brandColor,
+    this.iconUrl,
     required this.description,
     required this.categories,
     this.isPremiumPartner = false,

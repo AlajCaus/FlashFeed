@@ -42,8 +42,8 @@ class ProductCategoryMapping {
       // TODO: ALDI Kategorien nach deiner Analyse hinzufügen
     },
     
-    'Netto': {
-      // TODO: Netto Kategorien hier eintragen nach deiner Analyse
+    'Netto Marken-Discount': {
+      // TODO: Netto Marken-Discount Kategorien hier eintragen nach deiner Analyse
     },
     
     'Lidl': {

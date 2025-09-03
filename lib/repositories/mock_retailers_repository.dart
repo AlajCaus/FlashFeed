@@ -8,8 +8,10 @@ class MockRetailersRepository implements RetailersRepository {
   static final List<Retailer> _mockRetailers = [
     Retailer(
       name: 'EDEKA',
+      displayName: 'EDEKA',
       logoUrl: 'assets/logos/edeka.png',
       brandColor: '#005CA9',
+      iconUrl: null,
       description: 'Deutschlands größte Supermarkt-Kooperation mit frischen Produkten',
       categories: ['Molkereiprodukte', 'Frischfleisch', 'Obst', 'Gemüse'],
       isPremiumPartner: true,
@@ -17,8 +19,10 @@ class MockRetailersRepository implements RetailersRepository {
     ),
     Retailer(
       name: 'REWE',
+      displayName: 'REWE',
       logoUrl: 'assets/logos/rewe.png', 
       brandColor: '#CC071E',
+      iconUrl: null,
       description: 'Ihr Nahversorger mit nachhaltigen Produkten und Service',
       categories: ['Milch & Käse', 'Fleisch & Geflügel', 'Frisches Obst', 'Frisches Gemüse'],
       isPremiumPartner: true,
@@ -26,8 +30,10 @@ class MockRetailersRepository implements RetailersRepository {
     ),
     Retailer(
       name: 'ALDI',
+      displayName: 'ALDI',
       logoUrl: 'assets/logos/aldi.png',
       brandColor: '#00A8E6',
+      iconUrl: null,
       description: 'Einfach günstig - Qualität zum besten Preis',
       categories: ['Milcherzeugnisse', 'Frischfleisch'],
       isPremiumPartner: false,
@@ -35,18 +41,22 @@ class MockRetailersRepository implements RetailersRepository {
     ),
     Retailer(
       name: 'Lidl',
+      displayName: 'Lidl',
       logoUrl: 'assets/logos/lidl.png',
       brandColor: '#0050AA',
+      iconUrl: null,
       description: 'Mehr frische Ideen - Qualität, Frische und Swappiness',
       categories: ['Backwaren', 'Milchprodukte'],
       isPremiumPartner: false,
       websiteUrl: 'https://www.lidl.de',
     ),
     Retailer(
-      name: 'Netto',
-      logoUrl: 'assets/logos/netto.png',
-      brandColor: '#FFCC00',
-      description: 'Der Scottie hat\'s - günstig und gut',
+      name: 'Netto Marken-Discount',
+      displayName: 'Netto',
+      logoUrl: 'assets/logos/netto_red.png',
+      brandColor: '#FF0000',
+      iconUrl: null,
+      description: 'Jeden Tag ein bisschen besser - günstige Preise, große Auswahl',
       categories: ['Getränke', 'Konserven'],
       isPremiumPartner: false,
       websiteUrl: 'https://www.netto-online.de',
@@ -167,11 +177,11 @@ class MockRetailersRepository implements RetailersRepository {
       hasPharmacy: false,
     ),
     
-    // Netto Filialen
+    // Netto Marken-Discount Filialen
     Store(
       id: 'netto_berlin_01',
-      retailerName: 'Netto',
-      name: 'Netto Berlin Friedrichshain',
+      retailerName: 'Netto Marken-Discount',
+      name: 'Netto Marken-Discount Berlin Friedrichshain',
       address: 'Teststraße 50, 10121 Berlin',
       latitude: 52.5100,
       longitude: 13.3800,
