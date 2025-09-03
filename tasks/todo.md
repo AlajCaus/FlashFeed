@@ -38,15 +38,40 @@
 
 #### **Task 4: Core Provider erstellen**
 - [ ] `lib/providers/app_provider.dart` - Navigation & Global State
-- [ ] `lib/providers/offers_provider.dart` - Angebote & Preisvergleich  
+- [ ] `lib/providers/offers_provider.dart` - Angebote & Preisvergleich (mit regionaler Filterung)
 - [ ] `lib/providers/user_provider.dart` - Freemium Logic & Settings
-- [ ] `lib/providers/location_provider.dart` - GPS & Standort
+- [ ] `lib/providers/location_provider.dart` - GPS & Standort (Basis-Implementierung)
 
 #### **Task 5: Mock-Daten-Service**
 - [ ] `lib/services/mock_data_service.dart` - Zentrale Mock-Daten
 - [ ] Mock-Angebote für alle Händler generieren
 - [ ] Mock-Filialen mit GPS-Koordinaten
 - [ ] Integration mit `product_category_mapping.dart`
+
+---
+
+### **🗺️ REGIONALE VERFÜGBARKEIT**
+*Neue Task-Gruppe für realistische Händler-Verfügbarkeit*
+
+#### **Task 5a: PLZ-basierte Retailer-Verfügbarkeit**
+- [ ] Retailer-Klasse um `availablePLZRanges: List<PLZRange>` erweitern
+- [ ] PLZRange-Model-Klasse implementieren (`startPLZ`, `endPLZ`, `regionName`)
+- [ ] Mock-Retailer mit realistischen PLZ-Bereichen aktualisieren
+- [ ] BioCompany: Berlin/Brandenburg, Globus: Süd/West, Netto (schwarz): Nord/Ost
+
+#### **Task 5b: PLZ-Lookup-Service**  
+- [ ] `lib/services/plz_lookup_service.dart` erstellen
+- [ ] GPS-Koordinaten zu PLZ-Mapping (Reverse-Geocoding oder Lookup-Table)
+- [ ] User-PLZ-Eingabe Alternative (Fallback wenn GPS nicht verfügbar)
+- [ ] PLZ-zu-Region Zuordnung (Bayern: 80000-99999, Berlin: 10000-14999, etc.)
+- [ ] Caching für Performance
+
+#### **Task 5c: Regionale Provider-Logik**
+- [ ] LocationProvider um regionale PLZ-Logik erweitern
+- [ ] OffersProvider um regionale Filterung erweitern (`getRegionalOffers()`)
+- [ ] RetailersProvider um Verfügbarkeitsprüfung erweitern (`getAvailableRetailers(plz)`)
+- [ ] "Nicht verfügbar in Ihrer Region"-Fallback-Logic
+- [ ] Cross-Provider Integration (LocationProvider → OffersProvider/RetailersProvider)
 
 ---
 
@@ -79,9 +104,10 @@
 #### **Task 9: OffersProvider Implementation**
 - [ ] Angebote laden über Repository Pattern
 - [ ] Produktkategorien-Filter (Integration mit `product_category_mapping.dart`)
-- [ ] Händler-spezifische Filter  
+- [ ] Händler-spezifische Filter mit regionaler Verfügbarkeit
 - [ ] Sortierung (Preis, Entfernung, Rabatt)
 - [ ] Suchfunktion implementieren
+- [ ] Regionale Filterung: nur verfügbare Händler anzeigen
 
 #### **Task 10: Offers Panel UI**
 - [ ] Produktkarten mit Preisvergleich
@@ -89,12 +115,14 @@
 - [ ] Sortierungs-Dropdown
 - [ ] Suchleiste
 - [ ] Freemium-Features (limitierte Anzahl ohne Premium)
+- [ ] "Nicht in Ihrer Region verfügbar" UI-Messages
 
 #### **Task 11: Retailer Management**
 - [ ] RetailerProvider für Händler-Daten
-- [ ] Händler-Logos & Branding
+- [ ] Händler-Logos & Branding (mit displayName + iconUrl)
 - [ ] Öffnungszeiten Integration
 - [ ] Filial-Suche Funktionalität
+- [ ] Regionale Verfügbarkeitsprüfung basierend auf User-PLZ
 
 ---
 
@@ -103,15 +131,18 @@
 #### **Task 12: LocationProvider Setup**
 - [ ] GPS-Berechtigung anfordern (Web Geolocation API)
 - [ ] Aktuelle Position ermitteln
-- [ ] Standort-basierte Filial-Suche
+- [ ] Integration mit PLZ-Lookup-Service (GPS → PLZ → Region)
+- [ ] Standort-basierte Filial-Suche (nur regionale Filialen)
 - [ ] Entfernungsberechnung zu Filialen
+- [ ] Fallback: User-PLZ-Eingabe wenn GPS fehlschlägt
 
 #### **Task 13: Map Panel Implementation** 
 - [ ] Web-Map Integration (Google Maps oder OpenStreetMap)
-- [ ] Filial-Marker auf Karte
+- [ ] Filial-Marker auf Karte (nur regionale Händler)
 - [ ] Aktuelle Position anzeigen
 - [ ] Klickbare Marker mit Filial-Info
 - [ ] Route zur Filiale anzeigen
+- [ ] Regionale Marker-Filterung basierend auf User-Standort
 
 ---
 
@@ -127,8 +158,9 @@
 - [ ] Live-Deal-Karten mit Countdown
 - [ ] "Professor Demo"-Button (Instant Deal Generation)
 - [ ] Deal-Kategorien Filter
-- [ ] Standort-basierte Deal-Anzeige
+- [ ] Standort-basierte Deal-Anzeige (nur regionale Händler)
 - [ ] "Deal verpasst"-Animation
+- [ ] Regionale Verfügbarkeitsinformation bei Deals
 
 ---
 
@@ -138,16 +170,20 @@
 ### **🔗 PROVIDER-INTEGRATION**
 
 #### **Task 16: Cross-Provider Communication**
-- [ ] LocationProvider ↔ OffersProvider (standortbasierte Angebote)
-- [ ] FlashDealsProvider ↔ LocationProvider (lokale Deals)
+- [ ] LocationProvider ↔ OffersProvider (standortbasierte Angebote + regionale Filterung)
+- [ ] FlashDealsProvider ↔ LocationProvider (lokale Deals + regionale Verfügbarkeit)
 - [ ] UserProvider ↔ All Providers (Freemium-Limits)
+- [ ] RetailersProvider ↔ LocationProvider (regionale Händler-Filterung)
 - [ ] Shared State für Panel-übergreifende Daten
+- [ ] Regionale Daten-Synchronisation zwischen Providern
 
 #### **Task 17: Error Handling & Loading States**
 - [ ] Loading Indicators für alle Provider
 - [ ] Error-Recovery Mechanismen  
 - [ ] Offline-Fallback (cached Mock-Daten)
 - [ ] User-friendly Error Messages
+- [ ] "Keine Händler in Ihrer Region" Error-Cases
+- [ ] PLZ-Lookup Fehlerbehandlung (GPS nicht verfügbar, ungültige PLZ)
 
 #### **Task 18: Performance-Optimierung**
 - [ ] Provider Disposal richtig implementieren
@@ -228,6 +264,13 @@
 
 ---
 
-**GESAMT-TASKS: 23 Aufgaben**  
-**GESCHÄTZTE ZEIT: 3 Wochen**  
-**ARCHITEKTUR: Provider → BLoC Migration Ready**
+**GESAMT-TASKS: 26 Aufgaben (23 ursprünglich + 3 regionale Tasks)**  
+**GESCHÄTZTE ZEIT: 3-3.5 Wochen**  
+**ARCHITEKTUR: Provider → BLoC Migration Ready + Regionale Verfügbarkeit**
+
+### **🗺️ NEUE FEATURES DURCH REGIONALE VERFÜGBARKEIT:**
+- **Realistische UX:** Nur verfügbare Händler anzeigen
+- **PLZ-basierte Filterung:** BioCompany nur Berlin, Globus nur Süden, etc.
+- **GPS + Manual:** Automatische Standorterkennung mit Fallback
+- **Cross-Provider Integration:** Regionale Daten zwischen allen Providern
+- **Error Handling:** "Nicht in Ihrer Region verfügbar" Cases
