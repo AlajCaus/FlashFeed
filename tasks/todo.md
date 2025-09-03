@@ -37,10 +37,10 @@
 - [x] `lib/repositories/mock_retailers_repository.dart` - Mock-Implementation
 
 #### **Task 4: Core Provider erstellen**
-- [ ] `lib/providers/app_provider.dart` - Navigation & Global State
-- [ ] `lib/providers/offers_provider.dart` - Angebote & Preisvergleich (mit regionaler Filterung)
-- [ ] `lib/providers/user_provider.dart` - Freemium Logic & Settings
-- [ ] `lib/providers/location_provider.dart` - GPS & Standort (Basis-Implementierung)
+- [x] `lib/providers/app_provider.dart` - Navigation & Global State
+- [x] `lib/providers/offers_provider.dart` - Angebote & Preisvergleich (mit regionaler Filterung)
+- [x] `lib/providers/user_provider.dart` - Freemium Logic & Settings
+- [x] `lib/providers/location_provider.dart` - GPS & Standort (Basis-Implementierung)
 
 #### **Task 5: Mock-Daten-Service**
 - [ ] `lib/services/mock_data_service.dart` - Zentrale Mock-Daten
