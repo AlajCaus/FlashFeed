@@ -5,7 +5,7 @@
 ### Woche 1: Grundlagen & Provider Setup
 **Tage 1-2: Projekt Setup**
 - [x] GitHub Repository mit Flutter Web Setup
-- [ ] Provider Package Integration (provider: ^6.1.1)
+- [x] Provider Package Integration (provider: ^6.1.1)
 - [ ] Basis Provider-Architektur
 - [ ] Repository Pattern Setup
 - [ ] Mock-Daten-Service

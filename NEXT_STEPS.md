@@ -1,6 +1,6 @@
 # 🚨 SOFORT-AKTION: GitHub Pages aktivieren
 
-## ✅ Task 4b ist abgeschlossen - JETZT DEPLOYMENT AKTIVIEREN!
+## ❌ Task 4b Build-Fehler - DEPLOYMENT KORREKTUR ERFORDERLICH!
 
 ### **📋 TODO FÜR SIE (als Entwickler):**
 
@@ -21,9 +21,11 @@ git push origin main
 - GitHub Actions läuft automatisch
 - Check: Repository → **Actions** Tab für Status
 
-4. **Live-Demo URL finden:**
-- Nach erfolgreichem Build: Settings → Pages
-- Deine URL: `https://YOUR-USERNAME.github.io/FlashFeed/`
+4. **Build-Fehler beheben:**
+- GitHub Actions Log prüfen: Repository → Actions Tab
+- Spezifische Fehlermeldungen analysieren
+- Build-Problem lösen (vermutlich Flutter/Dart Kompatibilität)
+- Erst nach erfolgreichem Build: Live-Demo URL verfügbar
 
 ### **🧪 SOFORT TESTEN:**
 
@@ -36,7 +38,7 @@ flutter run -d chrome
 flutter run -d web-server --web-port=8080
 ```
 
-**Mobile:** QR-Code generieren mit Live-Demo URL
+**Mobile:** Nach Build-Erfolg: QR-Code generieren mit Live-Demo URL
 
 ---
 
@@ -55,10 +57,10 @@ flutter run -d web-server --web-port=8080
 
 ## 📁 ERSTELLTE DATEIEN (Task 4b):
 
-- `.github/workflows/deploy.yml` - GitHub Actions
+- `.github/workflows/static.yml` - GitHub Actions
 - `DEPLOYMENT_SETUP.md` - Setup-Anleitung  
 - `README.md` - Aktualisiert mit Live-Demo
 - `tasks/todo.md` - Persistent Status-Tracking
 - `NEXT_STEPS.md` - Diese Datei
 
-**✅ Task 4b: Quick Deployment Setup - KOMPLETT ERLEDIGT!**
+**❌ Task 4b: Quick Deployment Setup - BUILD-FEHLER BEHEBEN ERFORDERLICH!**

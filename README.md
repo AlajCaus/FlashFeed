@@ -21,7 +21,7 @@
 
 ### 2. Automatisches Deployment aktivieren:
 ```bash
-# Workflow-Datei wird erstellt in .github/workflows/deploy.yml
+# Workflow-Datei wird erstellt in .github/workflows/static.yml
 # Jeder Push zu main löst automatisch Web-Build aus
 ```
 
