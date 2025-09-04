@@ -28,7 +28,7 @@ jobs:
       
     - name: Build Web App
       run: flutter build web --release --base-href "/FlashFeed/"
-      
+        
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v4
       if: github.ref == 'refs/heads/main'

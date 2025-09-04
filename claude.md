@@ -9,3 +9,11 @@
 5. Bitte erläutern Sie mir bei jedem Schritt detailliert, welche Änderungen Sie vorgenommen haben.
 6. Gestalten Sie alle Aufgaben und Codeänderungen so einfach wie möglich. Wir möchten massive oder komplexe Änderungen vermeiden. Jede Änderung sollte sich so wenig wie möglich auf den Code auswirken. Einfachheit ist alles.
 7. Fügen Sie abschließend einen Überprüfungsbereich in die Datei [todo.md](http://todo.md/) ein, der eine Zusammenfassung der vorgenommenen Änderungen und alle anderen relevanten Informationen enthält.
+8. Führe keine Änderungen selbstständig aus ohne dich vorher mit mir zu beraten.
+
+## 🔒 COMPLIANCE CHECK (für jede Claude-Instanz)
+Bevor du IRGENDETWAS anderes machst:
+☐ Hast du diese Regeln vollständig gelesen?
+☐ Verstehst du, dass du NICHTS ohne Rücksprache ändern darfst?
+☐ Wirst du einen Plan erstellen BEVOR du arbeitest?
+☐ Bestätige diese Punkte explizit am Anfang jeder Session
