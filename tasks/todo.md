@@ -1,5 +1,16 @@
 # FlashFeed MVP Entwicklungsplan - Provider Pattern (3 Wochen)
 
+## ⚠️ CLAUDE: COMPLIANCE CHECK ERFORDERLICH!
+**🔒 BEVOR DU IRGENDETWAS MACHST:**
+- ☐ Hast du claude.md gelesen und die 8 Arbeitsregeln verstanden?
+- ☐ Verstehst du: NIEMALS Dateien ändern ohne vorherige Planabstimmung?
+- ☐ Wirst du einen Plan in todo.md erstellen BEVOR du arbeitest?
+- ☐ Wirst du auf Freigabe warten bevor du Code schreibst?
+
+**✅ Bestätige diese Punkte explizit am Anfang jeder Session!**
+
+---
+
 ## **STATUS-ANALYSE & AKTUELLER FORTSCHRITT**
 - ✅ **Git Setup:** Repository erfolgreich eingerichtet
 - ✅ **Flutter Template:** Standard-App läuft  
