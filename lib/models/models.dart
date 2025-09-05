@@ -109,7 +109,7 @@ class Store {
   final String street;          // Straße (separiert von address)
   final String zipCode;         // PLZ (für regionale Filterung)
   final String city;            // Stadt
-  final String address;         // Vollständige Adresse (generiert)
+
   final double latitude;
   final double longitude;
   final String phoneNumber;     // Telefonnummer
