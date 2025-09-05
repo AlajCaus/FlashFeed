@@ -1,6 +1,13 @@
 // FlashFeed Offers Repository Interface
 // Repository Pattern für BLoC-Migration Ready
 
+/*
+ * MIGRATION-KOMPATIBILITÄT:
+ * - Interface bleibt unverändert für BLoC-Migration
+ * - Nur Provider/BLoC-Layer ändert sich später
+ * - Mock-Implementation verwendet neue Model-Klassen
+ */
+
 abstract class OffersRepository {
   /// Alle Angebote laden
   Future<List<Offer>> getAllOffers();
@@ -21,62 +28,8 @@ abstract class OffersRepository {
   Future<List<Offer>> getSortedOffers(List<Offer> offers, OfferSortType sortType);
 }
 
-/// Angebot Model-Klasse
-class Offer {
-  final String id;
-  final String retailer;
-  final String productName;
-  final String originalCategory;
-  final double price;
-  final double? originalPrice; // null wenn kein Rabatt
-  final String storeAddress;
-  final String storeId;
-  final double? discountPercent; // null wenn kein Rabatt
-  final DateTime validUntil;
-  final double storeLat;
-  final double storeLng;
-
-  Offer({
-    required this.id,
-    required this.retailer,
-    required this.productName,
-    required this.originalCategory,
-    required this.price,
-    this.originalPrice,
-    required this.storeAddress,
-    required this.storeId,
-    this.discountPercent,
-    required this.validUntil,
-    required this.storeLat,
-    required this.storeLng,
-  });
-
-  /// Zugeordnete FlashFeed Kategorie (aus product_category_mapping.dart)
-  String get flashFeedCategory {
-    // Import wird in Mock-Implementation hinzugefügt
-    return 'Sonstiges'; // Fallback
-  }
-  
-  /// Hat das Angebot einen Rabatt?
-  bool get hasDiscount => originalPrice != null && discountPercent != null;
-  
-  /// Ersparnis in Euro
-  double get savings => hasDiscount ? (originalPrice! - price) : 0.0;
-  
-  /// Ist das Angebot noch gültig?
-  bool get isValid => DateTime.now().isBefore(validUntil);
-  
-  /// Entfernung zu einem Punkt berechnen (grobe Näherung)
-  double distanceTo(double lat, double lng) {
-    // Vereinfachte Entfernungsberechnung für MVP
-    const double earthRadius = 6371; // km
-    double latDiff = (lat - storeLat) * (3.14159 / 180);
-    double lngDiff = (lng - storeLng) * (3.14159 / 180);
-    double a = (latDiff / 2) * (latDiff / 2) + 
-               (lngDiff / 2) * (lngDiff / 2);
-    return earthRadius * 2 * (a < 1 ? a : 1); // Vereinfacht
-  }
-}
+/// Angebot Model-Klasse (wurde nach services/mock_data_service.dart verschoben)
+/// Import: import '../services/mock_data_service.dart';
 
 /// Sortier-Optionen für Angebote
 enum OfferSortType {

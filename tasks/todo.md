@@ -58,32 +58,20 @@
 ## 📍 **LAST CLAUDE POSITION (PERSISTENT HANDOFF)**
 
 ### **✅ AKTUELLER STATUS:** 
-**DART SDK 3.9.0 MIGRATION ABGESCHLOSSEN** - Alle Tasks M1-M4 erfolgreich
+**BLoC-DISKREPANZEN KORRIGIERT** - Provider-Architektur vollständig implementiert
 
-**Kritische Änderung durchgeführt:**
-- `.github/workflows/static.yml` - Flutter Version 3.24.0 → 3.35.3 aktualisiert
-- **GRUND:** PWA-Features erfordern Dart SDK 3.9.0+ (Service Worker, Web App Manifest)
-- **LÖSUNG:** Flutter 3.35.3 enthält kompatible Dart SDK Version
+**Durchgeführte Korrekturen:**
+- `main.dart` von BLoC zu Provider-Architektur umgestellt
+- `MainLayoutScreen` mit Provider-Pattern erstellt
+- `MockDataService` Provider-optimiert implementiert
+- Repository-Integration für Migration-Ready Design angepasst
 
-**MIGRATION KOMPLETT:** Alle 4 Migrations-Tasks abgeschlossen
-**NÄCHSTER SCHRITT:** Git Push → GitHub Actions Build-Test → Task 5 (Mock-Daten-Service)
+**MIGRATION KOMPLETT:** Alle BLoC-Referenzen zu Provider korrigiert
+**NÄCHSTER SCHRITT:** Task 4b abschließen → Task 5 beginnen
 
-### **⏭️ DANACH SOFORT:**
-**Task 5: Mock-Daten-Service** - Vollständig vorbereitet!
-
-**Was zu tun ist:**
-1. `lib/services/mock_data_service.dart` erstellen
-2. Mock-Angebote für alle Händler generieren (EDEKA, REWE, ALDI, etc.)
-3. Mock-Filialen mit GPS-Koordinaten (Berlin/München Focus)
-4. Integration mit `product_category_mapping.dart`
-5. Provider mit Mock-Service verbinden
-
-### **📋 FÜR ENTWICKLER:**
-Vor Task 5:
-1. Code committen und pushen
-2. GitHub Pages setup gemäß `DEPLOYMENT_SETUP.md`
-3. Live-Demo URL testen
-4. Dann Task 5 starten
+### **⏭️ SOFORT ANSTEHEND:**
+**Task 4b: Build-Test + Live-Demo-URL** - 2 offene Punkte
+**Task 5: Mock-Daten-Service** - Bereit zum Start
 
 ---
 
@@ -95,7 +83,7 @@ Vor Task 5:
 #### **Task 1: Provider Package Integration**
 - [x] Provider Package zu `pubspec.yaml` hinzufügen (`provider: ^6.1.1`)
 - [x] `flutter pub get` ausführen (manuell von Entwickler durchzuführen)
-- [ ] Import-Tests in main.dart
+- [x] Import-Tests in main.dart
 
 #### **Task 2: Ordnerstruktur erweitern**
 - [x] `lib/providers/` erstellen
@@ -338,6 +326,27 @@ Vor Task 5:
 ## **REVIEW-BEREICH**
 *Wird nach jedem abgeschlossenen Task aktualisiert*
 
+### **Abgeschlossene Änderungen (BLoC-Diskrepanz-Korrektur):**
+
+**✅ PROVIDER-ARCHITEKTUR VOLLSTÄNDIG IMPLEMENTIERT:**
+- **main.dart:** MultiBlocProvider → MultiProvider, komplette Provider-Integration
+- **MainLayoutScreen:** Consumer<Provider> statt BlocBuilder, drei-Panel-Navigation
+- **MockDataService:** Provider-Callbacks statt BLoC-Storage, Timer-System für Flash Deals
+- **Repository-Integration:** Model-Klassen zentralisiert, migration-ready Interface
+
+**✅ MIGRATION-KOMMENTARE HINZUGEFÜGT:**
+- Alle Dateien dokumentieren Provider vs BLoC Entscheidung
+- Begründung: 3-Wochen MVP-Timeline, BLoC-Migration Post-MVP geplant
+- Repository Pattern bleibt unverändert für spätere Migration
+
+**🎯 BLoC-KORREKTUR-COMMIT-MESSAGES:**
+```bash
+git commit -m "refactor: convert main.dart from BLoC to Provider architecture"
+git commit -m "feat: implement MainLayoutScreen with Provider pattern"  
+git commit -m "feat: create Provider-optimized MockDataService"
+git commit -m "refactor: centralize model classes for migration compatibility"
+```
+
 ### **Abgeschlossene Änderungen (Dart SDK 3.9.0 Migration):**
 
 **✅ URGENT MIGRATION KOMPLETT ABGESCHLOSSEN:**
@@ -346,19 +355,6 @@ Vor Task 5:
 - **Lösung implementiert:** Flutter Version 3.24.0 → 3.35.3 in `.github/workflows/static.yml`
 - **Dokumentation verifiziert:** Keine weiteren Version-Referenzen in README.md, DEPLOYMENT_SETUP.md, development_roadmap_provider.md
 - **Build-Verification:** Anweisungen für GitHub Actions + lokale Tests bereitgestellt
-- **Migration dokumentiert:** Vollständige Task-Liste M1-M4 abgeschlossen
-
-**🎯 MIGRATION-COMMIT-MESSAGES:**
-```bash
-git commit -m "fix: update Flutter to 3.35.3 for Dart SDK 3.9.0 compatibility"
-git commit -m "docs: verify no Flutter version references in documentation"
-git commit -m "docs: add build verification instructions for Flutter 3.35.3"
-git commit -m "docs: complete Dart SDK 3.9.0 migration documentation"
-```
-
-**⚡ NÄCHSTER SCHRITT:** Push to GitHub → Automatic Build Test → Task 5 beginnen
-
----
 
 ### **Abgeschlossene Änderungen (Task 4b):**
 
@@ -373,27 +369,10 @@ git commit -m "docs: complete Dart SDK 3.9.0 migration documentation"
 - `DEPLOYMENT_SETUP.md`: Schritt-für-Schritt Anleitung + Troubleshooting
 - Persistent Claude Handoff System implementiert
 
-**✅ Multi-Device Testing Setup:**
-- Lokaler Web-Server Setup dokumentiert (`flutter run -d web-server --web-port=8080`)
-- Cross-Platform Testing Strategien
-- QR-Code Generation Workflow
-
-### **Aufgetretene Probleme & Lösungen:**
-- **Problem:** Kontinuität zwischen Claude-Sessions gewährleisten
-- **Lösung:** "LAST CLAUDE POSITION" System in todo.md implementiert
-- **Problem:** Deployment-Komplexität reduzieren
-- **Lösung:** Automatisches + Manuelles Deployment als Fallback
-
-### **Abweichungen vom Plan:**
-- **Änderung:** Task 4b vor Task 5 priorisiert für frühes Live-Testing
-- **Grund:** Professor-Demo und 3-Wochen-Timeline profitieren von sofortigem Deployment
-- **Vorteil:** Kontinuierliches Testing ab sofort möglich
-
 ### **Nächste Schritte:**
-**Task 5 (Mock-Daten-Service) ist bereit zum Starten!**
-- Repository Pattern ist bereits implementiert
-- Provider sind vorbereitet für Mock-Daten Integration  
-- Deployment-Pipeline läuft für sofortige Live-Tests
+1. **Task 4b abschließen:** Build-Test + Live-Demo-URL testen
+2. **Task 5 beginnen:** Mock-Daten-Service implementieren
+3. **Provider mit Mock-Service verbinden:** Vollständige Integration
 
 ### **Für BLoC-Migration (Post-MVP):**
 - Repository Interfaces bleiben unverändert ✅
@@ -405,16 +384,3 @@ git commit -m "docs: complete Dart SDK 3.9.0 migration documentation"
 **GESAMT-TASKS: 27 Aufgaben (23 ursprünglich + 3 regionale Tasks + 1 Quick Deployment)**  
 **GESCHÄTZTE ZEIT: 3-3.5 Wochen**  
 **ARCHITEKTUR: Provider → BLoC Migration Ready + Regionale Verfügbarkeit + Continuous Deployment**
-
-### **🗺️ NEUE FEATURES DURCH REGIONALE VERFÜGBARKEIT:**
-- **Realistische UX:** Nur verfügbare Händler anzeigen
-- **PLZ-basierte Filterung:** BioCompany nur Berlin, Globus nur Süden, etc.
-- **GPS + Manual:** Automatische Standorterkennung mit Fallback
-- **Cross-Provider Integration:** Regionale Daten zwischen allen Providern
-- **Error Handling:** "Nicht in Ihrer Region verfügbar" Cases
-
-### **🚀 CONTINUOUS DEPLOYMENT & TESTING:**
-- **Frühes Deployment:** Live-Demo ab Task 4b statt Task 20
-- **Multi-Device Testing:** Lokaler Server + GitHub Pages
-- **Live-Demo-URL:** Kontinuierliche Updates nach jedem Feature
-- **Professor-Ready:** QR-Code Demo und Cross-Platform Testing
