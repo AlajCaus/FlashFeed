@@ -37,7 +37,7 @@ class MockDataService {
   VoidCallback? _onStoresUpdated;
   
   // Generated Mock Data (basierend auf Datenbank-Schema)
-  List<Chain> _chains = [];
+  List<Retailer> _retailers = [];
   List<Store> _stores = [];
   List<Product> _products = [];
   List<Offer> _offers = [];
@@ -46,7 +46,7 @@ class MockDataService {
   bool _isInitialized = false;
   
   // Getters für generierte Daten
-  List<Chain> get chains => List.unmodifiable(_chains);
+  List<Retailer> get retailers => List.unmodifiable(_retailers);
   List<Store> get stores => List.unmodifiable(_stores);
   List<Product> get products => List.unmodifiable(_products);
   List<Offer> get offers => List.unmodifiable(_offers);
@@ -75,7 +75,7 @@ class MockDataService {
     
     try {
       // Generate all mock data based on database schema
-      await _generateChains();
+      await _generateRetailers();
       await _generateStores();
       await _generateProducts();
       await _generateOffers();
@@ -87,7 +87,7 @@ class MockDataService {
       _startPeriodicUpdates();
       
       debugPrint('✅ MockDataService: Initialisierung abgeschlossen');
-      debugPrint('   • ${_chains.length} Chains generiert');
+      debugPrint('   • ${_retailers.length} Retailers generiert');
       debugPrint('   • ${_stores.length} Stores generiert');
       debugPrint('   • ${_products.length} Products generiert');
       debugPrint('   • ${_offers.length} Offers generiert');
@@ -119,56 +119,66 @@ class MockDataService {
   }
 
   // Mock Data Generation basierend auf Datenbank-Schema
-  Future<void> _generateChains() async {
-    _chains = [
-      Chain(
+  Future<void> _generateRetailers() async {
+    _retailers = [
+      Retailer(
         id: 'edeka',
         name: 'EDEKA',
         displayName: 'EDEKA',
         logoUrl: 'assets/images/logos/edeka.png',
-        primaryColor: '#005CA9', // aus Datenbank-Schema
+        primaryColor: '#005CA9',
+        description: 'Deutschlands größte Supermarkt-Kooperation',
+        categories: ['Molkereiprodukte', 'Frischfleisch', 'Obst', 'Gemüse'],
+        isPremiumPartner: true,
         website: 'https://www.edeka.de',
-        isActive: true,
         storeCount: 7,
       ),
-      Chain(
+      Retailer(
         id: 'rewe',
         name: 'REWE',
         displayName: 'REWE',
         logoUrl: 'assets/images/logos/rewe.png',
         primaryColor: '#CC071E',
+        description: 'Ihr Nahversorger mit nachhaltigen Produkten',
+        categories: ['Milch & Käse', 'Fleisch & Geflügel', 'Frisches Obst', 'Frisches Gemüse'],
+        isPremiumPartner: true,
         website: 'https://www.rewe.de',
-        isActive: true,
         storeCount: 7,
       ),
-      Chain(
+      Retailer(
         id: 'aldi',
         name: 'ALDI SÜD',
         displayName: 'ALDI',
         logoUrl: 'assets/images/logos/aldi.png',
         primaryColor: '#00549F',
+        description: 'Einfach günstig - Qualität zum besten Preis',
+        categories: ['Milcherzeugnisse', 'Frischfleisch'],
+        isPremiumPartner: false,
         website: 'https://www.aldi-sued.de',
-        isActive: true,
         storeCount: 7,
       ),
-      Chain(
+      Retailer(
         id: 'lidl',
         name: 'LIDL',
         displayName: 'LIDL',
         logoUrl: 'assets/images/logos/lidl.png',
         primaryColor: '#0050AA',
+        description: 'Mehr frische Ideen - Qualität und Frische',
+        categories: ['Backwaren', 'Milchprodukte'],
+        isPremiumPartner: false,
         website: 'https://www.lidl.de',
-        isActive: true,
         storeCount: 7,
       ),
-      Chain(
+      Retailer(
         id: 'netto_schwarz',
         name: 'NETTO',
         displayName: 'Netto',
         logoUrl: 'assets/images/logos/netto-schwarz.png',
         primaryColor: '#FFD100',
+        description: 'Jeden Tag ein bisschen besser',
+        categories: ['Getränke', 'Konserven'],
+        isPremiumPartner: false,
         website: 'https://www.netto-online.de',
-        isActive: true,
         storeCount: 7,
       ),
     ];
@@ -201,8 +211,8 @@ class MockDataService {
     _stores = [];
     int storeCounter = 1;
     
-    for (final chain in _chains) {
-      for (int i = 0; i < chain.storeCount; i++) {
+    for (final retailer in _retailers) {
+      for (int i = 0; i < retailer.storeCount; i++) {
         // 60% Berlin, 40% München (realistische Verteilung)
         final isBerlin = _random.nextDouble() < 0.6;
         final coordinates = isBerlin ? berlinCoordinates : munichCoordinates;
@@ -211,8 +221,9 @@ class MockDataService {
         
         _stores.add(Store(
           id: 'store_${storeCounter.toString().padLeft(3, '0')}',
-          chainId: chain.id,
-          name: '${chain.displayName} $template',
+          chainId: retailer.id,
+          retailerName: retailer.name,
+          name: '${retailer.displayName} $template',
           street: '$template ${_random.nextInt(200) + 1}',
           zipCode: isBerlin 
               ? '${10000 + _random.nextInt(5000)}' // Berlin PLZ 10000-14999
@@ -220,6 +231,11 @@ class MockDataService {
           city: isBerlin ? 'Berlin' : 'München',
           latitude: (location['lat'] as double) + (_random.nextDouble() - 0.5) * 0.02,
           longitude: (location['lng'] as double) + (_random.nextDouble() - 0.5) * 0.02,
+          phoneNumber: '+49 30 ${_random.nextInt(90000000) + 10000000}',
+          openingHours: _generateOpeningHours(),
+          services: _generateStoreServices(retailer.name),
+          hasWifi: _random.nextBool(),
+          hasPharmacy: false,
           hasBeacon: _random.nextBool(), // 50% haben Beacon für Indoor-Navigation
           isActive: true,
         ));
@@ -288,7 +304,7 @@ class MockDataService {
     for (int i = 0; i < 100; i++) {
       final product = _products[_random.nextInt(_products.length)];
       final store = _stores[_random.nextInt(_stores.length)];
-      final chain = _chains.firstWhere((c) => c.id == store.chainId);
+      final retailer = _retailers.firstWhere((r) => r.id == store.chainId);
       
       final discountPercent = _random.nextInt(31) + 10; // 10-40% Rabatt
       final originalPrice = product.basePriceCents;
@@ -296,13 +312,13 @@ class MockDataService {
       
       _offers.add(Offer(
         id: 'offer_${offerCounter.toString().padLeft(3, '0')}',
-        retailer: chain.name,
+        retailer: retailer.name,
         productName: product.name,
-        originalCategory: _getChainCategory(chain.id, product.categoryName),
+        originalCategory: _getRetailerCategory(retailer.id, product.categoryName),
         price: discountedPrice / 100.0, // Convert to Euro
         originalPrice: originalPrice / 100.0,
         discountPercent: discountPercent.toDouble(),
-        storeAddress: '${store.street}, ${store.zipCode} ${store.city}',
+        storeAddress: store.address,
         storeId: store.id,
         validUntil: DateTime.now().add(Duration(days: _random.nextInt(14) + 1)),
         storeLat: store.latitude,
@@ -328,7 +344,7 @@ class MockDataService {
       if (beaconStores.isEmpty) continue;
       
       final store = beaconStores[_random.nextInt(beaconStores.length)];
-      final chain = _chains.firstWhere((c) => c.id == store.chainId);
+      final retailer = _retailers.firstWhere((r) => r.id == store.chainId);
       
       final discountPercent = _random.nextInt(41) + 30; // 30-70% Flash-Rabatt
       final originalPrice = product.basePriceCents;
@@ -342,9 +358,9 @@ class MockDataService {
         id: 'flash_${(i + 1).toString().padLeft(3, '0')}',
         productName: product.name,
         brand: product.brand,
-        retailer: chain.name,
+        retailer: retailer.name,
         storeName: store.name,
-        storeAddress: '${store.street}, ${store.zipCode} ${store.city}',
+        storeAddress: store.address,
         originalPriceCents: originalPrice,
         flashPriceCents: flashPrice,
         discountPercentage: discountPercent,
@@ -415,7 +431,7 @@ class MockDataService {
     
     final product = _products[_random.nextInt(_products.length)];
     final store = beaconStores[_random.nextInt(beaconStores.length)];
-    final chain = _chains.firstWhere((c) => c.id == store.chainId);
+    final retailer = _retailers.firstWhere((r) => r.id == store.chainId);
     
     final discountPercent = _random.nextInt(41) + 30;
     final originalPrice = product.basePriceCents;
@@ -429,9 +445,9 @@ class MockDataService {
       id: 'flash_${DateTime.now().millisecondsSinceEpoch}',
       productName: product.name,
       brand: product.brand,
-      retailer: chain.name,
+      retailer: retailer.name,
       storeName: store.name,
-      storeAddress: '${store.street}, ${store.zipCode} ${store.city}',
+      storeAddress: store.address,
       originalPriceCents: originalPrice,
       flashPriceCents: flashPrice,
       discountPercentage: discountPercent,
@@ -461,19 +477,52 @@ class MockDataService {
   }
 
   // Helper Methods
-  String _getChainCategory(String chainId, String flashFeedCategory) {
-    // Use ProductCategoryMapping to get chain-specific category
-    final mappings = ProductCategoryMapping.categoryMappings[chainId] ?? {};
+  String _getRetailerCategory(String retailerId, String flashFeedCategory) {
+    // Use ProductCategoryMapping to get retailer-specific category
+    final mappings = ProductCategoryMapping.categoryMappings[retailerId] ?? {};
     
-    // Find the chain category for this FlashFeed category
+    // Find the retailer category for this FlashFeed category
     for (final entry in mappings.entries) {
       if (entry.value == flashFeedCategory) {
-        return entry.key; // Return chain-specific category
+        return entry.key; // Return retailer-specific category
       }
     }
     
     // Fallback to FlashFeed category
     return flashFeedCategory;
+  }
+
+  // Helper Methods für Store-Generierung
+  Map<String, OpeningHours> _generateOpeningHours() {
+    return {
+      'Montag': OpeningHours.standard(7, 0, 21, 0),
+      'Dienstag': OpeningHours.standard(7, 0, 21, 0),
+      'Mittwoch': OpeningHours.standard(7, 0, 21, 0),
+      'Donnerstag': OpeningHours.standard(7, 0, 21, 0),
+      'Freitag': OpeningHours.standard(7, 0, 22, 0),
+      'Samstag': OpeningHours.standard(7, 0, 21, 0),
+      'Sonntag': OpeningHours.closed(),
+    };
+  }
+  
+  List<String> _generateStoreServices(String retailerName) {
+    final commonServices = ['Parkplatz'];
+    
+    switch (retailerName.toLowerCase()) {
+      case 'edeka':
+        return [...commonServices, 'Lieferservice', 'Click & Collect'];
+      case 'rewe':
+        return [...commonServices, 'REWE Lieferservice', 'PayBack'];
+      case 'aldi':
+      case 'aldi süd':
+        return [...commonServices, 'Pfandautomat'];
+      case 'lidl':
+        return [...commonServices, 'Lidl Plus App', 'Bäckerei'];
+      case 'netto':
+        return [...commonServices, 'DeutschlandCard'];
+      default:
+        return commonServices;
+    }
   }
 
   ShelfLocation _generateShelfLocation() {

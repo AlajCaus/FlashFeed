@@ -70,8 +70,9 @@
 **NÄCHSTER SCHRITT:** Task 4b abschließen → Task 5 beginnen
 
 ### **⏭️ SOFORT ANSTEHEND:**
-**Task 4b: Build-Test + Live-Demo-URL** - 2 offene Punkte
-**Task 5: Mock-Daten-Service** - Bereit zum Start
+**Task 5: Mock-Daten-Service** - Detailplan erstellt, 7 Sub-Tasks identifiziert
+**PRIORITÄT 1:** Task 5.1 (Model-Klassen Konsistenz) - Kritische Inkonsistenzen lösen
+**BEREIT FÜR:** Freigabe-Anfrage für Task 5 Implementierung
 
 ---
 
@@ -117,11 +118,65 @@
 - [x] Multi-Device-Testing Setup dokumentiert
 - [x] DEPLOYMENT_SETUP.md mit Schritt-für-Schritt Anleitung erstellt
 
-#### **Task 5: Mock-Daten-Service**
-- [ ] `lib/services/mock_data_service.dart` - Zentrale Mock-Daten
-- [ ] Mock-Angebote für alle Händler generieren
-- [ ] Mock-Filialen mit GPS-Koordinaten
-- [ ] Integration mit `product_category_mapping.dart`
+#### **Task 5: Mock-Daten-Service** ⚠️ **AKTUELL IN ARBEIT**
+
+**🔍 PROBLEM IDENTIFIZIERT:** Mock-Daten-Service existiert bereits, aber hat kritische Inkonsistenzen:
+- MockDataService verwendet veraltete Model-Klassen (`Chain`, `Store`) die nicht in models.dart existieren
+- MockRetailersRepository verwendet nicht-existierende Klassen (`Retailer`, `OpeningHours`)
+- Fehlende Integration zwischen MockDataService und Provider
+- Produktkategorien-Mapping nicht vollständig genutzt
+
+**📋 TASK 5 DETAILPLAN:**
+
+#### **Task 5.1: Model-Klassen Konsistenz** ✅ **ABGESCHLOSSEN**
+- [x] **Problem:** `Chain`, `Store`, `Retailer`, `OpeningHours` Klassen fehlen in models.dart
+- [x] **Lösung:** Fehlende Model-Klassen zu models.dart hinzugefügt
+- [x] **Basis:** Existierende MockRetailersRepository als Referenz verwendet
+- [x] **Ziel:** Alle Model-Klassen zentral in models.dart verfügbar
+
+**🔄 DURCHGEFÜHRTE ÄNDERUNGEN:**
+- ✅ `Chain` + `Retailer` konsolidiert zu einheitlichem `Retailer` Model
+- ✅ `Store` Duplikat aufgelöst (zwei Versionen zusammengefügt)
+- ✅ `OpeningHours` von retailers_repository.dart nach models.dart verschoben
+- ✅ Repository-Interfaces bereinigt (Model-Klassen entfernt)
+- ✅ MockRetailersRepository an neue Model-Struktur angepasst
+- ✅ Alle Imports und Referenzen aktualisiert
+
+#### **Task 5.2: MockDataService Reparatur** 🛠️
+- [ ] **Problem:** MockDataService kompiliert nicht (fehlende Imports/Klassen)
+- [ ] **Lösung:** MockDataService aktualisieren für korrekte Model-Klassen
+- [ ] **Vereinfachung:** Überkomplexe Generation reduzieren (MVP-Fokus)
+- [ ] **Priorisierung:** Funktionalität vor Perfektion
+
+#### **Task 5.3: Repository-Integration** 🔗
+- [ ] **Problem:** MockOffersRepository und MockRetailersRepository nicht mit MockDataService integriert
+- [ ] **Lösung:** Repositories nutzen MockDataService als Datenquelle
+- [ ] **Singleton-Pattern:** Zentrale Dateninstanz für alle Repositories
+- [ ] **Konsistenz:** Alle Mock-Daten aus einer Quelle
+
+#### **Task 5.4: Provider-Integration** ⚡
+- [ ] **Problem:** Provider nutzen noch separate Mock-Repositories statt zentrale MockDataService
+- [ ] **Lösung:** Provider mit MockDataService Callbacks verbinden
+- [ ] **Live-Updates:** Timer-System für Flash Deals aktivieren
+- [ ] **Professor-Demo:** Instant-Demo-Features testen
+
+#### **Task 5.5: Produktkategorien-Mapping Vollendung** 📦
+- [ ] **Problem:** product_category_mapping.dart hat viele TODO-Einträge
+- [ ] **Lösung:** Alle Händler-Kategorien-Mappings vervollständigen
+- [ ] **Realistic Data:** Realistische Kategorien für alle 5+ Händler
+- [ ] **Integration:** Mapping in MockDataService Product-Generation nutzen
+
+#### **Task 5.6: GPS-Koordinaten & Standorte** 🗺️
+- [ ] **Problem:** Filial-Standorte sind zu generisch (nur Berlin/München)
+- [ ] **Lösung:** Realistische Filial-Standorte für Demo
+- [ ] **Händler-spezifisch:** Jeder Händler 3-5 realistische Berliner Standorte
+- [ ] **GPS-Präzision:** Echte Koordinaten für Demo-Zwecke
+
+#### **Task 5.7: Testing & Verification** ✅
+- [ ] **Build-Test:** MockDataService kompiliert fehlerfrei
+- [ ] **Provider-Test:** Alle Provider laden Daten erfolgreich
+- [ ] **Demo-Test:** Professor-Demo-Button funktioniert
+- [ ] **Performance-Test:** Keine Memory-Leaks oder Performance-Issues
 
 ---
 
@@ -389,10 +444,25 @@ git commit -m "feat: complete Task 4b - GitHub Pages deployment fully functional
 - Provider architecture operational"
 ```
 
-### **Nächste Schritte:**
-1. **Task 4b abschließen:** Build-Test + Live-Demo-URL testen
-2. **Task 5 beginnen:** Mock-Daten-Service implementieren
-3. **Provider mit Mock-Service verbinden:** Vollständige Integration
+### **Task 5 Analyse & Detailplan (aktuell):**
+
+**🔍 KRITISCHE PROBLEME IDENTIFIZIERT:**
+- **MockDataService existiert**, aber verwendet nicht-existierende Model-Klassen (`Chain`, `Store`)
+- **MockRetailersRepository** nutzt fehlende Klassen (`Retailer`, `OpeningHours`)
+- **Inkonsistenzen** zwischen verschiedenen Repository-Implementierungen
+- **Provider-Integration** fehlt komplett
+- **Produktkategorien-Mapping** unvollständig (viele TODOs)
+
+**📋 SYSTEMATISCHER LÖSUNGSPLAN:**
+1. **Task 5.1:** Model-Klassen Konsistenz (Basis für alles andere)
+2. **Task 5.2:** MockDataService Reparatur (Kompilier-Fehler beheben)
+3. **Task 5.3:** Repository-Integration (Zentrale Datenquelle)
+4. **Task 5.4:** Provider-Integration (Live-Updates)
+5. **Task 5.5:** Produktkategorien vervollständigen
+6. **Task 5.6:** Realistische GPS-Daten
+7. **Task 5.7:** Testing & Verification
+
+**⚡ BEREIT FÜR FREIGABE:** Task 5 Implementierung kann beginnen
 
 ### **Für BLoC-Migration (Post-MVP):**
 - Repository Interfaces bleiben unverändert ✅
