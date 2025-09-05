@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../data/product_category_mapping.dart';
+import '../models/models.dart';
 
 /*
  * FlashFeed Mock Data Service - Provider-optimiert
@@ -102,14 +103,14 @@ class MockDataService {
   void _startPeriodicUpdates() {
     // Flash Deals Updates: alle 2 Stunden neue Deals
     _flashDealTimer?.cancel();
-    _flashDealTimer = Timer.periodic(Duration(hours: 2), (timer) {
+    _flashDealTimer = Timer.periodic(const Duration(hours: 2), (timer) {
       _updateFlashDeals();
       _onFlashDealsUpdated?.call(); // Direkte Provider-Benachrichtigung
     });
     
     // Countdown Updates: alle 60 Sekunden Timer aktualisieren
     _countdownTimer?.cancel();
-    _countdownTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+    _countdownTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
       _updateCountdownTimers();
       _onFlashDealsUpdated?.call(); // Provider-Update für Timer
     });
@@ -203,8 +204,8 @@ class MockDataService {
     for (final chain in _chains) {
       for (int i = 0; i < chain.storeCount; i++) {
         // 60% Berlin, 40% München (realistische Verteilung)
-        final isBerl in = _random.nextDouble() < 0.6;
-        final coordinates = isBerl in ? berlinCoordinates : munichCoordinates;
+        final isBerlin = _random.nextDouble() < 0.6;
+        final coordinates = isBerlin ? berlinCoordinates : munichCoordinates;
         final location = coordinates[_random.nextInt(coordinates.length)];
         final template = storeTemplates[i % storeTemplates.length];
         
@@ -213,12 +214,12 @@ class MockDataService {
           chainId: chain.id,
           name: '${chain.displayName} $template',
           street: '$template ${_random.nextInt(200) + 1}',
-          zipCode: isBerl in 
+          zipCode: isBerlin 
               ? '${10000 + _random.nextInt(5000)}' // Berlin PLZ 10000-14999
               : '${80000 + _random.nextInt(6000)}', // München PLZ 80000-85999
-          city: isBerl in ? 'Berlin' : 'München',
-          latitude: location['lat'] as double + (_random.nextDouble() - 0.5) * 0.02,
-          longitude: location['lng'] as double + (_random.nextDouble() - 0.5) * 0.02,
+          city: isBerlin ? 'Berlin' : 'München',
+          latitude: (location['lat'] as double) + (_random.nextDouble() - 0.5) * 0.02,
+          longitude: (location['lng'] as double) + (_random.nextDouble() - 0.5) * 0.02,
           hasBeacon: _random.nextBool(), // 50% haben Beacon für Indoor-Navigation
           isActive: true,
         ));
@@ -309,6 +310,9 @@ class MockDataService {
       ));
       offerCounter++;
     }
+    
+    // Notify offers provider
+    _onOffersUpdated?.call();
   }
 
   Future<void> _generateFlashDeals() async {
@@ -490,206 +494,4 @@ class MockDataService {
     _countdownTimer?.cancel();
     debugPrint('🧹 MockDataService: Timer gestoppt');
   }
-}
-
-// Model Classes (basierend auf Datenbank-Schema)
-
-class Chain {
-  final String id;
-  final String name;
-  final String displayName;
-  final String logoUrl;
-  final String primaryColor;
-  final String website;
-  final bool isActive;
-  final int storeCount;
-
-  Chain({
-    required this.id,
-    required this.name,
-    required this.displayName,
-    required this.logoUrl,
-    required this.primaryColor,
-    required this.website,
-    required this.isActive,
-    required this.storeCount,
-  });
-}
-
-class Store {
-  final String id;
-  final String chainId;
-  final String name;
-  final String street;
-  final String zipCode;
-  final String city;
-  final double latitude;
-  final double longitude;
-  final bool hasBeacon;
-  final bool isActive;
-
-  Store({
-    required this.id,
-    required this.chainId,
-    required this.name,
-    required this.street,
-    required this.zipCode,
-    required this.city,
-    required this.latitude,
-    required this.longitude,
-    required this.hasBeacon,
-    required this.isActive,
-  });
-}
-
-class Product {
-  final String id;
-  final String categoryName;
-  final String name;
-  final String brand;
-  final int basePriceCents;
-  final bool isActive;
-
-  Product({
-    required this.id,
-    required this.categoryName,
-    required this.name,
-    required this.brand,
-    required this.basePriceCents,
-    required this.isActive,
-  });
-}
-
-class Offer {
-  final String id;
-  final String retailer;
-  final String productName;
-  final String originalCategory;
-  final double price;
-  final double? originalPrice;
-  final double? discountPercent;
-  final String storeAddress;
-  final String storeId;
-  final DateTime validUntil;
-  final double storeLat;
-  final double storeLng;
-
-  Offer({
-    required this.id,
-    required this.retailer,
-    required this.productName,
-    required this.originalCategory,
-    required this.price,
-    this.originalPrice,
-    this.discountPercent,
-    required this.storeAddress,
-    required this.storeId,
-    required this.validUntil,
-    required this.storeLat,
-    required this.storeLng,
-  });
-
-  bool get hasDiscount => originalPrice != null && discountPercent != null;
-  double get savings => hasDiscount ? (originalPrice! - price) : 0.0;
-  bool get isValid => DateTime.now().isBefore(validUntil);
-  
-  String get flashFeedCategory {
-    return ProductCategoryMapping.mapToFlashFeedCategory(retailer, originalCategory);
-  }
-}
-
-class FlashDeal {
-  final String id;
-  final String productName;
-  final String brand;
-  final String retailer;
-  final String storeName;
-  final String storeAddress;
-  final int originalPriceCents;
-  final int flashPriceCents;
-  final int discountPercentage;
-  final DateTime expiresAt;
-  final int remainingSeconds;
-  final String urgencyLevel; // 'low', 'medium', 'high'
-  final int estimatedStock;
-  final ShelfLocation shelfLocation;
-  final double storeLat;
-  final double storeLng;
-
-  FlashDeal({
-    required this.id,
-    required this.productName,
-    required this.brand,
-    required this.retailer,
-    required this.storeName,
-    required this.storeAddress,
-    required this.originalPriceCents,
-    required this.flashPriceCents,
-    required this.discountPercentage,
-    required this.expiresAt,
-    required this.remainingSeconds,
-    required this.urgencyLevel,
-    required this.estimatedStock,
-    required this.shelfLocation,
-    required this.storeLat,
-    required this.storeLng,
-  });
-
-  double get originalPrice => originalPriceCents / 100.0;
-  double get flashPrice => flashPriceCents / 100.0;
-  double get savings => originalPrice - flashPrice;
-  int get remainingMinutes => (remainingSeconds / 60).ceil();
-  bool get isExpired => remainingSeconds <= 0;
-
-  FlashDeal copyWith({
-    String? id,
-    String? productName,
-    String? brand,
-    String? retailer,
-    String? storeName,
-    String? storeAddress,
-    int? originalPriceCents,
-    int? flashPriceCents,
-    int? discountPercentage,
-    DateTime? expiresAt,
-    int? remainingSeconds,
-    String? urgencyLevel,
-    int? estimatedStock,
-    ShelfLocation? shelfLocation,
-    double? storeLat,
-    double? storeLng,
-  }) {
-    return FlashDeal(
-      id: id ?? this.id,
-      productName: productName ?? this.productName,
-      brand: brand ?? this.brand,
-      retailer: retailer ?? this.retailer,
-      storeName: storeName ?? this.storeName,
-      storeAddress: storeAddress ?? this.storeAddress,
-      originalPriceCents: originalPriceCents ?? this.originalPriceCents,
-      flashPriceCents: flashPriceCents ?? this.flashPriceCents,
-      discountPercentage: discountPercentage ?? this.discountPercentage,
-      expiresAt: expiresAt ?? this.expiresAt,
-      remainingSeconds: remainingSeconds ?? this.remainingSeconds,
-      urgencyLevel: urgencyLevel ?? this.urgencyLevel,
-      estimatedStock: estimatedStock ?? this.estimatedStock,
-      shelfLocation: shelfLocation ?? this.shelfLocation,
-      storeLat: storeLat ?? this.storeLat,
-      storeLng: storeLng ?? this.storeLng,
-    );
-  }
-}
-
-class ShelfLocation {
-  final String aisle;
-  final String shelf;
-  final int x;
-  final int y;
-
-  ShelfLocation({
-    required this.aisle,
-    required this.shelf,
-    required this.x,
-    required this.y,
-  });
 }

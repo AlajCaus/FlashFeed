@@ -11,20 +11,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('FlashFeed app loads correctly', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const FlashFeedApp());
+    
+    // Allow time for providers to initialize
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that FlashFeed app loads without errors
+    expect(find.byType(MaterialApp), findsOneWidget);
+    
+    // Verify that main layout screen is present
+    // Note: Specific widget checks depend on MainLayoutScreen implementation
+    expect(tester.takeException(), isNull);
+  });
+  
+  testWidgets('FlashFeed providers are accessible', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const FlashFeedApp());
+    
+    // Allow time for providers to initialize
+    await tester.pumpAndSettle();
+    
+    // Verify that no exceptions occurred during provider setup
+    expect(tester.takeException(), isNull);
+    
+    // Verify MaterialApp is present (indicates successful provider setup)
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }

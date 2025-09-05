@@ -1,11 +1,13 @@
 // FlashFeed Offers Repository Interface
 // Repository Pattern für BLoC-Migration Ready
 
+import '../models/models.dart';
+
 /*
  * MIGRATION-KOMPATIBILITÄT:
  * - Interface bleibt unverändert für BLoC-Migration
  * - Nur Provider/BLoC-Layer ändert sich später
- * - Mock-Implementation verwendet neue Model-Klassen
+ * - Model-Klassen jetzt zentral in lib/models/models.dart
  */
 
 abstract class OffersRepository {
@@ -26,17 +28,4 @@ abstract class OffersRepository {
   
   /// Angebote sortieren
   Future<List<Offer>> getSortedOffers(List<Offer> offers, OfferSortType sortType);
-}
-
-/// Angebot Model-Klasse (wurde nach services/mock_data_service.dart verschoben)
-/// Import: import '../services/mock_data_service.dart';
-
-/// Sortier-Optionen für Angebote
-enum OfferSortType {
-  priceAsc,        // Preis aufsteigend
-  priceDesc,       // Preis absteigend  
-  discountDesc,    // Rabatt absteigend
-  distanceAsc,     // Entfernung aufsteigend
-  validityDesc,    // Gültigkeitsdauer absteigend
-  nameAsc,         // Produktname A-Z
 }

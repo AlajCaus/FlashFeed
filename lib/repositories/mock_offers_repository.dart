@@ -3,6 +3,7 @@
 
 import 'offers_repository.dart';
 import '../data/product_category_mapping.dart';
+import '../models/models.dart';
 
 class MockOffersRepository implements OffersRepository {
   static final List<Offer> _mockOffers = [

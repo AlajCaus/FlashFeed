@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../repositories/offers_repository.dart';
 import '../repositories/mock_offers_repository.dart';
 import '../data/product_category_mapping.dart';
+import '../models/models.dart';
 
 class OffersProvider extends ChangeNotifier {
   final OffersRepository _offersRepository;
