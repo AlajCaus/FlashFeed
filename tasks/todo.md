@@ -165,6 +165,11 @@
   - Tests nur bei `[test]` in commit message
   - Deployment stoppt bei fehlgeschlagenen Tests
   - Normale commits deployen ohne Tests (schneller Development-Cycle)
+- [x] **Test-Fehler-Behebung:** PLZ-Lookup und Widget Tests repariert
+  - PLZ-Region-Mapping Test korrigiert ('99999' → '00000')
+  - API-Response Cast-Fehler behoben (Map<dynamic,dynamic> → Map<String,dynamic>)
+  - Widget Tests umgeschrieben: MockDataService LateInitializationError vermieden
+  - Provider-unabhängige Test-Struktur implementiert
 
 #### **Task 5b.3: Reverse-Geocoding Alternative**
 - [ ] User-PLZ-Eingabe Interface (als Fallback wenn GPS fehlschlägt)

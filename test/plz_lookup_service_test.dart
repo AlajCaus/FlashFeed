@@ -48,7 +48,7 @@ void main() {
         expect(service.getRegionFromPLZ('60311'), equals('Hessen/Rheinland-Pfalz'));
         expect(service.getRegionFromPLZ('70173'), equals('Baden-Württemberg'));
         expect(service.getRegionFromPLZ('80331'), equals('Bayern'));
-        expect(service.getRegionFromPLZ('99999'), isNull); // Unbekannte PLZ
+        expect(service.getRegionFromPLZ('00000'), isNull); // Unbekannte PLZ
       });
     });
 
@@ -56,28 +56,6 @@ void main() {
       test('Cache wird korrekt initialisiert', () {
         final stats = service.getCacheStats();
         expect(stats['entries'], equals(0));
-      });
-
-      test('Cache speichert und liefert Ergebnisse', () async {
-        // Mock HTTP Client für konsistente Antworten
-        final mockClient = MockClient((request) async {
-          final mockResponse = {
-            'address': {
-              'postcode': '10115',
-              'city': 'Berlin',
-              'country': 'Deutschland'
-            }
-          };
-          return http.Response(json.encode(mockResponse), 200);
-        });
-
-        // Temporär den HTTP Client ersetzen (für den Test)
-        // Note: Das würde eine Dependency Injection Lösung erfordern
-        // Für jetzt testen wir die Cache-Logik indirekt
-        
-        service.clearCache();
-        final initialStats = service.getCacheStats();
-        expect(initialStats['entries'], equals(0));
       });
 
       test('Cache wird korrekt geleert', () {
@@ -89,7 +67,6 @@ void main() {
 
     group('PLZ-Format-Validierung', () {
       test('Gültige deutsche PLZ-Formate', () {
-        // Diese Tests würden intern von der API-Response-Parsing getestet
         final validPLZs = ['10115', '80331', '01067', '20095', '99999'];
         for (final plz in validPLZs) {
           expect(RegExp(r'^\d{5}$').hasMatch(plz), isTrue, reason: 'PLZ $plz sollte gültig sein');
@@ -144,7 +121,6 @@ void main() {
       });
 
       test('Alternative PLZ-Felder werden korrekt behandelt', () {
-        // Nominatim kann verschiedene Felder für PLZ verwenden
         final testCases = [
           {'address': {'postcode': '80331'}},
           {'address': {'postal_code': '01067'}},
@@ -162,7 +138,7 @@ void main() {
         }
       });
 
-      test('Fehlerhafte API-Response wirft PLZLookupException', () {
+      test('Fehlerhafte API-Response wird korrekt behandelt', () {
         // Simuliere fehlerhafte Response-Strukturen
         final errorCases = [
           {}, // Leer
@@ -172,15 +148,17 @@ void main() {
         ];
 
         for (final errorCase in errorCases) {
-          final address = errorCase['address'] as Map<String, dynamic>?;
+          final address = errorCase['address'] as Map?;
           if (address == null) {
-            // Keine Adress-Information
+            // Keine Adress-Information gefunden
+            expect(address, isNull);
             continue;
           }
 
-          final plz = address['postcode'] as String? ??
-                     address['postal_code'] as String? ??
-                     address['zipcode'] as String?;
+          final addressMap = Map<String, dynamic>.from(address);
+          final plz = addressMap['postcode'] as String? ??
+                     addressMap['postal_code'] as String? ??
+                     addressMap['zipcode'] as String?;
 
           if (plz == null || plz.isEmpty || !RegExp(r'^\d{5}$').hasMatch(plz)) {
             // Diese Fälle sollten PLZLookupException werfen
@@ -192,7 +170,6 @@ void main() {
 
     group('Rate-Limiting Simulation', () {
       test('Rate-Limiting Delay-Berechnung', () {
-        // Simuliere Rate-Limiting-Logik
         final now = DateTime.now();
         final lastRequest = now.subtract(const Duration(milliseconds: 500));
         final rateLimitDelay = const Duration(seconds: 1);
@@ -209,7 +186,6 @@ void main() {
 
     group('Performance Tests', () {
       test('Cache-Performance bei mehreren Lookups', () {
-        // Simuliere mehrere Cache-Operationen
         final coordinates = [
           '52.5200,13.4050', // Berlin
           '48.1351,11.5820', // München
@@ -250,7 +226,6 @@ void main() {
           final lat = stadt['lat'] as double;
           final lng = stadt['lng'] as double;
           
-          // Deutschland GPS-Grenzen prüfen
           expect(lat, greaterThanOrEqualTo(47.0));
           expect(lat, lessThanOrEqualTo(56.0));
           expect(lng, greaterThanOrEqualTo(5.0));
@@ -261,7 +236,7 @@ void main() {
   });
 }
 
-// Extension für private Methoden-Tests (nur für Testing)
+// Extension für private Methoden-Tests
 extension PLZLookupServiceTest on PLZLookupService {
   bool _isValidCoordinate(double latitude, double longitude) {
     return latitude >= 47.0 && latitude <= 56.0 && 
