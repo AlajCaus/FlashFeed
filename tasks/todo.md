@@ -161,6 +161,10 @@
 - [x] HTTP package zu pubspec.yaml hinzugefügt (dependencies + dev_dependencies)
 - [x] Performance Tests für Memory-Usage und Cache-Effizienz
 - [x] Extension-Methods für private Methoden-Testing
+- [x] **GitHub Actions Test-Steuerung:** Commit message-basierte Test-Ausführung
+  - Tests nur bei `[test]` in commit message
+  - Deployment stoppt bei fehlgeschlagenen Tests
+  - Normale commits deployen ohne Tests (schneller Development-Cycle)
 
 #### **Task 5b.3: Reverse-Geocoding Alternative**
 - [ ] User-PLZ-Eingabe Interface (als Fallback wenn GPS fehlschlägt)

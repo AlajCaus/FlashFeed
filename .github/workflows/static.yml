@@ -1,4 +1,4 @@
-name: FlashFeed Web Deploy
+name: FlashFeed CI/CD
 
 on:
   push:
@@ -15,10 +15,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  # Tests nur ausführen wenn commit message "[test]" enthält
+  test:
+    if: contains(github.event.head_commit.message, '[test]')
     runs-on: ubuntu-latest
     
     steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.35.3'
+        channel: 'stable'
+        
+    - name: Install Dependencies
+      run: flutter pub get
+      
+    - name: Run Unit Tests
+      run: flutter test --reporter=expanded
+      
+    - name: Test Summary
+      run: echo "✅ All tests passed! Proceeding with deployment..."
+
+  build:
+    # Build läuft immer, aber wartet auf Tests wenn sie ausgeführt werden
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Skip if tests failed
+      if: needs.test.result == 'failure'
+      run: |
+        echo "❌ Tests failed - skipping deployment"
+        exit 1
+        
     - name: Checkout Repository
       uses: actions/checkout@v4
       
