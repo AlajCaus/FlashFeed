@@ -132,12 +132,60 @@
 - [x] Realistische PLZ-Bereiche: BioCompany (Berlin), Globus (Süd/West), Netto (Nord/Ost) ✅
 - [x] Vollständige Tests: 100% Pass-Rate für alle Funktionen ✅
 
-#### **Task 5b: PLZ-Lookup-Service**  
-- [ ] `lib/services/plz_lookup_service.dart` erstellen
-- [ ] GPS-Koordinaten zu PLZ-Mapping (Reverse-Geocoding oder Lookup-Table)
-- [ ] User-PLZ-Eingabe Alternative (Fallback wenn GPS nicht verfügbar)
-- [ ] PLZ-zu-Region Zuordnung (Bayern: 80000-99999, Berlin: 10000-14999, etc.)
-- [ ] Caching für Performance
+#### **Task 5b: PLZ-Lookup-Service** 🔄 **NÄCHSTER TASK**
+
+**🎯 ZIEL:** GPS-Koordinaten zu PLZ-Mapping für regionale Händler-Filterung
+
+**📋 DETAILPLAN:**
+
+#### **Task 5b.1: PLZ-Lookup-Service Grundstruktur** ✅ **ABGESCHLOSSEN**
+- [x] `lib/services/plz_lookup_service.dart` erstellt mit Nominatim API Integration
+- [x] Singleton-Pattern implementiert (Factory Constructor, app-weite Instanz)
+- [x] Abstract Interface definiert (`getPLZFromCoordinates`, `getRegionFromPLZ`)
+- [x] Error-Handling-Struktur definiert (PLZLookupException mit detaillierten Fehlern)
+- [x] Rate-Limiting für Nominatim API (1 Request/Sekunde)
+- [x] In-Memory-Cache für GPS→PLZ-Lookups implementiert
+- [x] GPS-Koordinaten-Validierung für Deutschland-Grenzen
+- [x] Deutsche PLZ-Format-Validierung (5 Ziffern)
+- [x] Basis-Region-Mapping für 9 deutsche Regionen
+
+#### **Task 5b.2: Nominatim API Testing & Verification** ✅ **ABGESCHLOSSEN**
+- [x] Unit Tests für PLZLookupService implementiert (9 Test-Gruppen, 20+ Einzeltests)
+- [x] Mock-GPS-Koordinaten Testing (Berlin, München, Hamburg, Köln, Frankfurt)
+- [x] API-Response-Parsing Testing mit simulierten Nominatim-Daten
+- [x] Error-Handling Testing (ungültige Koordinaten, API-Fehler, fehlerhafte Responses)
+- [x] Rate-Limiting Testing (Delay-Berechnung und Timing-Logic)
+- [x] Cache-Funktionalität Testing (Hit/Miss-Scenarios, Performance-Simulation)
+- [x] Deutsche PLZ-Validierung Testing (gültige/ungültige Formate, Edge Cases)
+- [x] Integration Testing mit http package und MockClient
+- [x] HTTP package zu pubspec.yaml hinzugefügt (dependencies + dev_dependencies)
+- [x] Performance Tests für Memory-Usage und Cache-Effizienz
+- [x] Extension-Methods für private Methoden-Testing
+
+#### **Task 5b.3: Reverse-Geocoding Alternative**
+- [ ] User-PLZ-Eingabe Interface (als Fallback wenn GPS fehlschlägt)
+- [ ] PLZ-Validierung mit PLZHelper integration
+- [ ] UI-Integration: PLZ-Eingabe-Dialog vorbereiten
+- [ ] LocalStorage für User-PLZ cachen
+
+#### **Task 5b.4: Performance & Caching**
+- [ ] In-Memory-Cache für GPS→PLZ-Lookups
+- [ ] Cache-Expiry (24h) implementieren
+- [ ] Performance-Tests für große Koordinaten-Listen
+- [ ] Memory-Usage optimieren
+
+#### **Task 5b.5: Integration mit LocationProvider**
+- [ ] LocationProvider um PLZ-Lookup erweitern
+- [ ] GPS-Permission → GPS-Koordinaten → PLZ-Lookup → Regionale Filterung
+- [ ] Error-Chain: GPS failed → User-PLZ-Eingabe → Manual-Region-Selection
+- [ ] Provider-Callbacks für andere Provider (OffersProvider, RetailersProvider)
+
+#### **Task 5b.6: Testing & Verification**
+- [ ] Unit Tests für PLZ-Lookup-Algorithmus
+- [ ] Integration Tests mit LocationProvider
+- [ ] Mock-GPS-Koordinaten Testing (Berlin, München, Hamburg)
+- [ ] User-PLZ-Eingabe Testing
+- [ ] Performance-Benchmarks
 
 #### **Task 5c: Regionale Provider-Logik**
 - [ ] LocationProvider um regionale PLZ-Logik erweitern
