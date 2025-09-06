@@ -1,32 +1,52 @@
 // FlashFeed LocationProvider Integration Tests
-// Task 5b.6: Testing & Verification (Corrected Version)
+// Task 5b.6: Testing & Verification (Fixed Test Setup)
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
+
 import '../../lib/providers/location_provider.dart';
 import '../../lib/providers/offers_provider.dart';
 import '../../lib/services/mock_data_service.dart';
 import '../../lib/helpers/plz_helper.dart';
 
+// Global test mock data service for integration tests
+late MockDataService testMockDataService;
+
 void main() {
   group('Task 5b.6: LocationProvider Integration Tests', () {
     late LocationProvider locationProvider;
     late OffersProvider offersProvider;
-    late MockDataService mockDataService;
 
     setUpAll(() async {
-      // Initialize MockDataService
-      mockDataService = MockDataService();
-      await mockDataService.initializeMockData();
+      // Initialize Flutter test bindings for LocalStorage
+      TestWidgetsFlutterBinding.ensureInitialized();
+      
+      // Setup SharedPreferences mock for LocalStorage
+      const MethodChannel('plugins.flutter.io/shared_preferences')
+          .setMockMethodCallHandler((methodCall) async {
+        if (methodCall.method == 'getAll') {
+          return <String, dynamic>{};
+        }
+        return null;
+      });
+      
+      // Initialize test MockDataService
+      testMockDataService = MockDataService();
+      await testMockDataService.initializeMockData();
     });
 
     setUp(() {
       locationProvider = LocationProvider();
-      offersProvider = OffersProvider.mock();
+      offersProvider = OffersProvider(testMockDataService.getOffersRepository());
     });
 
     tearDown(() {
       locationProvider.dispose();
       offersProvider.dispose();
+    });
+
+    tearDownAll(() async {
+      testMockDataService.dispose();
     });
 
     group('GPS → PLZ → Regional Filtering Integration', () {
@@ -196,11 +216,10 @@ void main() {
         
         locationProvider.registerLocationChangeCallback(callback);
 
-        // Act: Dispose provider
-        locationProvider.dispose();
-
-        // Assert: Should not crash
+        // Act & Assert: Should not crash
         expect(() => locationProvider.dispose(), returnsNormally);
+        
+        // Note: Don't call dispose again in tearDown since we already called it
       });
     });
 
