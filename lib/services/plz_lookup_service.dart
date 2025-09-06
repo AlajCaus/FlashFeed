@@ -75,7 +75,7 @@ class PLZLookupService {
     
     // Basis-Region-Mapping (wird erweitert)
     if (plz.startsWith('1')) return 'Berlin/Brandenburg';
-    if (plz.startsWith('0')) return 'Sachsen/Thüringen';
+    if (plz.startsWith('0') && plz != '00000') return 'Sachsen/Thüringen'; // 00000 ist ungültig
     if (plz.startsWith('2') || plz.startsWith('3')) return 'Niedersachsen/Schleswig-Holstein';
     if (plz.startsWith('4') || plz.startsWith('5')) return 'Nordrhein-Westfalen';
     if (plz.startsWith('6')) return 'Hessen/Rheinland-Pfalz';

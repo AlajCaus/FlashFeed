@@ -56,7 +56,17 @@ void main() {
       final mockService = MockDataService();
       expect(mockService, isNotNull);
       
-      // Basis-Daten verfügbar
+      // Vor Initialisierung sollten Listen leer sein
+      expect(mockService.offers, isEmpty);
+      expect(mockService.flashDeals, isEmpty);
+      expect(mockService.retailers, isEmpty);
+      expect(mockService.isInitialized, isFalse);
+      
+      // MockDataService initialisieren
+      await mockService.initializeMockData();
+      
+      // Nach Initialisierung sollten Daten verfügbar sein
+      expect(mockService.isInitialized, isTrue);
       expect(mockService.offers, isNotEmpty);
       expect(mockService.flashDeals, isNotEmpty);
       expect(mockService.retailers, isNotEmpty);
