@@ -217,33 +217,60 @@
 - **Regional-Updates:** Automatische Benachrichtigung anderer Provider bei Standort-Änderungen
 
 #### **Task 5b.6: Testing & Verification**
-- [ ] Unit Tests für PLZ-Lookup-Algorithmus
-- [ ] Integration Tests mit LocationProvider
-- [ ] Mock-GPS-Koordinaten Testing (Berlin, München, Hamburg)
-- [ ] User-PLZ-Eingabe Testing
-- [ ] Performance-Benchmarks
-- [ ] **LocationProvider Unit Tests**
-  - [ ] ensureLocationData() Fallback-Kette Tests (GPS → Cache → Dialog)
-  - [ ] PLZ-to-Coordinates Simulation Tests
-  - [ ] Error-Chain Tests (alle Fallbacks fehlgeschlagen)
-  - [ ] LocationSource Enum State-Tracking Tests
-  - [ ] LocalStorage Integration Tests (PLZ-Caching mit Expiry)
-  - [ ] GPS-Permission und Location-Service Tests
-- [ ] **Provider-Callback System Tests**
-  - [ ] LocationProvider Callback Registration/Unregistration Tests
-  - [ ] RegionalDataCallback Integration Tests (PLZ → verfügbare Retailer)
-  - [ ] LocationChangeCallback Tests (GPS-Update → Provider-Benachrichtigung)
-  - [ ] Cross-Provider Callback Communication Tests
-  - [ ] Callback Error-Handling Tests (ungültige PLZ, leere Retailer-Listen)
-  - [ ] Memory-Leak Tests für Callback-Cleanup (dispose() Pattern)
-- [ ] **Cross-Provider Integration Tests**  
-  - [ ] LocationProvider → OffersProvider regionale Filterung
-  - [ ] LocationProvider → FlashDealsProvider Standort-Updates
-  - [ ] LocationProvider → RetailersProvider Verfügbarkeit
-  - [ ] Multi-Provider State-Synchronisation Tests
-  - [ ] Provider-Callback Stress-Tests (mehrere gleichzeitige Updates)
+**🎯 ANWEISUNG FÜR NACHFOLGENDE CLAUDE-INSTANZEN:**
+**Arbeite die Prioritäten in exakter Reihenfolge ab - jede Priorität muss vollständig abgeschlossen sein, bevor zur nächsten übergegangen wird.**
+
+**PRIORITÄT 1: LocationProvider Core Tests (MUSS - Basis-Funktionalität)**
+*Warum kritisch: Ohne funktionierende LocationProvider Tests ist regionale Filterung nicht verifizierbar*
+- [ ] `test/location_provider_test.dart` erstellen (neue Datei)
+- [ ] Setup/TearDown Pattern implementieren (MockDataService Test-Mode verwenden)
+- [ ] ensureLocationData() Fallback-Kette Tests (GPS → Cache → Dialog)
+- [ ] LocationSource Enum State-Tracking Tests (none → gps → cachedPLZ → userPLZ)
+- [ ] Error-Chain Tests (alle Fallbacks fehlgeschlagen)
+- [ ] PLZ-to-Coordinates Simulation Tests (Berlin, München, Hamburg)
+- [ ] GPS-Permission und Location-Service Tests
+- [ ] LocalStorage Integration Tests (PLZ-Caching mit Expiry)
+
+**PRIORITÄT 2: Cross-Provider Integration Tests (MVP-KRITISCH)**
+*Warum MVP-kritisch: FlashFeed's Kern-Wertversprechen ist "regionale Verfügbarkeit" - ohne Cross-Provider Integration zeigt die App irrelevante Daten (z.B. Globus-Angebote in Berlin, wo Globus nicht verfügbar ist)*
+- [ ] `test/cross_provider_integration_test.dart` erstellen (neue Datei)
+- [ ] LocationProvider → OffersProvider regionale Filterung (Berlin User sieht nur verfügbare Händler)
+- [ ] LocationProvider → FlashDealsProvider Standort-Updates (nur regionale Flash Deals)
+- [ ] LocationProvider → RetailersProvider Verfügbarkeit (PLZ-basierte Händler-Filterung)
+- [ ] Multi-Provider State-Synchronisation Tests (PLZ-Änderung propagiert zu allen Providern)
+- [ ] RegionalDataCallback Integration Tests (PLZ → verfügbare Retailer Liste)
+- [ ] Cross-Provider Communication Stress-Tests (mehrere gleichzeitige Location-Updates)
+
+**PRIORITÄT 3: Provider-Callback System Tests (WICHTIG - Robustheit)**
+*Warum wichtig: Sicherstellt Memory-Management und Error-Handling des Callback-Systems*
+- [ ] `test/location_provider_test.dart` erweitern um Callback Tests
+- [ ] LocationProvider Callback Registration/Unregistration Tests
+- [ ] LocationChangeCallback Tests (GPS-Update → Provider-Benachrichtigung)
+- [ ] Callback Error-Handling Tests (ungültige PLZ, leere Retailer-Listen)
+- [ ] Memory-Leak Tests für Callback-Cleanup (dispose() Pattern)
+- [ ] Provider-Callback Registration-Lifecycle Tests
+
+**📋 SETUP-PATTERN (IMMER VERWENDEN):**
+```dart
+// Für alle LocationProvider Tests
+setUp(() {
+  testMockDataService = MockDataService();
+  // WICHTIG: Test-Mode aktivieren (keine Timer)
+  await testMockDataService.initializeMockData(testMode: true);
+});
+
+tearDown(() {
+  testMockDataService.dispose();
+});
+```
+
+**⚠️ REIHENFOLGE EINHALTEN:**
+- Priorität 1 MUSS vollständig abgeschlossen sein, bevor Priorität 2 beginnt
+- Priorität 2 ist MVP-kritisch für Phase 2 Tasks (Task 9, 15, 16)
+- Tests müssen CI/CD-kompatibel sein (nur bei `[test]` in commit message)
 
 #### **Task 5c: Regionale Provider-Logik**
+**🔗 ABHÄNGIGKEIT: Task 5b.6 Priorität 2 (Cross-Provider Tests) MUSS vorher abgeschlossen sein**
 - [ ] LocationProvider um regionale PLZ-Logik erweitern
 - [ ] OffersProvider um regionale Filterung erweitern (`getRegionalOffers()`)
 - [ ] RetailersProvider um Verfügbarkeitsprüfung erweitern (`getAvailableRetailers(plz)`)
