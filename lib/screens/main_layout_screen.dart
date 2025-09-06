@@ -5,6 +5,7 @@ import '../providers/app_provider.dart';
 import '../providers/offers_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/flash_deals_provider.dart';
 
 /*
  * FlashFeed Main Layout Screen
@@ -42,6 +43,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
   void _initializeApp() async {
     final appProvider = context.read<AppProvider>();
     final offersProvider = context.read<OffersProvider>();
+    final flashDealsProvider = context.read<FlashDealsProvider>();
     final locationProvider = context.read<LocationProvider>();
     
     try {
@@ -51,8 +53,9 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
       // Initialize location (with permission request)
       await locationProvider.requestLocationPermission();
       
-      // Load initial offers data
+      // Load initial data
       await offersProvider.loadOffers();
+      await flashDealsProvider.loadFlashDeals();
       
       // Mark first launch as complete
       if (appProvider.isFirstLaunch) {
@@ -101,7 +104,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -296,58 +299,84 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
   }
 
   Widget _buildFlashDealsPanel() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
+    return Consumer<FlashDealsProvider>(
+      builder: (context, flashDealsProvider, child) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             children: [
-              Text(
-                'Flash Deals',
-                style: Theme.of(context).textTheme.headlineSmall,
+              Row(
+                children: [
+                  Text(
+                    'Flash Deals',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const Spacer(),
+                  // Stats
+                  Text(
+                    '${flashDealsProvider.totalDealsCount} Deals • ${flashDealsProvider.urgentDealsCount} dringend',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Professor Demo Button
+                  ElevatedButton.icon(
+                    onPressed: () => _triggerProfessorDemo(),
+                    icon: const Icon(Icons.flash_on),
+                    label: const Text('Professor Demo'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-              const Spacer(),
-              // Professor Demo Button
-              ElevatedButton.icon(
-                onPressed: () => _triggerProfessorDemo(),
-                icon: const Icon(Icons.flash_on),
-                label: const Text('Professor Demo'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                ),
+              
+              const SizedBox(height: 8),
+              
+              // Quick Actions
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => flashDealsProvider.refresh(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Aktualisieren'),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => flashDealsProvider.clearAllFilters(),
+                    icon: const Icon(Icons.clear_all),
+                    label: const Text('Filter zurücksetzen'),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Flash Deals List
+              Expanded(
+                child: flashDealsProvider.isLoading
+                    ? _buildLoadingWidget('Lade Flash Deals...')
+                    : flashDealsProvider.errorMessage != null
+                        ? _buildErrorWidget(
+                            flashDealsProvider.errorMessage!,
+                            () => flashDealsProvider.refresh(),
+                          )
+                        : flashDealsProvider.flashDeals.isEmpty
+                            ? _buildEmptyState('Keine Flash Deals verfügbar')
+                            : ListView.builder(
+                                itemCount: flashDealsProvider.flashDeals.length,
+                                itemBuilder: (context, index) {
+                                  final deal = flashDealsProvider.flashDeals[index];
+                                  return _buildFlashDealCard(deal);
+                                },
+                              ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.orange[50],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.flash_on,
-                      size: 64,
-                      color: Colors.orange,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Flash Deals werden in Task 5 + Task 14-15 implementiert',
-                      style: TextStyle(color: Colors.orange),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -444,33 +473,161 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
   }
 
   Widget _buildOfferCard(dynamic offer) {
-    // Placeholder for actual offer card
-    // Will be implemented when Offer model is available
+    // Offer Card mit echten Daten aus MockDataService
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: const Icon(Icons.local_offer, color: Colors.green),
-        title: Text('Produkt-Name'), // offer.productName
-        subtitle: Text('Händler • Adresse'), // offer.retailer + offer.storeAddress
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: offer.hasDiscount ? Colors.green : Colors.blue,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            offer.hasDiscount ? Icons.local_offer : Icons.shopping_cart,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          offer.productName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('   ${offer.retailer}'),
+            Text('   ${offer.storeAddress}'),
+            if (offer.hasDiscount)
+              Text(
+                '   Gültig bis: ${offer.validUntil.day}.${offer.validUntil.month}.${offer.validUntil.year}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+          ],
+        ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '€0.00', // offer.price
+              '€${offer.price.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
             ),
-            Text(
-              'Ersparnis: €0.00', // offer.savings
-              style: TextStyle(
-                color: Colors.green[600],
-                fontSize: 12,
+            if (offer.hasDiscount) ...[
+              Text(
+                'statt €${offer.originalPrice!.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  decoration: TextDecoration.lineThrough,
+                  fontSize: 10,
+                  color: Colors.grey,
+                ),
               ),
-            ),
+              Text(
+                'Ersparnis: €${offer.savings.toStringAsFixed(2)}',
+                style: TextStyle(
+                  color: Colors.green[600],
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildFlashDealCard(dynamic deal) {
+    // Flash Deal Card mit echten Daten
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 4,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          gradient: LinearGradient(
+            colors: [
+              deal.urgencyLevel == 'high' ? Colors.red[50]! : 
+              deal.urgencyLevel == 'medium' ? Colors.orange[50]! : Colors.blue[50]!,
+              Colors.white,
+            ],
+          ),
+        ),
+        child: ListTile(
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: deal.urgencyLevel == 'high' ? Colors.red : 
+                     deal.urgencyLevel == 'medium' ? Colors.orange : Colors.blue,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.flash_on, color: Colors.white, size: 20),
+          ),
+          title: Text(
+            deal.productName,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('   ${deal.brand} • ${deal.retailer}'),
+              Text('   ${deal.storeName}'),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.timer,
+                    size: 14,
+                    color: deal.urgencyLevel == 'high' ? Colors.red : Colors.orange,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '  ${deal.remainingMinutes} Min verbleibend',
+                    style: TextStyle(
+                      color: deal.urgencyLevel == 'high' ? Colors.red : Colors.orange,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '€${deal.flashPrice.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.green,
+                ),
+              ),
+              Text(
+                'statt €${deal.originalPrice.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  decoration: TextDecoration.lineThrough,
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+              ),
+              Text(
+                '-${deal.discountPercentage}%',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -511,17 +668,45 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
   void _triggerProfessorDemo() {
     final appProvider = context.read<AppProvider>();
     final userProvider = context.read<UserProvider>();
+    final flashDealsProvider = context.read<FlashDealsProvider>();
     
-    // Enable demo mode
-    userProvider.enableDemoMode();
-    appProvider.triggerProfessorDemo();
-    
-    // Show demo message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('🎓 Professor Demo aktiviert! Premium-Features freigeschaltet.'),
-        backgroundColor: Colors.orange,
-      ),
-    );
+    try {
+      // Enable demo mode
+      userProvider.enableDemoMode();
+      appProvider.triggerProfessorDemo();
+      
+      // Generate instant flash deal
+      final newDeal = flashDealsProvider.generateInstantFlashDeal();
+      
+      // Show demo message with deal details
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🎓 Professor Demo aktiviert! '
+            'Neuer Flash Deal: ${newDeal.productName} (-${newDeal.discountPercentage}%)'
+          ),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Anzeigen',
+            textColor: Colors.white,
+            onPressed: () {
+              // Switch to flash deals panel if not already there
+              if (appProvider.currentPanel != AppPanel.flashDeals) {
+                appProvider.switchToPanel(AppPanel.flashDeals);
+              }
+            },
+          ),
+        ),
+      );
+      
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ Professor Demo Fehler: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
