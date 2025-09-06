@@ -149,14 +149,14 @@
 - [x] Deutsche PLZ-Format-Validierung (5 Ziffern)
 - [x] Basis-Region-Mapping für 9 deutsche Regionen
 
-#### **Task 5b.2: Nominatim API Testing & Verification** ✅ **ABGESCHLOSSEN**
-- [x] Unit Tests für PLZLookupService implementiert (9 Test-Gruppen, 20+ Einzeltests)
-- [x] Mock-GPS-Koordinaten Testing (Berlin, München, Hamburg, Köln, Frankfurt)
-- [x] API-Response-Parsing Testing mit simulierten Nominatim-Daten
-- [x] Error-Handling Testing (ungültige Koordinaten, API-Fehler, fehlerhafte Responses)
-- [x] Rate-Limiting Testing (Delay-Berechnung und Timing-Logic)
-- [x] Cache-Funktionalität Testing (Hit/Miss-Scenarios, Performance-Simulation)
-- [x] Deutsche PLZ-Validierung Testing (gültige/ungültige Formate, Edge Cases)
+#### **Task 5b.2: Comprehensive PLZLookupService Testing ✅**
+- [x] **ABGESCHLOSSEN** - Alle Tests bestehen, CI/CD erfolgreich
+- [x] Umfassende Test-Suite für PLZLookupService implementiert
+- [x] GPS-Koordinaten Validierung für deutsche Grenzen
+- [x] PLZ-Region-Mapping Tests (Berlin, Bayern, NRW, etc.)
+- [x] Cache-Funktionalität Tests (initialisieren, leeren, Performance)
+- [x] PLZ-Format-Validierung (gültige/ungültige Formate)
+- [x] Error-Handling Tests (PLZLookupException)
 - [x] Integration Testing mit http package und MockClient
 - [x] HTTP package zu pubspec.yaml hinzugefügt (dependencies + dev_dependencies)
 - [x] Performance Tests für Memory-Usage und Cache-Effizienz
@@ -172,12 +172,20 @@
   - Provider-unabhängige Test-Struktur implementiert
   - Timer-Leck behoben: MockDataService Test-Mode + dispose() Pattern
   - tearDown() für ordnungsgemäße Test-Bereinigung hinzugefügt
+  - Duplicate dispose() Methode entfernt
 
-#### **Task 5b.3: Reverse-Geocoding Alternative**
-- [ ] User-PLZ-Eingabe Interface (als Fallback wenn GPS fehlschlägt)
-- [ ] PLZ-Validierung mit PLZHelper integration
-- [ ] UI-Integration: PLZ-Eingabe-Dialog vorbereiten
-- [ ] LocalStorage für User-PLZ cachen
+#### **Task 5b.3: Reverse-Geocoding Alternative ✅**
+- [x] **ABGESCHLOSSEN** - PLZ-Fallback-Kette komplett implementiert
+- [x] shared_preferences Package zu pubspec.yaml hinzugefügt
+- [x] LocalStorageService implementiert (PLZ-Caching mit Expiry, Permission-Status)
+- [x] PLZInputDialog Widget erstellt (Material Design, Real-time Validierung)
+- [x] PLZInputField Component für Inline-Verwendung
+- [x] LocationProvider Fallback-Kette: GPS → LocalStorage → User-Dialog
+- [x] ensureLocationData() Hauptmethode für intelligente Location-Bestimmung
+- [x] PLZ-zu-Koordinaten Simulation für deutsche Städte
+- [x] Vollständige Integration: LocalStorage + PLZLookupService + Dialog
+- [x] 🧹 Cache-Management: Speichern, Laden, Löschen, Expiry-Handling
+- [x] 🔄 State-Management: LocationSource Enum, umfassende Status-Tracking
 
 #### **Task 5b.4: Performance & Caching**
 - [ ] In-Memory-Cache für GPS→PLZ-Lookups

@@ -1,7 +1,20 @@
 // FlashFeed Location Provider - GPS & Standort
-// Basis-Implementierung (wird in Task 5b-5c für PLZ-Features erweitert)
+// Erweitert: PLZ-Fallback-Kette mit LocalStorage & Dialog Integration (Task 5b.3)
 
 import 'package:flutter/material.dart';
+import '../services/local_storage_service.dart';
+import '../services/plz_lookup_service.dart';
+import '../widgets/plz_input_dialog.dart';
+import '../helpers/plz_helper.dart';
+
+/// Enum für Location-Datenquellen (Task 5b.3)
+enum LocationSource {
+  none,
+  gps,
+  userPLZ,
+  cachedPLZ,
+  manualAddress,
+}
 
 class LocationProvider extends ChangeNotifier {
   // Location State
@@ -22,6 +35,15 @@ class LocationProvider extends ChangeNotifier {
   
   // Regional Support (ready for Task 5b-5c)
   List<String> _availableRetailersInRegion = [];
+  
+  // PLZ Fallback State (Task 5b.3)
+  String? _userPLZ; // Cached user PLZ from LocalStorage
+  bool _hasAskedForLocation = false;
+  LocationSource _currentLocationSource = LocationSource.none;
+  
+  // Services (Lazy Loading)
+  LocalStorageService? _storageService;
+  PLZLookupService? _plzLookupService;
   
   // Constructor
   LocationProvider();
@@ -52,7 +74,276 @@ class LocationProvider extends ChangeNotifier {
   List<String> get availableRetailersInRegion => List.unmodifiable(_availableRetailersInRegion);
   bool get hasRegionalData => _availableRetailersInRegion.isNotEmpty;
   
+  // Getters - PLZ Fallback (Task 5b.3)
+  String? get userPLZ => _userPLZ;
+  bool get hasAskedForLocation => _hasAskedForLocation;
+  LocationSource get currentLocationSource => _currentLocationSource;
+  bool get hasValidLocationData => hasLocation || hasPostalCode;
+  
   // Location Methods
+  
+  /// Haupt-Methode: Intelligente Location-Bestimmung mit Fallback-Kette (Task 5b.3)
+  /// 
+  /// Fallback-Reihenfolge:
+  /// 1. GPS-Lokalisierung (wenn Permission vorhanden)
+  /// 2. LocalStorage PLZ-Cache (wenn verfügbar und nicht abgelaufen)
+  /// 3. User-PLZ-Eingabe Dialog (wenn Context verfügbar)
+  /// 4. Fehler bei allen Fallbacks
+  /// 
+  /// [context] BuildContext für Dialog-Anzeige (optional)
+  /// [forceRefresh] Cache ignorieren und neu laden
+  /// Returns: true bei Erfolg, false bei Fehler
+  Future<bool> ensureLocationData({
+    BuildContext? context, 
+    bool forceRefresh = false
+  }) async {
+    _setLocationError(null);
+    
+    debugPrint('🗺️ LocationProvider: Starte intelligente Location-Bestimmung...');
+    
+    // 1. FALLBACK: GPS-Lokalisierung versuchen
+    if (useGPS && !forceRefresh) {
+      debugPrint('📍 Fallback 1: GPS-Lokalisierung versuchen...');
+      
+      final gpsSuccess = await _tryGPSLocation();
+      if (gpsSuccess) {
+        _currentLocationSource = LocationSource.gps;
+        debugPrint('✅ GPS-Lokalisierung erfolgreich');
+        return true;
+      }
+      debugPrint('❌ GPS-Lokalisierung fehlgeschlagen');
+    }
+    
+    // 2. FALLBACK: LocalStorage PLZ-Cache laden
+    if (!forceRefresh) {
+      debugPrint('💾 Fallback 2: LocalStorage PLZ-Cache laden...');
+      
+      final cacheSuccess = await _tryLoadCachedPLZ();
+      if (cacheSuccess) {
+        _currentLocationSource = LocationSource.cachedPLZ;
+        debugPrint('✅ PLZ-Cache erfolgreich geladen: $_userPLZ');
+        return true;
+      }
+      debugPrint('❌ PLZ-Cache nicht verfügbar oder abgelaufen');
+    }
+    
+    // 3. FALLBACK: User-PLZ-Eingabe Dialog
+    if (context != null) {
+      debugPrint('🔤 Fallback 3: User-PLZ-Eingabe Dialog...');
+      
+      final dialogSuccess = await _tryPLZInputDialog(context);
+      if (dialogSuccess) {
+        _currentLocationSource = LocationSource.userPLZ;
+        debugPrint('✅ User-PLZ-Eingabe erfolgreich: $_userPLZ');
+        return true;
+      }
+      debugPrint('❌ User-PLZ-Eingabe abgebrochen');
+    }
+    
+    // 4. ALLE FALLBACKS FEHLGESCHLAGEN
+    _currentLocationSource = LocationSource.none;
+    _setLocationError('Standort konnte nicht bestimmt werden. Bitte GPS aktivieren oder PLZ eingeben.');
+    debugPrint('❌ Alle Location-Fallbacks fehlgeschlagen');
+    return false;
+  }
+  
+  /// Helper: GPS-Lokalisierung versuchen
+  Future<bool> _tryGPSLocation() async {
+    try {
+      _setLoadingLocation(true);
+      
+      // Permission prüfen/anfordern
+      if (!hasLocationPermission) {
+        await requestLocationPermission();
+        if (!hasLocationPermission) {
+          return false;
+        }
+      }
+      
+      // GPS-Koordinaten abrufen
+      await getCurrentLocation();
+      
+      // Erfolg wenn Koordinaten vorhanden
+      return hasLocation;
+      
+    } catch (e) {
+      debugPrint('❌ GPS-Fehler: $e');
+      return false;
+    } finally {
+      _setLoadingLocation(false);
+    }
+  }
+  
+  /// Helper: PLZ aus LocalStorage laden
+  Future<bool> _tryLoadCachedPLZ() async {
+    try {
+      // LocalStorage Service initialisieren
+      _storageService ??= await LocalStorageService.getInstance();
+      
+      // PLZ aus Cache laden (24h Gültigkeit)
+      final cachedPLZ = await _storageService!.getUserPLZ(maxAgeHours: 24);
+      
+      if (cachedPLZ != null && PLZHelper.isValidPLZ(cachedPLZ)) {
+        _userPLZ = cachedPLZ;
+        await _setPLZAsLocation(cachedPLZ);
+        return true;
+      }
+      
+      return false;
+      
+    } catch (e) {
+      debugPrint('❌ LocalStorage-Fehler: $e');
+      return false;
+    }
+  }
+  
+  /// Helper: PLZ-Eingabe Dialog anzeigen
+  Future<bool> _tryPLZInputDialog(BuildContext context) async {
+    try {
+      // Aktueller PLZ-Wert als Initial-Wert
+      final initialPLZ = _userPLZ ?? _postalCode;
+      
+      // Dialog anzeigen
+      final enteredPLZ = await PLZInputDialog.show(
+        context,
+        initialPLZ: initialPLZ,
+        title: 'Postleitzahl eingeben',
+        subtitle: 'GPS-Lokalisierung nicht verfügbar. Bitte geben Sie Ihre PLZ ein:',
+      );
+      
+      if (enteredPLZ != null && PLZHelper.isValidPLZ(enteredPLZ)) {
+        _userPLZ = enteredPLZ;
+        
+        // PLZ in LocalStorage speichern
+        await _savePLZToCache(enteredPLZ);
+        
+        // PLZ als Location setzen
+        await _setPLZAsLocation(enteredPLZ);
+        
+        return true;
+      }
+      
+      return false;
+      
+    } catch (e) {
+      debugPrint('❌ PLZ-Dialog-Fehler: $e');
+      return false;
+    }
+  }
+  
+  /// Helper: PLZ in LocalStorage speichern
+  Future<void> _savePLZToCache(String plz) async {
+    try {
+      _storageService ??= await LocalStorageService.getInstance();
+      final success = await _storageService!.saveUserPLZ(plz);
+      
+      if (!success) {
+        debugPrint('⚠️ PLZ-Cache speichern fehlgeschlagen');
+      }
+    } catch (e) {
+      debugPrint('❌ PLZ-Cache-Fehler: $e');
+    }
+  }
+  
+  /// Helper: PLZ als Location-Daten setzen
+  Future<void> _setPLZAsLocation(String plz) async {
+    try {
+      _setLoadingLocation(true);
+      
+      // PLZ-Lookup Service initialisieren
+      _plzLookupService ??= PLZLookupService();
+      
+      // PLZ-Daten setzen
+      _postalCode = plz;
+      _userPLZ = plz;
+      
+      // Region aus PLZ bestimmen
+      final region = _plzLookupService!.getRegionFromPLZ(plz);
+      if (region != null) {
+        _address = '$plz, $region, Deutschland';
+        _city = region;
+      } else {
+        _address = '$plz, Deutschland';
+        _city = 'Deutschland';
+      }
+      
+      // TODO: Später mit echtem PLZ-Lookup Service
+      // Koordinaten aus PLZ bestimmen (Simulation)
+      await _simulateCoordinatesFromPLZ(plz);
+      
+      // Regionale Daten aktualisieren
+      await _updateRegionalData();
+      
+      notifyListeners();
+      
+    } catch (e) {
+      debugPrint('❌ PLZ-Location-Setup-Fehler: $e');
+    } finally {
+      _setLoadingLocation(false);
+    }
+  }
+  
+  /// Simulation: Koordinaten aus PLZ ableiten (TODO: Echte API Integration)
+  Future<void> _simulateCoordinatesFromPLZ(String plz) async {
+    // Basis-Koordinaten für deutsche Städte
+    final plzToCoords = {
+      '10': [52.5200, 13.4050], // Berlin
+      '20': [53.5511, 9.9937],  // Hamburg  
+      '30': [52.3759, 9.7320],  // Hannover
+      '40': [51.2277, 6.7735],  // Düsseldorf
+      '50': [50.9375, 6.9603],  // Köln
+      '60': [50.1109, 8.6821],  // Frankfurt
+      '70': [48.7758, 9.1829],  // Stuttgart
+      '80': [48.1351, 11.5820], // München
+      '90': [49.4521, 11.0767], // Nürnberg
+    };
+    
+    final prefix = plz.substring(0, 2);
+    final coords = plzToCoords[prefix] ?? [51.1657, 10.4515]; // Deutschland-Mitte
+    
+    _latitude = coords[0];
+    _longitude = coords[1];
+  }
+  
+  /// Öffentliche API: Manuelle PLZ setzen (mit Caching)
+  Future<bool> setUserPLZ(String plz, {bool saveToCache = true}) async {
+    if (!PLZHelper.isValidPLZ(plz)) {
+      _setLocationError('Ungültige PLZ: $plz');
+      return false;
+    }
+    
+    try {
+      _userPLZ = plz;
+      _currentLocationSource = LocationSource.userPLZ;
+      
+      if (saveToCache) {
+        await _savePLZToCache(plz);
+      }
+      
+      await _setPLZAsLocation(plz);
+      
+      debugPrint('✅ User-PLZ gesetzt: $plz');
+      return true;
+      
+    } catch (e) {
+      _setLocationError('Fehler beim Setzen der PLZ: $e');
+      return false;
+    }
+  }
+  
+  /// Öffentliche API: PLZ-Cache löschen
+  Future<void> clearPLZCache() async {
+    try {
+      _storageService ??= await LocalStorageService.getInstance();
+      await _storageService!.clearUserPLZ();
+      
+      _userPLZ = null;
+      debugPrint('🧹 PLZ-Cache gelöscht');
+      
+    } catch (e) {
+      debugPrint('❌ PLZ-Cache-Löschen fehlgeschlagen: $e');
+    }
+  }
   Future<void> requestLocationPermission() async {
     _setLocationError(null);
     
