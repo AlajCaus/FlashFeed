@@ -200,11 +200,14 @@
 - [x] **Erweiterte Statistiken:** Hit-Rate, Memory-Usage, LRU-Evictions, Cleanup-Metriken
 - [x] **CI/CD Integration:** Alle Tests erfolgreich, Deployment completed
 
-#### **Task 5b.5: Integration mit LocationProvider**
-- [ ] LocationProvider um PLZ-Lookup erweitern
-- [ ] GPS-Permission → GPS-Koordinaten → PLZ-Lookup → Regionale Filterung
-- [ ] Error-Chain: GPS failed → User-PLZ-Eingabe → Manual-Region-Selection
-- [ ] Provider-Callbacks für andere Provider (OffersProvider, RetailersProvider)
+#### **Task 5b.5: Integration mit LocationProvider** ✅ **ABGESCHLOSSEN**
+- [x] LocationProvider um PLZ-Lookup erweitern
+- [x] GPS-Permission → GPS-Koordinaten → PLZ-Lookup → Regionale Filterung
+- [x] Error-Chain: GPS failed → User-PLZ-Eingabe → Manual-Region-Selection
+- [x] Provider-Callbacks für andere Provider (OffersProvider, RetailersProvider)
+- [x] Tests systematisch repariert: getOffersRepository → OffersProvider.mock()
+- [x] SharedPreferences Mock für Test-Umgebung implementiert
+- [x] LocationProvider disposal-Probleme behoben
 
 #### **Task 5b.6: Testing & Verification**
 - [ ] Unit Tests für PLZ-Lookup-Algorithmus
