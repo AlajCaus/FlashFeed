@@ -7,6 +7,7 @@ import '../repositories/mock_offers_repository.dart';
 import '../data/product_category_mapping.dart';
 import '../models/models.dart';
 import '../main.dart'; // Access to global mockDataService
+import '../providers/location_provider.dart'; // Task 5b.5: Provider-Callbacks
 
 class OffersProvider extends ChangeNotifier {
   final OffersRepository _offersRepository;
@@ -46,6 +47,15 @@ class OffersProvider extends ChangeNotifier {
         refresh();
       });
     }
+  }
+  
+  // Register with LocationProvider for regional updates (Task 5b.5)
+  void registerWithLocationProvider(LocationProvider locationProvider) {
+    locationProvider.registerRegionalDataCallback((plz, availableRetailers) {
+      if (plz != null && availableRetailers.isNotEmpty) {
+        loadRegionalOffers(plz, availableRetailers);
+      }
+    });
   }
   
   // Getters

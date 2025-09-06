@@ -50,6 +50,9 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
       // Set loading state
       appProvider.setLoading(true);
       
+      // Connect providers through callback system (Task 5b.5)
+      offersProvider.registerWithLocationProvider(locationProvider);
+      
       // Initialize location (with permission request)
       await locationProvider.requestLocationPermission();
       

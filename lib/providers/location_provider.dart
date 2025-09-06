@@ -36,6 +36,10 @@ class LocationProvider extends ChangeNotifier {
   // Regional Support (ready for Task 5b-5c)
   List<String> _availableRetailersInRegion = [];
   
+  // Provider Callbacks (Task 5b.5: Cross-Provider Communication)
+  final List<VoidCallback> _locationChangeCallbacks = [];
+  final List<Function(String?, List<String>)> _regionalDataCallbacks = [];
+  
   // PLZ Fallback State (Task 5b.3)
   String? _userPLZ; // Cached user PLZ from LocalStorage
   bool _hasAskedForLocation = false;
@@ -79,6 +83,23 @@ class LocationProvider extends ChangeNotifier {
   bool get hasAskedForLocation => _hasAskedForLocation;
   LocationSource get currentLocationSource => _currentLocationSource;
   bool get hasValidLocationData => hasLocation || hasPostalCode;
+  
+  // Provider Callbacks API (Task 5b.5)
+  void registerLocationChangeCallback(VoidCallback callback) {
+    _locationChangeCallbacks.add(callback);
+  }
+  
+  void registerRegionalDataCallback(Function(String?, List<String>) callback) {
+    _regionalDataCallbacks.add(callback);
+  }
+  
+  void unregisterLocationChangeCallback(VoidCallback callback) {
+    _locationChangeCallbacks.remove(callback);
+  }
+  
+  void unregisterRegionalDataCallback(Function(String?, List<String>) callback) {
+    _regionalDataCallbacks.remove(callback);
+  }
   
   // Location Methods
   
@@ -245,7 +266,7 @@ class LocationProvider extends ChangeNotifier {
     }
   }
   
-  /// Helper: PLZ als Location-Daten setzen
+  /// Helper: PLZ als Location-Daten setzen (Task 5b.5: Enhanced PLZ Integration)
   Future<void> _setPLZAsLocation(String plz) async {
     try {
       _setLoadingLocation(true);
@@ -257,22 +278,27 @@ class LocationProvider extends ChangeNotifier {
       _postalCode = plz;
       _userPLZ = plz;
       
-      // Region aus PLZ bestimmen
+      // Region aus PLZ bestimmen (Enhanced von Task 5b.4)
       final region = _plzLookupService!.getRegionFromPLZ(plz);
       if (region != null) {
         _address = '$plz, $region, Deutschland';
         _city = region;
+        debugPrint('🎯 PLZ $plz → Region: $region');
       } else {
         _address = '$plz, Deutschland';
         _city = 'Deutschland';
+        debugPrint('⚠️ PLZ $plz → Unbekannte Region');
       }
       
-      // TODO: Später mit echtem PLZ-Lookup Service
-      // Koordinaten aus PLZ bestimmen (Simulation)
+      // TODO Task 5b.5: Echte PLZ-zu-Koordinaten-Konvertierung
+      // Derzeit simuliert, wird später durch Reverse-PLZ-Lookup ersetzt
       await _simulateCoordinatesFromPLZ(plz);
       
       // Regionale Daten aktualisieren
       await _updateRegionalData();
+      
+      // Provider-Callbacks benachrichtigen (Task 5b.5)
+      _notifyLocationCallbacks();
       
       notifyListeners();
       
@@ -322,7 +348,7 @@ class LocationProvider extends ChangeNotifier {
       
       await _setPLZAsLocation(plz);
       
-      debugPrint('✅ User-PLZ gesetzt: $plz');
+      debugPrint('User-PLZ gesetzt: $plz');
       return true;
       
     } catch (e) {
@@ -568,6 +594,10 @@ class LocationProvider extends ChangeNotifier {
       }
       
       await _updateRegionalData();
+      
+      // Provider-Callbacks benachrichtigen (Task 5b.5)
+      _notifyLocationCallbacks();
+      
       notifyListeners();
       
     } catch (e) {
@@ -610,9 +640,33 @@ class LocationProvider extends ChangeNotifier {
     }
   }
   
+  // Provider Callback Helpers (Task 5b.5)
+  void _notifyLocationCallbacks() {
+    debugPrint('LocationProvider: Benachrichtige ${_locationChangeCallbacks.length} Location-Callbacks');
+    
+    try {
+      // Allgemeine Location-Change-Callbacks
+      for (final callback in _locationChangeCallbacks) {
+        callback();
+      }
+      
+      // Regionale Daten-Callbacks mit PLZ + verfügbare Retailer
+      for (final callback in _regionalDataCallbacks) {
+        callback(_postalCode, _availableRetailersInRegion);
+      }
+      
+      debugPrint('LocationProvider: Alle Callbacks erfolgreich benachrichtigt');
+      
+    } catch (e) {
+      debugPrint('LocationProvider: Fehler bei Callback-Benachrichtigung: $e');
+    }
+  }
+  
   @override
   void dispose() {
-    // Clean up any timers or listeners
+    // Clean up callbacks and timers
+    _locationChangeCallbacks.clear();
+    _regionalDataCallbacks.clear();
     super.dispose();
   }
 }
