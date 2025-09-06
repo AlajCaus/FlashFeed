@@ -1,8 +1,8 @@
 // FlashFeed Produktgruppen-Mapping System
-// Hier trägst du die LEH-Kategorien ein und ordnest sie unseren Produktgruppen zu
+// Vollständiges Mapping aller deutschen LEH-Kategorien zu FlashFeed Produktgruppen
 
 class ProductCategoryMapping {
-  // Unsere einheitlichen FlashFeed Produktgruppen
+  // Unsere einheitlichen FlashFeed Produktgruppen (erweitert)
   static const List<String> flashFeedCategories = [
     'Obst & Gemüse',
     'Milchprodukte', 
@@ -13,62 +13,180 @@ class ProductCategoryMapping {
     'Konserven',
     'Süßwaren',
     'Drogerie',
-    'Haushalt'
+    'Haushalt',
+    'Bio-Produkte',
+    'Fertiggerichte'
   ];
 
-  // Mapping: [Händler][Original-Kategorie] -> FlashFeed Kategorie
+  // Vollständiges Mapping: [Händler][Original-Kategorie] -> FlashFeed Kategorie
   static const Map<String, Map<String, String>> categoryMappings = {
     
     'EDEKA': {
-      // Hier trägst du ein: 'EDEKA Kategorie' -> 'FlashFeed Kategorie'
+      // EDEKA Kategorien - Premium-Vollsortimenter
       'Molkereiprodukte': 'Milchprodukte',
       'Frischfleisch': 'Fleisch & Wurst',
       'Obst': 'Obst & Gemüse',
       'Gemüse': 'Obst & Gemüse',
-      // TODO: Weitere EDEKA Kategorien nach deiner Analyse hinzufügen
+      'Backwaren': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefkühlprodukte': 'Tiefkühl',
+      'Konserven & Dauerware': 'Konserven',
+      'Süßwaren & Knabbereien': 'Süßwaren',
+      'Drogerie & Körperpflege': 'Drogerie',
+      'Haushalt & Reinigung': 'Haushalt',
+      'Bio-Sortiment': 'Bio-Produkte',
+      'Fertigprodukte': 'Fertiggerichte',
+      'Wurst & Aufschnitt': 'Fleisch & Wurst',
+      'Käse & Feinkost': 'Milchprodukte',
     },
     
     'REWE': {
+      // REWE Kategorien - Nachhaltiger Vollsortimenter
       'Milch & Käse': 'Milchprodukte', 
       'Fleisch & Geflügel': 'Fleisch & Wurst',
       'Frisches Obst': 'Obst & Gemüse',
       'Frisches Gemüse': 'Obst & Gemüse',
-      // TODO: Weitere REWE Kategorien nach deiner Analyse hinzufügen
+      'Brot & Bäckerei': 'Brot & Backwaren',
+      'Getränke & Alkohol': 'Getränke',
+      'Tiefgekühltes': 'Tiefkühl',
+      'Haltbare Lebensmittel': 'Konserven',
+      'Naschwerk & Snacks': 'Süßwaren',
+      'Drogerie': 'Drogerie',
+      'Haushaltswaren': 'Haushalt',
+      'REWE Bio': 'Bio-Produkte',
+      'Convenience': 'Fertiggerichte',
+      'Wurstwaren': 'Fleisch & Wurst',
+      'Molkerei & Eier': 'Milchprodukte',
     },
     
     'ALDI': {
+      // ALDI SÜD Kategorien - Discounter-Sortiment
       'Milcherzeugnisse': 'Milchprodukte',
       'Frischfleisch': 'Fleisch & Wurst',
-      // TODO: ALDI Kategorien nach deiner Analyse hinzufügen
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Backwaren': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefkühl': 'Tiefkühl',
+      'Konserven': 'Konserven',
+      'Süßigkeiten': 'Süßwaren',
+      'Non-Food': 'Haushalt',
+      'Wurst & Käse': 'Fleisch & Wurst',
+      'Simply V': 'Bio-Produkte',
+      'Ready Meals': 'Fertiggerichte',
     },
     
     'Netto Marken-Discount': {
-      // TODO: Netto Marken-Discount Kategorien hier eintragen nach deiner Analyse
+      // Netto Marken-Discount Kategorien - Discounter mit Marken
+      'Getränke': 'Getränke',
+      'Konserven': 'Konserven',
+      'Molkereiprodukte': 'Milchprodukte',
+      'Fleisch & Wurst': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Backshop': 'Brot & Backwaren',
+      'Tiefkühlkost': 'Tiefkühl',
+      'Süßwaren': 'Süßwaren',
+      'Drogerieartikel': 'Drogerie',
+      'Haushaltsartikel': 'Haushalt',
+      'BioBio': 'Bio-Produkte',
+      'Fertiggerichte': 'Fertiggerichte',
     },
     
     'Lidl': {
-      // TODO: Lidl Kategorien hier eintragen nach deiner Analyse
+      // Lidl Kategorien - Internationaler Discounter
+      'Backwaren': 'Brot & Backwaren',
+      'Milchprodukte': 'Milchprodukte',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Fleisch & Geflügel': 'Fleisch & Wurst',
+      'Getränke': 'Getränke',
+      'Tiefkühl': 'Tiefkühl',
+      'Haltbare Lebensmittel': 'Konserven',
+      'Süßes & Salziges': 'Süßwaren',
+      'Drogerie & Kosmetik': 'Drogerie',
+      'Haushalt & Garten': 'Haushalt',
+      'Bio Organic': 'Bio-Produkte',
+      'Convenience Food': 'Fertiggerichte',
+      'Wurst & Käse': 'Fleisch & Wurst',
     },
     
     'Penny': {
-      // TODO: Penny Kategorien hier eintragen nach deiner Analyse
+      // Penny Kategorien - REWE-Discounter
+      'Molkerei': 'Milchprodukte',
+      'Fleisch': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Bäckerei': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefgekühltes': 'Tiefkühl',
+      'Konserven & Haltbares': 'Konserven',
+      'Süßwaren & Snacks': 'Süßwaren',
+      'Drogerie & Pflege': 'Drogerie',
+      'Haushaltswaren': 'Haushalt',
+      'PENNY Ready': 'Fertiggerichte',
     },
     
     'Kaufland': {
-      // TODO: Kaufland Kategorien hier eintragen nach deiner Analyse
+      // Kaufland Kategorien - Schwarz-Gruppe Hypermarkt
+      'Milch & Molkerei': 'Milchprodukte',
+      'Fleisch & Wurst': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Backwaren': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefkühl': 'Tiefkühl',
+      'Konserven': 'Konserven',
+      'Süßwaren': 'Süßwaren',
+      'Drogerie': 'Drogerie',
+      'Haushalt': 'Haushalt',
+      'K-Bio': 'Bio-Produkte',
+      'K-free': 'Bio-Produkte',
+      'To Go': 'Fertiggerichte',
     },
     
     'Real': {
-      // TODO: Real Kategorien hier eintragen nach deiner Analyse
+      // Real Kategorien - SB-Warenhaus (historisch, größtenteils geschlossen)
+      'Molkereiprodukte': 'Milchprodukte',
+      'Fleisch & Geflügel': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Bäckerei': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefkühlprodukte': 'Tiefkühl',
+      'Konserven': 'Konserven',
+      'Süßwaren': 'Süßwaren',
+      'Drogerie': 'Drogerie',
+      'Haushaltswaren': 'Haushalt',
+      'tip': 'Bio-Produkte',
+      'Real Quality': 'Fertiggerichte',
     },
     
     'Globus': {
-      // TODO: Globus Kategorien hier eintragen nach deiner Analyse
+      // Globus Kategorien - SB-Warenhaus Saar/Südwest
+      'Molkerei & Eier': 'Milchprodukte',
+      'Fleisch & Wurst': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Bäckerei': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefkühl': 'Tiefkühl',
+      'Konserven & Vorräte': 'Konserven',
+      'Süßes & Salziges': 'Süßwaren',
+      'Drogerie & Kosmetik': 'Drogerie',
+      'Haus & Garten': 'Haushalt',
+      'Bio': 'Bio-Produkte',
+      'Frische Küche': 'Fertiggerichte',
     },
     
     'Marktkauf': {
-      // TODO: Marktkauf Kategorien hier eintragen nach deiner Analyse
-    }
+      // Marktkauf Kategorien - EDEKA-Hypermarkt
+      'Molkereiprodukte': 'Milchprodukte',
+      'Fleischwaren': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Backwaren': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefkühlkost': 'Tiefkühl',
+      'Konserven & Dauerware': 'Konserven',
+      'Süßwaren & Knabberartikel': 'Süßwaren',
+      'Drogerie & Gesundheit': 'Drogerie',
+      'Haushalt & Wohnen': 'Haushalt',
+      'Bio-Sortiment': 'Bio-Produkte',
+      'Convenience': 'Fertiggerichte',
+    },
   };
 
   // Hilfsfunktion: Händler-Kategorie zu FlashFeed-Kategorie
