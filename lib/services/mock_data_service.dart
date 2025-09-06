@@ -67,15 +67,6 @@ class MockDataService {
     _onStoresUpdated = callback;
   }
 
-  // Cleanup für Tests (Timer beenden)
-  void dispose() {
-    _flashDealTimer?.cancel();
-    _countdownTimer?.cancel();
-    _flashDealTimer = null;
-    _countdownTimer = null;
-    debugPrint('🧹 MockDataService: Timer bereinigt');
-  }
-
   // Initialization (aufgerufen von main.dart)
   Future<void> initializeMockData({bool testMode = false}) async {
     if (_isInitialized) return;
