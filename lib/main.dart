@@ -6,6 +6,10 @@ import 'providers/app_provider.dart';
 import 'providers/offers_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/location_provider.dart';
+import 'providers/flash_deals_provider.dart';
+
+// FlashFeed Services
+import 'services/mock_data_service.dart';
 
 // FlashFeed Screens
 import 'screens/main_layout_screen.dart';
@@ -26,8 +30,15 @@ import 'screens/main_layout_screen.dart';
  * - Service Layer wird architektur-agnostisch designed
  */
 
+// Global MockDataService instance for MVP
+late final MockDataService mockDataService;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize MockDataService for all providers
+  mockDataService = MockDataService();
+  await mockDataService.initializeMockData();
   
   runApp(const FlashFeedApp());
 }
@@ -47,6 +58,11 @@ class FlashFeedApp extends StatelessWidget {
         // Offers Provider - Angebote & Preisvergleich  
         ChangeNotifierProvider<OffersProvider>(
           create: (context) => OffersProvider.mock(), // Mock repository for MVP
+        ),
+        
+        // Flash Deals Provider - Echtzeit Rabatte
+        ChangeNotifierProvider<FlashDealsProvider>(
+          create: (context) => FlashDealsProvider(),
         ),
         
         // User Provider - Freemium Logic & Settings

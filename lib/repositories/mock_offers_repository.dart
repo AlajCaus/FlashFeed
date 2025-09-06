@@ -1,9 +1,10 @@
 // FlashFeed Mock Offers Repository Implementation
-// Simuliert echte Daten für MVP-Entwicklung
+// Nutzt zentralen MockDataService als Datenquelle
 
 import 'offers_repository.dart';
 import '../data/product_category_mapping.dart';
 import '../models/models.dart';
+import '../main.dart'; // Access to global mockDataService
 
 class MockOffersRepository implements OffersRepository {
   static final List<Offer> _mockOffers = [
@@ -124,6 +125,13 @@ class MockOffersRepository implements OffersRepository {
   Future<List<Offer>> getAllOffers() async {
     // Simuliere Netzwerk-Delay
     await Future.delayed(Duration(milliseconds: 300));
+    
+    // Use centralized MockDataService instead of static data
+    if (mockDataService.isInitialized) {
+      return List.from(mockDataService.offers);
+    }
+    
+    // Fallback to static data if service not initialized
     return List.from(_mockOffers);
   }
 
@@ -131,7 +139,12 @@ class MockOffersRepository implements OffersRepository {
   Future<List<Offer>> getOffersByCategory(String flashFeedCategory) async {
     await Future.delayed(Duration(milliseconds: 200));
     
-    return _mockOffers.where((offer) {
+    // Get offers from MockDataService
+    List<Offer> allOffers = mockDataService.isInitialized 
+        ? mockDataService.offers 
+        : _mockOffers;
+    
+    return allOffers.where((offer) {
       String mappedCategory = ProductCategoryMapping.mapToFlashFeedCategory(
         offer.retailer, 
         offer.originalCategory
@@ -144,7 +157,12 @@ class MockOffersRepository implements OffersRepository {
   Future<List<Offer>> getOffersByRetailer(String retailer) async {
     await Future.delayed(Duration(milliseconds: 150));
     
-    return _mockOffers.where((offer) => 
+    // Get offers from MockDataService
+    List<Offer> allOffers = mockDataService.isInitialized 
+        ? mockDataService.offers 
+        : _mockOffers;
+    
+    return allOffers.where((offer) => 
       offer.retailer.toLowerCase() == retailer.toLowerCase()
     ).toList();
   }

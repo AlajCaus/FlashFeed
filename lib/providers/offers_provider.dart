@@ -6,6 +6,7 @@ import '../repositories/offers_repository.dart';
 import '../repositories/mock_offers_repository.dart';
 import '../data/product_category_mapping.dart';
 import '../models/models.dart';
+import '../main.dart'; // Access to global mockDataService
 
 class OffersProvider extends ChangeNotifier {
   final OffersRepository _offersRepository;
@@ -28,10 +29,24 @@ class OffersProvider extends ChangeNotifier {
   String? _userPLZ;
   List<String> _availableRetailers = [];
   
-  OffersProvider(this._offersRepository);
+  OffersProvider(this._offersRepository) {
+    _initializeCallbacks();
+  }
   
   // Factory constructor with mock repository
-  OffersProvider.mock() : _offersRepository = MockOffersRepository();
+  OffersProvider.mock() : _offersRepository = MockOffersRepository() {
+    _initializeCallbacks();
+  }
+  
+  // Initialize Provider-Callbacks
+  void _initializeCallbacks() {
+    if (mockDataService.isInitialized) {
+      // Register callback for offers updates
+      mockDataService.setOffersCallback(() {
+        refresh();
+      });
+    }
+  }
   
   // Getters
   List<Offer> get offers => _filteredOffers;
