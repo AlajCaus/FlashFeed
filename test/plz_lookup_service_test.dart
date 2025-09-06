@@ -207,8 +207,16 @@ void main() {
 
       test('Memory-Usage-Schätzung', () {
         final stats = service.getCacheStats();
-        final estimatedMemory = stats['memoryUsage'] as String;
-        expect(estimatedMemory, contains('B'));
+        
+        // Updated für Task 5b.4 enhanced cache statistics
+        expect(stats.containsKey('estimatedMemoryBytes'), isTrue);
+        expect(stats.containsKey('estimatedMemoryKB'), isTrue);
+        
+        final memoryBytes = stats['estimatedMemoryBytes'] as int;
+        final memoryKB = stats['estimatedMemoryKB'] as String;
+        
+        expect(memoryBytes, greaterThanOrEqualTo(0));
+        expect(memoryKB, contains('KB'));
       });
     });
 
