@@ -9,71 +9,6 @@
 
 **✅ Bestätige diese Punkte explizit am Anfang jeder Session!**
 
----
-
-## 🚨 **URGENT: DART SDK 3.9.0 MIGRATION PLAN**
-**🔍 PROBLEM IDENTIFIZIERT:** Deployment schlägt fehl - Flutter 3.24.0 hat nur Dart SDK 3.5.0, aber pubspec.yaml verlangt ^3.9.0
-
-**✅ GRUND FÜR 3.9.0 BESTÄTIGT:** PWA-Features (Service Worker, Web App Manifest, Offline-Funktionalität)
-
-### **📋 MIGRATION TASKS (HÖCHSTE PRIORITÄT):**
-
-#### **Task M1: Flutter Version Update**
-- [x] `.github/workflows/static.yml` aktualisieren: `flutter-version: '3.35.3'` (statt '3.24.0') ✅
-- [x] Begründung: Flutter 3.35.3 enthält Dart SDK 3.9.0+ für PWA-Features ✅
-- [x] Deployment-Log-Empfehlung befolgen: "Try using the Flutter SDK version: 3.35.3" ✅
-
-#### **Task M2: Dokumentation Updates**
-- [x] `README.md` prüfen auf Flutter-Version-Referenzen ✅ (keine Änderungen nötig)
-- [x] `DEPLOYMENT_SETUP.md` aktualisieren falls Flutter-Version erwähnt ✅ (keine Änderungen nötig)
-- [x] `development_roadmap_provider.md` prüfen auf Versions-Dependencies ✅ (keine Änderungen nötig)
-
-#### **Task M3: Build-Verification**
-- [x] GitHub Actions Build-Test nach Flutter-Update ✅ (Anweisungen bereitgestellt)
-- [x] Lokaler Build-Test: `flutter build web --release` ✅ (Anweisungen bereitgestellt)
-- [x] PWA-Features testen (Service Worker, Manifest) ✅ (Verification-Plan erstellt)
-- [x] Live-Demo URL Funktionalität bestätigen ✅ (Test-Strategie dokumentiert)
-
-#### **Task M4: Dokumentation der Änderungen**
-- [x] `todo.md` Review-Bereich mit Migration-Summary aktualisieren ✅
-- [x] Commit-Message für Migration erstellen ✅
-- [x] Next-Claude-Handoff mit Migration-Status aktualisieren ✅
-
-**⚠️ DIESE MIGRATION MUSS VOR TASK 5 ABGESCHLOSSEN WERDEN!**
-
----
-
-## **STATUS-ANALYSE & AKTUELLER FORTSCHRITT**
-- ✅ **Git Setup:** Repository erfolgreich eingerichtet
-- ✅ **Flutter Template:** Standard-App läuft  
-- ✅ **Produktkategorien-Mapping:** Bereits implementiert (`lib/data/product_category_mapping.dart`)
-- ✅ **Provider Package:** `provider: ^6.1.1` in pubspec.yaml implementiert
-- ✅ **App-Architektur:** Provider-Pattern vollständig setup
-- ✅ **Repository Pattern:** 4 Repository-Dateien implementiert
-- ✅ **Core Provider:** 4 Provider erstellt (App, Offers, User, Location)
-- ✅ **Deployment Setup:** GitHub Pages + Actions konfiguriert
-
----
-
-## 📍 **LAST CLAUDE POSITION (PERSISTENT HANDOFF)**
-
-### **✅ AKTUELLER STATUS:** 
-**BLoC-DISKREPANZEN KORRIGIERT** - Provider-Architektur vollständig implementiert
-
-**Durchgeführte Korrekturen:**
-- `main.dart` von BLoC zu Provider-Architektur umgestellt
-- `MainLayoutScreen` mit Provider-Pattern erstellt
-- `MockDataService` Provider-optimiert implementiert
-- Repository-Integration für Migration-Ready Design angepasst
-
-**MIGRATION KOMPLETT:** Alle BLoC-Referenzen zu Provider korrigiert
-**NÄCHSTER SCHRITT:** Task 4b abschließen → Task 5 beginnen
-
-### **⏭️ SOFORT ANSTEHEND:**
-**Task 5: Mock-Daten-Service** - VOLLSTÄNDIG ABGESCHLOSSEN ✅
-**Task 5.7: Testing & Verification** - ERFOLGREICH ABGESCHLOSSEN ✅
-
----
 
 ## **PHASE 1: GRUNDLAGEN & PROVIDER SETUP** 
 *Ziel: Provider-Architektur + Navigation (Woche 1)*
@@ -117,7 +52,7 @@
 - [x] Multi-Device-Testing Setup dokumentiert
 - [x] DEPLOYMENT_SETUP.md mit Schritt-für-Schritt Anleitung erstellt
 
-#### **Task 5: Mock-Daten-Service** ⚠️ **AKTUELL IN ARBEIT**
+#### **Task 5: Mock-Daten-Service** ✅ **ABGESCHLOSSEN**
 
 **🔍 PROBLEM IDENTIFIZIERT:** Mock-Daten-Service existiert bereits, aber hat kritische Inkonsistenzen:
 - MockDataService verwendet veraltete Model-Klassen (`Chain`, `Store`) die nicht in models.dart existieren
