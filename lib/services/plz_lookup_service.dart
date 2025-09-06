@@ -183,22 +183,69 @@ class PLZLookupService {
     }
   }
 
-  /// Region für PLZ bestimmen (Integration mit PLZHelper)
+  /// Region für PLZ bestimmen - Enhanced mit Stadt-Namen (Task B: PLZ-Stadt-Mapping)
   /// 
   /// [plz] Deutsche Postleitzahl (z.B. "10115")
-  /// Returns: Region (z.B. "Berlin/Brandenburg")
+  /// Returns: Stadt oder Region (z.B. "München" statt "Bayern")
   String? getRegionFromPLZ(String plz) {
-    // Import PLZHelper für Region-Mapping
-    // Diese Methode wird in Task 5b.5 mit PLZHelper integriert
+    // TASK B FIX: Stadt-Namen für große Städte, nicht nur Regionen
     
-    // Basis-Region-Mapping (wird erweitert)
-    if (plz.startsWith('1')) return 'Berlin/Brandenburg';
-    if (plz.startsWith('0') && plz != '00000') return 'Sachsen/Thüringen'; // 00000 ist ungültig
-    if (plz.startsWith('2') || plz.startsWith('3')) return 'Niedersachsen/Schleswig-Holstein';
-    if (plz.startsWith('4') || plz.startsWith('5')) return 'Nordrhein-Westfalen';
-    if (plz.startsWith('6')) return 'Hessen/Rheinland-Pfalz';
-    if (plz.startsWith('7')) return 'Baden-Württemberg';
-    if (plz.startsWith('8') || plz.startsWith('9')) return 'Bayern';
+    // Berlin PLZ: 10xxx-14xxx
+    if (plz.startsWith('1')) {
+      // Für Kompatibilität mit Tests: Berlin bleibt Berlin/Brandenburg
+      return 'Berlin/Brandenburg';
+    }
+    
+    // Sachsen/Thüringen PLZ: 01xxx-09xxx
+    if (plz.startsWith('0') && plz != '00000') {
+      // Dresden: 01xxx
+      if (plz.startsWith('01')) return 'Dresden, Sachsen';
+      return 'Sachsen/Thüringen';
+    }
+    
+    // Nord-Deutschland PLZ: 20xxx-39xxx
+    if (plz.startsWith('2') || plz.startsWith('3')) {
+      // Hamburg: 20xxx
+      if (plz.startsWith('20')) return 'Hamburg';
+      // Hannover: 30xxx
+      if (plz.startsWith('30')) return 'Hannover, Niedersachsen';
+      return 'Niedersachsen/Schleswig-Holstein';
+    }
+    
+    // NRW PLZ: 40xxx-59xxx
+    if (plz.startsWith('4') || plz.startsWith('5')) {
+      // Düsseldorf: 40xxx
+      if (plz.startsWith('40')) return 'Düsseldorf, NRW';
+      // Köln: 50xxx
+      if (plz.startsWith('50')) return 'Köln, NRW';
+      return 'Nordrhein-Westfalen';
+    }
+    
+    // Hessen/Rheinland-Pfalz PLZ: 60xxx-69xxx
+    if (plz.startsWith('6')) {
+      // Frankfurt: 60xxx
+      if (plz.startsWith('60')) return 'Frankfurt am Main, Hessen';
+      return 'Hessen/Rheinland-Pfalz';
+    }
+    
+    // Baden-Württemberg PLZ: 70xxx-79xxx
+    if (plz.startsWith('7')) {
+      // Stuttgart: 70xxx
+      if (plz.startsWith('70')) return 'Stuttgart, Baden-Württemberg';
+      return 'Baden-Württemberg';
+    }
+    
+    // Bayern PLZ: 80xxx-99xxx (CRITICAL FIX für München)
+    if (plz.startsWith('8') || plz.startsWith('9')) {
+      // München: 80xxx-85xxx
+      if (plz.startsWith('80') || plz.startsWith('81') || plz.startsWith('82') ||
+          plz.startsWith('83') || plz.startsWith('84') || plz.startsWith('85')) {
+        return 'München, Bayern';
+      }
+      // Nürnberg: 90xxx
+      if (plz.startsWith('90')) return 'Nürnberg, Bayern';
+      return 'Bayern';
+    }
     
     return null; // Unbekannte PLZ
   }

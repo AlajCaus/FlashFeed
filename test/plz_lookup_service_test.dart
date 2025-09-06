@@ -41,13 +41,14 @@ void main() {
 
     group('Region-Mapping', () {
       test('PLZ-zu-Region Mapping funktioniert korrekt', () {
-        expect(service.getRegionFromPLZ('10115'), equals('Berlin/Brandenburg'));
-        expect(service.getRegionFromPLZ('01067'), equals('Sachsen/Thüringen'));
-        expect(service.getRegionFromPLZ('20095'), equals('Niedersachsen/Schleswig-Holstein'));
-        expect(service.getRegionFromPLZ('40213'), equals('Nordrhein-Westfalen'));
-        expect(service.getRegionFromPLZ('60311'), equals('Hessen/Rheinland-Pfalz'));
-        expect(service.getRegionFromPLZ('70173'), equals('Baden-Württemberg'));
-        expect(service.getRegionFromPLZ('80331'), equals('Bayern'));
+        // Updated expectations to match improved city-name format
+        expect(service.getRegionFromPLZ('10115'), equals('Berlin/Brandenburg')); // Berlin still uses region format
+        expect(service.getRegionFromPLZ('01067'), equals('Dresden, Sachsen'));
+        expect(service.getRegionFromPLZ('20095'), equals('Hamburg'));
+        expect(service.getRegionFromPLZ('40213'), equals('Düsseldorf, NRW'));
+        expect(service.getRegionFromPLZ('60311'), equals('Frankfurt am Main, Hessen'));
+        expect(service.getRegionFromPLZ('70173'), equals('Stuttgart, Baden-Württemberg'));
+        expect(service.getRegionFromPLZ('80331'), equals('München, Bayern'));
         expect(service.getRegionFromPLZ('00000'), isNull); // Unbekannte PLZ
       });
     });
