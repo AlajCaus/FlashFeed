@@ -1,6 +1,32 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
+/// Cache-Eintrag mit Timestamp für Expiry-Handling
+class _PLZCacheEntry {
+  final String plz;
+  final DateTime timestamp;
+  DateTime lastAccessed;
+  
+  _PLZCacheEntry(this.plz) 
+    : timestamp = DateTime.now(),
+      lastAccessed = DateTime.now();
+  
+  /// Prüfung ob Cache-Entry abgelaufen ist
+  bool isExpired(Duration maxAge) {
+    return DateTime.now().difference(timestamp) > maxAge;
+  }
+  
+  /// Entry als kürzlich verwendet markieren (für LRU)
+  void markAccessed() {
+    lastAccessed = DateTime.now();
+  }
+  
+  /// Memory-Größe schätzen (für Statistiken)
+  int get estimatedSizeBytes => plz.length * 2 + 64; // String + Timestamps
+}
 
 /// Ausnahme für PLZ-Lookup-Fehler
 class PLZLookupException implements Exception {
@@ -13,15 +39,33 @@ class PLZLookupException implements Exception {
   String toString() => 'PLZLookupException: $message${originalError != null ? ' ($originalError)' : ''}';
 }
 
-/// Service für GPS-Koordinaten zu PLZ-Mapping
+/// Service für GPS-Koordinaten zu PLZ-Mapping (Task 5b.4: Enhanced Performance & Caching)
 /// Verwendet OpenStreetMap Nominatim API für reverse geocoding
+/// Features: LRU-Cache, Time-Based Expiry, Performance-Monitoring
 class PLZLookupService {
   static final PLZLookupService _instance = PLZLookupService._internal();
   factory PLZLookupService() => _instance;
-  PLZLookupService._internal();
+  PLZLookupService._internal() {
+    _startBackgroundCleanup();
+  }
 
-  // Cache für GPS → PLZ Lookups (in-memory)
-  final Map<String, String> _plzCache = {};
+  // Enhanced Cache mit LRU und Expiry (Task 5b.4)
+  final Map<String, _PLZCacheEntry> _plzCache = {};
+  
+  // Cache-Konfiguration
+  static const int _maxCacheSize = 1000; // Max Einträge (ca. 100KB Memory)
+  static const Duration _cacheExpiry = Duration(hours: 6); // Cache-Lebensdauer
+  static const Duration _cleanupInterval = Duration(minutes: 30); // Cleanup-Frequenz
+  
+  // Performance-Statistiken (Task 5b.4)
+  int _cacheHits = 0;
+  int _cacheMisses = 0;
+  int _apiCalls = 0;
+  int _cacheEvictions = 0;
+  DateTime? _lastCleanup;
+  
+  // Background-Cleanup Timer
+  Timer? _cleanupTimer;
   
   // Nominatim API base URL
   static const String _nominatimBaseUrl = 'https://nominatim.openstreetmap.org';
@@ -30,7 +74,7 @@ class PLZLookupService {
   DateTime? _lastRequest;
   static const Duration _rateLimitDelay = Duration(seconds: 1);
 
-  /// Hauptmethode: GPS-Koordinaten zu PLZ
+  /// Hauptmethode: GPS-Koordinaten zu PLZ (Task 5b.4: Enhanced mit Performance-Optimierung)
   /// 
   /// [latitude] GPS Breitengrad (z.B. 52.5200)
   /// [longitude] GPS Längengrad (z.B. 13.4050)
@@ -43,11 +87,23 @@ class PLZLookupService {
       throw const PLZLookupException('Ungültige GPS-Koordinaten');
     }
     
-    // Cache-Check
+    // Cache-Key generieren (4 Dezimalstellen für Balance zwischen Präzision und Cache-Effizienz)
     final cacheKey = '${latitude.toStringAsFixed(4)},${longitude.toStringAsFixed(4)}';
-    if (_plzCache.containsKey(cacheKey)) {
-      return _plzCache[cacheKey]!;
+    
+    // Cache-Check mit Expiry-Validation (Task 5b.4)
+    final cachedEntry = _plzCache[cacheKey];
+    if (cachedEntry != null && !cachedEntry.isExpired(_cacheExpiry)) {
+      // Cache-Hit: Entry als accessed markieren (LRU)
+      cachedEntry.markAccessed();
+      _cacheHits++;
+      
+      debugPrint('✅ PLZ-Cache Hit: $cacheKey -> ${cachedEntry.plz}');
+      return cachedEntry.plz;
     }
+    
+    // Cache-Miss: API-Call nötig
+    _cacheMisses++;
+    debugPrint('🔍 PLZ-Cache Miss: $cacheKey (Hits: $_cacheHits, Misses: $_cacheMisses)');
     
     try {
       // Rate limiting
@@ -55,13 +111,75 @@ class PLZLookupService {
       
       // Nominatim API Call
       final plz = await _callNominatimAPI(latitude, longitude);
+      _apiCalls++;
       
-      // Cache speichern
-      _plzCache[cacheKey] = plz;
+      // Cache-Entry speichern mit LRU-Management
+      await _storeCacheEntry(cacheKey, plz);
       
       return plz;
     } catch (e) {
       throw PLZLookupException('PLZ-Lookup fehlgeschlagen', e.toString());
+    }
+  }
+  
+  /// Cache-Entry speichern mit LRU-Management (Task 5b.4)
+  Future<void> _storeCacheEntry(String cacheKey, String plz) async {
+    // Neuen Cache-Entry erstellen
+    final entry = _PLZCacheEntry(plz);
+    
+    // Cache-Size-Limit prüfen: bei Überschreitung LRU-Eviction
+    if (_plzCache.length >= _maxCacheSize) {
+      await _evictLeastRecentlyUsed();
+    }
+    
+    // Entry speichern
+    _plzCache[cacheKey] = entry;
+    
+    debugPrint('💾 PLZ-Cache Stored: $cacheKey -> $plz (Size: ${_plzCache.length}/$_maxCacheSize)');
+  }
+  
+  /// LRU-Eviction: Älteste Entries entfernen (Task 5b.4)
+  Future<void> _evictLeastRecentlyUsed() async {
+    if (_plzCache.isEmpty) return;
+    
+    // 10% der Cache-Einträge entfernen (Batch-Eviction für Performance)
+    final evictionCount = (_maxCacheSize * 0.1).ceil();
+    
+    // Entries nach lastAccessed sortieren (älteste zuerst)
+    final sortedEntries = _plzCache.entries.toList()
+      ..sort((a, b) => a.value.lastAccessed.compareTo(b.value.lastAccessed));
+    
+    // Älteste Entries entfernen
+    for (int i = 0; i < evictionCount && i < sortedEntries.length; i++) {
+      _plzCache.remove(sortedEntries[i].key);
+      _cacheEvictions++;
+    }
+    
+    debugPrint('🗑️ PLZ-Cache LRU Eviction: $evictionCount entries removed (Total evictions: $_cacheEvictions)');
+  }
+  
+  /// Background-Cleanup-Timer starten (Task 5b.4)
+  void _startBackgroundCleanup() {
+    _cleanupTimer = Timer.periodic(_cleanupInterval, (timer) {
+      _performBackgroundCleanup();
+    });
+    
+    debugPrint('⏰ PLZ-Cache Background-Cleanup gestartet (Interval: ${_cleanupInterval.inMinutes}min)');
+  }
+  
+  /// Background-Cleanup ausführen (Task 5b.4)
+  void _performBackgroundCleanup() {
+    final before = _plzCache.length;
+    final now = DateTime.now();
+    
+    // Expired Entries entfernen
+    _plzCache.removeWhere((key, entry) => entry.isExpired(_cacheExpiry));
+    
+    final removed = before - _plzCache.length;
+    _lastCleanup = now;
+    
+    if (removed > 0) {
+      debugPrint('🧹 PLZ-Cache Background-Cleanup: $removed expired entries removed');
     }
   }
 
@@ -85,16 +203,134 @@ class PLZLookupService {
     return null; // Unbekannte PLZ
   }
 
-  /// Cache leeren (für Tests oder Memory-Management)
+  /// Cache leeren (für Tests oder Memory-Management) - Enhanced Version (Task 5b.4)
   void clearCache() {
+    final entriesRemoved = _plzCache.length;
     _plzCache.clear();
+    
+    // Statistiken zurücksetzen
+    _cacheHits = 0;
+    _cacheMisses = 0;
+    _cacheEvictions = 0;
+    _lastCleanup = DateTime.now();
+    
+    debugPrint('🧹 PLZ-Cache komplett geleert: $entriesRemoved entries entfernt');
   }
 
-  /// Cache-Statistiken für Debugging
+  /// Erweiterte Cache-Statistiken für Performance-Monitoring (Task 5b.4)
   Map<String, dynamic> getCacheStats() {
+    final totalRequests = _cacheHits + _cacheMisses;
+    final hitRate = totalRequests > 0 ? (_cacheHits / totalRequests * 100) : 0.0;
+    final estimatedMemoryBytes = _plzCache.values
+        .map((entry) => entry.estimatedSizeBytes)
+        .fold(0, (sum, size) => sum + size);
+    
     return {
+      // Basis-Statistiken
       'entries': _plzCache.length,
-      'memoryUsage': '${_plzCache.length * 50}B (approx)', // ~50 Bytes pro Entry
+      'maxSize': _maxCacheSize,
+      'usagePercent': (_plzCache.length / _maxCacheSize * 100).toStringAsFixed(1),
+      
+      // Performance-Metriken
+      'cacheHits': _cacheHits,
+      'cacheMisses': _cacheMisses,
+      'hitRate': '${hitRate.toStringAsFixed(1)}%',
+      'apiCalls': _apiCalls,
+      
+      // Memory-Usage
+      'estimatedMemoryBytes': estimatedMemoryBytes,
+      'estimatedMemoryKB': '${(estimatedMemoryBytes / 1024).toStringAsFixed(1)}KB',
+      
+      // Expiry & Cleanup
+      'cacheExpiryHours': _cacheExpiry.inHours,
+      'cacheEvictions': _cacheEvictions,
+      'lastCleanup': _lastCleanup?.toIso8601String() ?? 'Never',
+      'cleanupIntervalMinutes': _cleanupInterval.inMinutes,
+      
+      // Debug-Info
+      'oldestEntry': _getOldestEntryAge(),
+      'newestEntry': _getNewestEntryAge(),
+    };
+  }
+  
+  /// Helper: Ältesten Cache-Entry-Alter bestimmen (für Statistiken)
+  String _getOldestEntryAge() {
+    if (_plzCache.isEmpty) return 'N/A';
+    
+    final oldestTimestamp = _plzCache.values
+        .map((entry) => entry.timestamp)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+    
+    final age = DateTime.now().difference(oldestTimestamp);
+    
+    if (age.inDays > 0) {
+      return '${age.inDays}d ${age.inHours % 24}h';
+    } else if (age.inHours > 0) {
+      return '${age.inHours}h ${age.inMinutes % 60}m';
+    } else {
+      return '${age.inMinutes}m';
+    }
+  }
+  
+  /// Helper: Neuesten Cache-Entry-Alter bestimmen (für Statistiken)
+  String _getNewestEntryAge() {
+    if (_plzCache.isEmpty) return 'N/A';
+    
+    final newestTimestamp = _plzCache.values
+        .map((entry) => entry.timestamp)
+        .reduce((a, b) => a.isAfter(b) ? a : b);
+    
+    final age = DateTime.now().difference(newestTimestamp);
+    
+    if (age.inMinutes > 0) {
+      return '${age.inMinutes}m';
+    } else {
+      return '${age.inSeconds}s';
+    }
+  }
+  
+  /// Service beenden und Ressourcen freigeben (Task 5b.4)
+  void dispose() {
+    _cleanupTimer?.cancel();
+    _cleanupTimer = null;
+    _plzCache.clear();
+    
+    debugPrint('PLZLookupService disposed - Timer gestoppt, Cache geleert');
+  }
+  
+  /// Performance-Benchmark für Bulk-Operations (Task 5b.4)
+  Future<Map<String, dynamic>> performBenchmark(List<List<double>> coordinates) async {
+    final stopwatch = Stopwatch()..start();
+    final results = <String>[];
+    int cacheHitsBefore = _cacheHits;
+    int cacheMissesBefore = _cacheMisses;
+    int apiCallsBefore = _apiCalls;
+    
+    try {
+      for (final coord in coordinates) {
+        if (coord.length != 2) continue;
+        final result = await getPLZFromCoordinates(coord[0], coord[1]);
+        results.add(result);
+      }
+    } catch (e) {
+      debugPrint('Benchmark-Fehler: $e');
+    }
+    
+    stopwatch.stop();
+    
+    return {
+      'coordinatesProcessed': coordinates.length,
+      'successfulLookups': results.length,
+      'totalTimeMs': stopwatch.elapsedMilliseconds,
+      'averageTimeMs': stopwatch.elapsedMilliseconds / coordinates.length,
+      'cacheHitsInBenchmark': _cacheHits - cacheHitsBefore,
+      'cacheMissesInBenchmark': _cacheMisses - cacheMissesBefore,
+      'apiCallsInBenchmark': _apiCalls - apiCallsBefore,
+      'benchmarkHitRate': (() {
+        final benchmarkRequests = (_cacheHits - cacheHitsBefore) + (_cacheMisses - cacheMissesBefore);
+        if (benchmarkRequests == 0) return 0.0;
+        return (_cacheHits - cacheHitsBefore) / benchmarkRequests * 100;
+      })(),
     };
   }
 
