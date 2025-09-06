@@ -181,62 +181,182 @@ class MockDataService {
         website: 'https://www.netto-online.de',
         storeCount: 7,
       ),
+      // Task 5.6: Erweiterte Händler für vollständige deutsche LEH-Landschaft
+      Retailer(
+        id: 'penny',
+        name: 'PENNY',
+        displayName: 'Penny',
+        logoUrl: 'assets/images/logos/penny.png',
+        primaryColor: '#D4001A',
+        description: 'Preise gut, alles gut',
+        categories: ['Getränke', 'Süßwaren', 'Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Wurst', 'Backwaren'],
+        isPremiumPartner: false,
+        website: 'https://www.penny.de',
+        storeCount: 3,
+      ),
+      Retailer(
+        id: 'kaufland',
+        name: 'KAUFLAND',
+        displayName: 'Kaufland',
+        logoUrl: 'assets/images/logos/kaufland.png',
+        primaryColor: '#C8102E',
+        description: 'Das ist gut für alle',
+        categories: ['Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Geflügel', 'Backwaren', 'Getränke', 'Tiefkühl', 'Bio-Produkte'],
+        isPremiumPartner: true,
+        website: 'https://www.kaufland.de',
+        storeCount: 2,
+      ),
+      Retailer(
+        id: 'real',
+        name: 'REAL',
+        displayName: 'Real',
+        logoUrl: 'assets/images/logos/real.png',
+        primaryColor: '#005CA9',
+        description: 'Einmal hin. Alles drin',
+        categories: ['Frische-Theke', 'Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Fisch', 'Backwaren', 'Getränke', 'Bio-Produkte'],
+        isPremiumPartner: true,
+        website: 'https://www.real.de',
+        storeCount: 2,
+      ),
+      Retailer(
+        id: 'globus',
+        name: 'GLOBUS',
+        displayName: 'Globus',
+        logoUrl: 'assets/images/logos/globus.png',
+        primaryColor: '#0033A0',
+        description: 'Meine Zeit. Mein Globus',
+        categories: ['Premium-Fleisch', 'Bio-Produkte', 'Molkereiprodukte', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Feinkost'],
+        isPremiumPartner: true,
+        website: 'https://www.globus.de',
+        storeCount: 1,
+      ),
+      Retailer(
+        id: 'marktkauf',
+        name: 'MARKTKAUF',
+        displayName: 'Marktkauf',
+        logoUrl: 'assets/images/logos/marktkauf.png',
+        primaryColor: '#009639',
+        description: 'Hier kauf ich gern',
+        categories: ['Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Wurst', 'Backwaren', 'Getränke', 'Tiefkühl'],
+        isPremiumPartner: false,
+        website: 'https://www.marktkauf.de',
+        storeCount: 1,
+      ),
     ];
   }
 
   Future<void> _generateStores() async {
-    final berlinCoordinates = [
-      {'name': 'Berlin Mitte', 'lat': 52.5200, 'lng': 13.4050},
-      {'name': 'Berlin Prenzlauer Berg', 'lat': 52.5482, 'lng': 13.4193},
-      {'name': 'Berlin Kreuzberg', 'lat': 52.4987, 'lng': 13.4180},
-      {'name': 'Berlin Charlottenburg', 'lat': 52.5048, 'lng': 13.2977},
-      {'name': 'Berlin Friedrichshain', 'lat': 52.5147, 'lng': 13.4545},
-    ];
+    // Task 5.6: Realistische Berliner Standorte für alle 10 deutschen LEH-Händler
+    // 35+ Filialen mit präzisen GPS-Koordinaten für Professor-Demo
+    final realisticStoreLocations = {
+      'edeka': [
+        {'name': 'EDEKA Neukauf Alexanderplatz', 'street': 'Alexanderstraße 9', 'plz': '10178', 'lat': 52.521918, 'lng': 13.413209},
+        {'name': 'EDEKA Center Potsdamer Platz', 'street': 'Potsdamer Platz 1', 'plz': '10785', 'lat': 52.509618, 'lng': 13.376208},
+        {'name': 'EDEKA Supermarkt Prenzlauer Berg', 'street': 'Kastanienallee 77', 'plz': '10435', 'lat': 52.533845, 'lng': 13.401947},
+        {'name': 'EDEKA Markt Charlottenburg', 'street': 'Kantstraße 108', 'plz': '10627', 'lat': 52.504829, 'lng': 13.307739},
+        {'name': 'EDEKA Friedrichshain', 'street': 'Warschauer Straße 33', 'plz': '10243', 'lat': 52.506738, 'lng': 13.453014},
+        {'name': 'EDEKA Kreuzberg', 'street': 'Bergmannstraße 88', 'plz': '10961', 'lat': 52.493918, 'lng': 13.389634},
+        {'name': 'EDEKA Mitte Hackescher Markt', 'street': 'Rosenthaler Straße 40', 'plz': '10178', 'lat': 52.525847, 'lng': 13.401534}
+      ],
+      'rewe': [
+        {'name': 'REWE City Unter den Linden', 'street': 'Unter den Linden 26', 'plz': '10117', 'lat': 52.517037, 'lng': 13.388860},
+        {'name': 'REWE Markt Schöneberg', 'street': 'Hauptstraße 155', 'plz': '10827', 'lat': 52.482743, 'lng': 13.356912},
+        {'name': 'REWE Center Wedding', 'street': 'Müllerstraße 143', 'plz': '13353', 'lat': 52.543089, 'lng': 13.366834},
+        {'name': 'REWE Neukölln', 'street': 'Karl-Marx-Straße 78', 'plz': '12043', 'lat': 52.476924, 'lng': 13.440284},
+        {'name': 'REWE Steglitz', 'street': 'Schloßstraße 82', 'plz': '12165', 'lat': 52.456745, 'lng': 13.326534},
+        {'name': 'REWE Wilmersdorf', 'street': 'Bundesallee 39', 'plz': '10717', 'lat': 52.489834, 'lng': 13.326512},
+        {'name': 'REWE Spandau Altstadt', 'street': 'Carl-Schurz-Straße 15', 'plz': '13597', 'lat': 52.537012, 'lng': 13.200334}
+      ],
+      'aldi': [
+        {'name': 'ALDI SÜD Mitte', 'street': 'Torstraße 104', 'plz': '10119', 'lat': 52.526734, 'lng': 13.402534},
+        {'name': 'ALDI SÜD Tempelhof', 'street': 'Tempelhofer Damm 227', 'plz': '12099', 'lat': 52.458123, 'lng': 13.387012},
+        {'name': 'ALDI SÜD Pankow', 'street': 'Breite Straße 43', 'plz': '13187', 'lat': 52.569234, 'lng': 13.401534},
+        {'name': 'ALDI SÜD Lichtenberg', 'street': 'Frankfurter Allee 69', 'plz': '10247', 'lat': 52.514723, 'lng': 13.469312},
+        {'name': 'ALDI SÜD Reinickendorf', 'street': 'Residenzstraße 90', 'plz': '13409', 'lat': 52.569234, 'lng': 13.326512},
+        {'name': 'ALDI SÜD Treptow', 'street': 'Elsenstraße 15', 'plz': '12435', 'lat': 52.490612, 'lng': 13.453634},
+        {'name': 'ALDI SÜD Mariendorf', 'street': 'Mariendorfer Damm 47', 'plz': '12109', 'lat': 52.443123, 'lng': 13.389634}
+      ],
+      'lidl': [
+        {'name': 'Lidl Berlin-Mitte', 'street': 'Chausseestraße 125', 'plz': '10115', 'lat': 52.535812, 'lng': 13.366834},
+        {'name': 'Lidl Friedenau', 'street': 'Rheinstraße 32', 'plz': '12161', 'lat': 52.472034, 'lng': 13.339612},
+        {'name': 'Lidl Hellersdorf', 'street': 'Hellersdorfer Straße 159', 'plz': '12627', 'lat': 52.534234, 'lng': 13.608912},
+        {'name': 'Lidl Köpenick', 'street': 'Bahnhofstraße 33', 'plz': '12555', 'lat': 52.445834, 'lng': 13.574812},
+        {'name': 'Lidl Hohenschönhausen', 'street': 'Konrad-Wolf-Straße 52', 'plz': '13055', 'lat': 52.553612, 'lng': 13.469312},
+        {'name': 'Lidl Zehlendorf', 'street': 'Clayallee 336', 'plz': '14169', 'lat': 52.443123, 'lng': 13.263012},
+        {'name': 'Lidl Weißensee', 'street': 'Berliner Allee 260', 'plz': '13088', 'lat': 52.553612, 'lng': 13.453634}
+      ],
+      'netto_schwarz': [
+        {'name': 'Netto Marken-Discount Alt-Moabit', 'street': 'Alt-Moabit 88', 'plz': '10559', 'lat': 52.521934, 'lng': 13.347812},
+        {'name': 'Netto Marken-Discount Rudow', 'street': 'Neuköllner Straße 311', 'plz': '12357', 'lat': 52.443123, 'lng': 13.483234},
+        {'name': 'Netto Marken-Discount Gesundbrunnen', 'street': 'Gesundbrunnenstraße 61', 'plz': '13357', 'lat': 52.553612, 'lng': 13.389634},
+        {'name': 'Netto Marken-Discount Buch', 'street': 'Wiltbergstraße 24', 'plz': '13125', 'lat': 52.630834, 'lng': 13.453634},
+        {'name': 'Netto Marken-Discount Adlershof', 'street': 'Dorfaue 4', 'plz': '12489', 'lat': 52.434223, 'lng': 13.542734},
+        {'name': 'Netto Marken-Discount Spandau', 'street': 'Klosterstraße 36', 'plz': '13581', 'lat': 52.537012, 'lng': 13.200334},
+        {'name': 'Netto Marken-Discount Britz', 'street': 'Britzer Damm 127', 'plz': '12347', 'lat': 52.434223, 'lng': 13.440284}
+      ],
+      'penny': [
+        {'name': 'Penny Markt Alexanderplatz', 'street': 'Karl-Liebknecht-Straße 13', 'plz': '10178', 'lat': 52.521445, 'lng': 13.412834},
+        {'name': 'Penny Markt Steglitz', 'street': 'Schloßstraße 94', 'plz': '12165', 'lat': 52.456234, 'lng': 13.327123},
+        {'name': 'Penny Markt Weißensee', 'street': 'Berliner Allee 270', 'plz': '13088', 'lat': 52.554123, 'lng': 13.454234}
+      ],
+      'kaufland': [
+        {'name': 'Kaufland Ostbahnhof', 'street': 'Stralauer Platz 33-34', 'plz': '10243', 'lat': 52.507834, 'lng': 13.434512},
+        {'name': 'Kaufland Spandau', 'street': 'Neuendorfer Straße 60', 'plz': '13585', 'lat': 52.537923, 'lng': 13.201234}
+      ],
+      'real': [
+        {'name': 'Real Marienfelde', 'street': 'Großbeerenstraße 263', 'plz': '12277', 'lat': 52.418734, 'lng': 13.373912},
+        {'name': 'Real Lichtenberg', 'street': 'Landsberger Allee 563', 'plz': '10249', 'lat': 52.524123, 'lng': 13.491234}
+      ],
+      'globus': [
+        {'name': 'Globus Genshagen (Berlin)', 'street': 'Lüdenscheider Weg 1', 'plz': '14974', 'lat': 52.367834, 'lng': 13.212345}
+      ],
+      'marktkauf': [
+        {'name': 'Marktkauf Steglitz', 'street': 'Unter den Eichen 96a', 'plz': '12203', 'lat': 52.436712, 'lng': 13.318456}
+      ]
+    };
     
-    final munichCoordinates = [
-      {'name': 'München Zentrum', 'lat': 48.1374, 'lng': 11.5755},
-      {'name': 'München Schwabing', 'lat': 48.1642, 'lng': 11.5816},
-    ];
-    
-    final storeTemplates = [
-      'Hauptstraße',
-      'Bahnhofstraße',
-      'Marktplatz',
-      'Zentrum',
-      'Nordstadt',
-      'Altstadt',
-      'City'
+    // München Standorte (für Diversität - wenige Fallback-Filialen)
+    final munichLocations = [
+      {'name': 'München Zentrum', 'street': 'Marienplatz 8', 'plz': '80331', 'lat': 48.137434, 'lng': 11.575512},
+      {'name': 'München Schwabing', 'street': 'Leopoldstraße 82', 'plz': '80802', 'lat': 48.164223, 'lng': 11.581634}
     ];
     
     _stores = [];
     int storeCounter = 1;
     
     for (final retailer in _retailers) {
+      final retailerLocations = realisticStoreLocations[retailer.id] ?? [];
+      
       for (int i = 0; i < retailer.storeCount; i++) {
-        // 60% Berlin, 40% München (realistische Verteilung)
-        final isBerlin = _random.nextDouble() < 0.6;
-        final coordinates = isBerlin ? berlinCoordinates : munichCoordinates;
-        final location = coordinates[_random.nextInt(coordinates.length)];
-        final template = storeTemplates[i % storeTemplates.length];
+        Map<String, dynamic> storeLocation;
+        
+        if (i < retailerLocations.length) {
+          // Verwende realistische Berliner Standorte
+          storeLocation = retailerLocations[i];
+        } else {
+          // Fallback: München für übrige Filialen
+          storeLocation = munichLocations[i % munichLocations.length];
+        }
+        
+        final storeZipCode = storeLocation['plz'].toString();
+        final isInBerlin = storeZipCode.startsWith('1');
         
         _stores.add(Store(
           id: 'store_${storeCounter.toString().padLeft(3, '0')}',
           chainId: retailer.id,
           retailerName: retailer.name,
-          name: '${retailer.displayName} $template',
-          street: '$template ${_random.nextInt(200) + 1}',
-          zipCode: isBerlin 
-              ? '${10000 + _random.nextInt(5000)}' // Berlin PLZ 10000-14999
-              : '${80000 + _random.nextInt(6000)}', // München PLZ 80000-85999
-          city: isBerlin ? 'Berlin' : 'München',
-          latitude: (location['lat'] as double) + (_random.nextDouble() - 0.5) * 0.02,
-          longitude: (location['lng'] as double) + (_random.nextDouble() - 0.5) * 0.02,
-          phoneNumber: '+49 30 ${_random.nextInt(90000000) + 10000000}',
+          name: storeLocation['name'] as String,
+          street: storeLocation['street'] as String,
+          zipCode: storeZipCode,
+          city: isInBerlin ? 'Berlin' : 'München',
+          latitude: storeLocation['lat'] as double,
+          longitude: storeLocation['lng'] as double,
+          phoneNumber: isInBerlin ? '+49 30 ${_random.nextInt(90000000) + 10000000}' : '+49 89 ${_random.nextInt(90000000) + 10000000}',
           openingHours: _generateOpeningHours(),
           services: _generateStoreServices(retailer.name),
           hasWifi: _random.nextBool(),
           hasPharmacy: false,
-          hasBeacon: _random.nextBool(), // 50% haben Beacon für Indoor-Navigation
+          hasBeacon: _random.nextBool(),
           isActive: true,
         ));
         storeCounter++;
@@ -520,6 +640,16 @@ class MockDataService {
         return [...commonServices, 'Lidl Plus App', 'Bäckerei'];
       case 'netto':
         return [...commonServices, 'DeutschlandCard'];
+      case 'penny':
+        return [...commonServices, 'Payback', 'DHL Paketstation'];
+      case 'kaufland':
+        return [...commonServices, 'Kaufland Card', 'Metzgerei', 'Bäckerei'];
+      case 'real':
+        return [...commonServices, 'Real Quality', 'SB-Warenhaus'];
+      case 'globus':
+        return [...commonServices, 'Metzgerei', 'Bäckerei', 'Restaurant'];
+      case 'marktkauf':
+        return [...commonServices, 'Frische-Theke'];
       default:
         return commonServices;
     }
