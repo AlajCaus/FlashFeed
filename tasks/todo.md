@@ -170,6 +170,8 @@
   - API-Response Cast-Fehler behoben (Map<dynamic,dynamic> → Map<String,dynamic>)
   - Widget Tests umgeschrieben: MockDataService LateInitializationError vermieden
   - Provider-unabhängige Test-Struktur implementiert
+  - Timer-Leck behoben: MockDataService Test-Mode + dispose() Pattern
+  - tearDown() für ordnungsgemäße Test-Bereinigung hinzugefügt
 
 #### **Task 5b.3: Reverse-Geocoding Alternative**
 - [ ] User-PLZ-Eingabe Interface (als Fallback wenn GPS fehlschlägt)

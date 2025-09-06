@@ -14,6 +14,11 @@ void main() {
       // mockDataService = testMockDataService; // Würde Compile-Error geben
     });
 
+    tearDown(() {
+      // MockDataService nach jedem Test bereinigen
+      testMockDataService.dispose();
+    });
+
     testWidgets('FlashFeed app loads correctly with mock setup', (WidgetTester tester) async {
       // Test-spezifische App-Initialisierung
       await tester.pumpWidget(
@@ -62,8 +67,8 @@ void main() {
       expect(mockService.retailers, isEmpty);
       expect(mockService.isInitialized, isFalse);
       
-      // MockDataService initialisieren
-      await mockService.initializeMockData();
+      // MockDataService initialisieren (mit Test-Mode - keine Timer)
+      await mockService.initializeMockData(testMode: true);
       
       // Nach Initialisierung sollten Daten verfügbar sein
       expect(mockService.isInitialized, isTrue);

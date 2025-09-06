@@ -67,8 +67,17 @@ class MockDataService {
     _onStoresUpdated = callback;
   }
 
+  // Cleanup für Tests (Timer beenden)
+  void dispose() {
+    _flashDealTimer?.cancel();
+    _countdownTimer?.cancel();
+    _flashDealTimer = null;
+    _countdownTimer = null;
+    debugPrint('🧹 MockDataService: Timer bereinigt');
+  }
+
   // Initialization (aufgerufen von main.dart)
-  Future<void> initializeMockData() async {
+  Future<void> initializeMockData({bool testMode = false}) async {
     if (_isInitialized) return;
     
     debugPrint('🏗️ MockDataService: Initialisiere Mock-Daten...');
@@ -83,8 +92,12 @@ class MockDataService {
       
       _isInitialized = true;
       
-      // Start periodic updates for real-time simulation
-      _startPeriodicUpdates();
+      // Start periodic updates for real-time simulation (nicht in Tests)
+      if (!testMode) {
+        _startPeriodicUpdates();
+      } else {
+        debugPrint('⚠️ MockDataService: Test-Mode - Timer werden nicht gestartet');
+      }
       
       debugPrint('✅ MockDataService: Initialisierung abgeschlossen');
       debugPrint('   • ${_retailers.length} Retailers generiert');
