@@ -132,6 +132,8 @@ class MockDataService {
         isPremiumPartner: true,
         website: 'https://www.edeka.de',
         storeCount: 7,
+        // Task 5a: EDEKA ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'rewe',
@@ -144,6 +146,8 @@ class MockDataService {
         isPremiumPartner: true,
         website: 'https://www.rewe.de',
         storeCount: 7,
+        // Task 5a: REWE ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'aldi',
@@ -156,6 +160,8 @@ class MockDataService {
         isPremiumPartner: false,
         website: 'https://www.aldi-sued.de',
         storeCount: 7,
+        // Task 5a: ALDI SÜD ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'lidl',
@@ -168,6 +174,8 @@ class MockDataService {
         isPremiumPartner: false,
         website: 'https://www.lidl.de',
         storeCount: 7,
+        // Task 5a: LIDL ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'netto_schwarz',
@@ -180,6 +188,10 @@ class MockDataService {
         isPremiumPartner: false,
         website: 'https://www.netto-online.de',
         storeCount: 7,
+        // Task 5a: Netto (schwarz) primär in Nord/Ost-Deutschland
+        availablePLZRanges: [
+          PLZRange(startPLZ: '01000', endPLZ: '39999', regionName: 'Nord/Ost-Deutschland'),
+        ],
       ),
       // Task 5.6: Erweiterte Händler für vollständige deutsche LEH-Landschaft
       Retailer(
@@ -193,6 +205,8 @@ class MockDataService {
         isPremiumPartner: false,
         website: 'https://www.penny.de',
         storeCount: 3,
+        // Task 5a: Penny ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'kaufland',
@@ -205,6 +219,8 @@ class MockDataService {
         isPremiumPartner: true,
         website: 'https://www.kaufland.de',
         storeCount: 2,
+        // Task 5a: Kaufland ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'real',
@@ -217,6 +233,11 @@ class MockDataService {
         isPremiumPartner: true,
         website: 'https://www.real.de',
         storeCount: 2,
+        // Task 5a: Real in selektiven Regionen (Beispiel: Berlin/Brandenburg + NRW)
+        availablePLZRanges: [
+          PLZRange(startPLZ: '10000', endPLZ: '16999', regionName: 'Berlin/Brandenburg'),
+          PLZRange(startPLZ: '40000', endPLZ: '59999', regionName: 'Nordrhein-Westfalen'),
+        ],
       ),
       Retailer(
         id: 'globus',
@@ -229,6 +250,10 @@ class MockDataService {
         isPremiumPartner: true,
         website: 'https://www.globus.de',
         storeCount: 1,
+        // Task 5a: Globus primär in Süd/West-Deutschland
+        availablePLZRanges: [
+          PLZRange(startPLZ: '50000', endPLZ: '99999', regionName: 'Süd/West-Deutschland'),
+        ],
       ),
       Retailer(
         id: 'marktkauf',
@@ -241,6 +266,25 @@ class MockDataService {
         isPremiumPartner: false,
         website: 'https://www.marktkauf.de',
         storeCount: 1,
+        // Task 5a: Marktkauf ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        availablePLZRanges: [], // Bundesweit
+      ),
+      // Task 5a: Beispiel für regionalen Händler (BioCompany)
+      Retailer(
+        id: 'biocompany',
+        name: 'BIOCOMPANY',
+        displayName: 'BioCompany',
+        logoUrl: 'assets/images/logos/biocompany.png',
+        primaryColor: '#7CB342',
+        description: 'Bio für die Stadt',
+        categories: ['Bio-Obst', 'Bio-Gemüse', 'Bio-Milchprodukte', 'Bio-Backwaren', 'Naturkosmetik'],
+        isPremiumPartner: true,
+        website: 'https://www.biocompany.de',
+        storeCount: 0, // Keine Mock-Filialen für Demo
+        // Task 5a: BioCompany nur in Berlin/Brandenburg
+        availablePLZRanges: [
+          PLZRange(startPLZ: '10000', endPLZ: '16999', regionName: 'Berlin/Brandenburg'),
+        ],
       ),
     ];
   }

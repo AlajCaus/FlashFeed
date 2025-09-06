@@ -62,6 +62,40 @@ class Offer {
   }
 }
 
+/// PLZ-Bereich für regionale Händler-Verfügbarkeit
+class PLZRange {
+  final String startPLZ;        // Start-PLZ (z.B. "10000")
+  final String endPLZ;          // End-PLZ (z.B. "14999")
+  final String regionName;      // Region-Name (z.B. "Berlin/Brandenburg")
+
+  PLZRange({
+    required this.startPLZ,
+    required this.endPLZ,
+    required this.regionName,
+  });
+  
+  /// Prüft ob eine PLZ in diesem Bereich liegt
+  bool containsPLZ(String plz) {
+    if (plz.length != 5) return false;
+    
+    try {
+      int plzInt = int.parse(plz);
+      int startInt = int.parse(startPLZ);
+      int endInt = int.parse(endPLZ);
+      
+      return plzInt >= startInt && plzInt <= endInt;
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  /// String-Darstellung für Debugging
+  @override
+  String toString() {
+    return '$regionName ($startPLZ-$endPLZ)';
+  }
+}
+
 /// Händler Model-Klasse (konsolidiert Chain + Retailer)
 class Retailer {
   final String id;              // Backend-ID (eindeutig)
@@ -75,6 +109,7 @@ class Retailer {
   final bool isPremiumPartner;   // Für Freemium-Features (war isActive)
   final String website;         // Website URL (war websiteUrl)
   final int storeCount;         // Anzahl Filialen
+  final List<PLZRange> availablePLZRanges; // Regionale Verfügbarkeit (Task 5a)
 
   Retailer({
     required this.id,
@@ -88,6 +123,7 @@ class Retailer {
     this.isPremiumPartner = false,
     required this.website,
     required this.storeCount,
+    this.availablePLZRanges = const [], // Default: keine regionalen Beschränkungen
   });
   
   /// Anzahl Kategorien die dieser Händler hat
@@ -98,6 +134,73 @@ class Retailer {
   
   /// Ist aktiv?
   bool get isActive => true; // Alle Mock-Händler sind aktiv
+  
+  /// Prüft ob Händler in einer bestimmten PLZ verfügbar ist (Task 5a)
+  bool isAvailableInPLZ(String plz) {
+    // Wenn keine PLZ-Ranges definiert sind, ist Händler überall verfügbar (bundesweit)
+    if (availablePLZRanges.isEmpty) return true;
+    
+    // Prüfe ob PLZ in einem der verfügbaren Bereiche liegt
+    return availablePLZRanges.any((range) => range.containsPLZ(plz));
+  }
+  
+  /// Gibt alle Regionen zurück, in denen der Händler verfügbar ist
+  List<String> get availableRegions {
+    if (availablePLZRanges.isEmpty) return ['Bundesweit'];
+    return availablePLZRanges.map((range) => range.regionName).toList();
+  }
+  
+  /// Ist bundesweit verfügbar?
+  bool get isNationwide => availablePLZRanges.isEmpty;
+}
+
+/// PLZ-Helper-Service für regionale Verfügbarkeitsprüfung (Task 5a)
+class PLZHelper {
+  /// Prüft ob eine PLZ gültig ist (5 Ziffern)
+  static bool isValidPLZ(String plz) {
+    if (plz.length != 5) return false;
+    return int.tryParse(plz) != null;
+  }
+  
+  /// Gibt alle verfügbaren Händler für eine PLZ zurück
+  static List<Retailer> getAvailableRetailers(String userPLZ, List<Retailer> allRetailers) {
+    if (!isValidPLZ(userPLZ)) return [];
+    
+    return allRetailers.where((retailer) => retailer.isAvailableInPLZ(userPLZ)).toList();
+  }
+  
+  /// Gibt Region-Name für eine PLZ zurück (grobe Zuordnung)
+  static String getRegionForPLZ(String plz) {
+    if (!isValidPLZ(plz)) return 'Unbekannt';
+    
+    int plzInt = int.parse(plz);
+    
+    // Grobe PLZ-Bereiche für Deutschland
+    if (plzInt >= 10000 && plzInt <= 16999) return 'Berlin/Brandenburg';
+    if (plzInt >= 17000 && plzInt <= 19999) return 'Mecklenburg-Vorpommern';
+    if (plzInt >= 20000 && plzInt <= 25999) return 'Hamburg/Schleswig-Holstein';
+    if (plzInt >= 26000 && plzInt <= 31999) return 'Niedersachsen/Bremen';
+    if (plzInt >= 32000 && plzInt <= 37999) return 'Nordrhein-Westfalen (Ost)';
+    if (plzInt >= 38000 && plzInt <= 39999) return 'Sachsen-Anhalt';
+    if (plzInt >= 40000 && plzInt <= 48999) return 'Nordrhein-Westfalen (West)';
+    if (plzInt >= 49000 && plzInt <= 49999) return 'Nordrhein-Westfalen (Süd)';
+    if (plzInt >= 50000 && plzInt <= 53999) return 'Nordrhein-Westfalen/Rheinland-Pfalz';
+    if (plzInt >= 54000 && plzInt <= 56999) return 'Rheinland-Pfalz/Saarland';
+    if (plzInt >= 57000 && plzInt <= 59999) return 'Nordrhein-Westfalen (Süd)';
+    if (plzInt >= 60000 && plzInt <= 63999) return 'Hessen';
+    if (plzInt >= 64000 && plzInt <= 65999) return 'Hessen/Rheinland-Pfalz';
+    if (plzInt >= 66000 && plzInt <= 66999) return 'Saarland';
+    if (plzInt >= 67000 && plzInt <= 76999) return 'Rheinland-Pfalz/Baden-Württemberg';
+    if (plzInt >= 77000 && plzInt <= 79999) return 'Baden-Württemberg';
+    if (plzInt >= 80000 && plzInt <= 87999) return 'Bayern (Süd)';
+    if (plzInt >= 88000 && plzInt <= 89999) return 'Baden-Württemberg/Bayern';
+    if (plzInt >= 90000 && plzInt <= 96999) return 'Bayern (Nord)';
+    if (plzInt >= 97000 && plzInt <= 97999) return 'Bayern/Baden-Württemberg';
+    if (plzInt >= 98000 && plzInt <= 99999) return 'Thüringen/Bayern';
+    if (plzInt >= 1000 && plzInt <= 9999) return 'Sachsen/Thüringen';
+    
+    return 'Deutschland';
+  }
 }
 
 /// Filiale Model-Klasse (konsolidiert Store Versionen)
