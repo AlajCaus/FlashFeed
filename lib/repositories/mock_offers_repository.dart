@@ -4,9 +4,16 @@
 import 'offers_repository.dart';
 import '../data/product_category_mapping.dart';
 import '../models/models.dart';
+import '../services/mock_data_service.dart';
 import '../main.dart'; // Access to global mockDataService
 
 class MockOffersRepository implements OffersRepository {
+  final MockDataService? _testService; // Optional test service
+  
+  MockOffersRepository({MockDataService? testService}) : _testService = testService;
+  
+  // Helper to get the correct service
+  MockDataService get _dataService => _testService ?? mockDataService;
   static final List<Offer> _mockOffers = [
     // EDEKA Angebote
     Offer(
@@ -126,9 +133,9 @@ class MockOffersRepository implements OffersRepository {
     // Simuliere Netzwerk-Delay
     await Future.delayed(Duration(milliseconds: 300));
     
-    // Use centralized MockDataService instead of static data
-    if (mockDataService.isInitialized) {
-      return List.from(mockDataService.offers);
+    // Use correct service (test or global)
+    if (_dataService.isInitialized) {
+      return List.from(_dataService.offers);
     }
     
     // Fallback to static data if service not initialized
@@ -139,9 +146,9 @@ class MockOffersRepository implements OffersRepository {
   Future<List<Offer>> getOffersByCategory(String flashFeedCategory) async {
     await Future.delayed(Duration(milliseconds: 200));
     
-    // Get offers from MockDataService
-    List<Offer> allOffers = mockDataService.isInitialized 
-        ? mockDataService.offers 
+    // Get offers from correct service
+    List<Offer> allOffers = _dataService.isInitialized 
+        ? _dataService.offers 
         : _mockOffers;
     
     return allOffers.where((offer) {
@@ -157,9 +164,9 @@ class MockOffersRepository implements OffersRepository {
   Future<List<Offer>> getOffersByRetailer(String retailer) async {
     await Future.delayed(Duration(milliseconds: 150));
     
-    // Get offers from MockDataService
-    List<Offer> allOffers = mockDataService.isInitialized 
-        ? mockDataService.offers 
+    // Get offers from correct service
+    List<Offer> allOffers = _dataService.isInitialized 
+        ? _dataService.offers 
         : _mockOffers;
     
     return allOffers.where((offer) => 

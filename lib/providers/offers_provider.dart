@@ -13,6 +13,9 @@ import '../providers/location_provider.dart'; // Task 5b.5: Provider-Callbacks
 class OffersProvider extends ChangeNotifier {
   final OffersRepository _offersRepository;
   
+  // NEW: Reference to LocationProvider for regional data (Task 5c.2)
+  LocationProvider? _locationProvider;
+  
   // State
   List<Offer> _allOffers = [];
   List<Offer> _filteredOffers = [];
@@ -40,7 +43,8 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Factory constructor with mock repository (backwards-compatible)
-  OffersProvider.mock({MockDataService? testService}) : _offersRepository = MockOffersRepository() {
+  OffersProvider.mock({MockDataService? testService}) 
+      : _offersRepository = MockOffersRepository(testService: testService) {
     _initializeCallbacks(testService);
   }
   
@@ -61,6 +65,8 @@ class OffersProvider extends ChangeNotifier {
   
   // Register with LocationProvider for regional updates (Task 5b.5)
   void registerWithLocationProvider(LocationProvider locationProvider) {
+    _locationProvider = locationProvider; // NEW: Store reference (Task 5c.2)
+    
     locationProvider.registerRegionalDataCallback((plz, availableRetailers) {
       if (plz != null && availableRetailers.isNotEmpty) {
         loadRegionalOffers(plz, availableRetailers);
@@ -87,6 +93,33 @@ class OffersProvider extends ChangeNotifier {
   String? get userPLZ => _userPLZ;
   bool get hasRegionalFiltering => _userPLZ != null && _availableRetailers.isNotEmpty;
   
+  // NEW: Task 5c.2 - Get regional availability message
+  String getRegionalAvailabilityMessage(String retailerName) {
+    if (_userPLZ == null) {
+      return '$retailerName - Verfügbarkeit unbekannt';
+    }
+    
+    if (_availableRetailers.contains(retailerName)) {
+      return '$retailerName ist in Ihrer Region (PLZ: $_userPLZ) verfügbar';
+    } else {
+      return '$retailerName ist in Ihrer Region (PLZ: $_userPLZ) nicht verfügbar';
+    }
+  }
+  
+  // NEW: Task 5c.2 - Empty state message
+  String get emptyStateMessage {
+    if (_filteredOffers.isEmpty && _userPLZ != null) {
+      if (_allOffers.isEmpty) {
+        return 'Keine Angebote verfügbar';
+      } else if (hasRegionalFiltering && _availableRetailers.isEmpty) {
+        return 'Keine Händler in Ihrer Region (PLZ: $_userPLZ) verfügbar';
+      } else if (hasRegionalFiltering) {
+        return 'Keine Angebote für Ihre Filterkriterien in PLZ $_userPLZ gefunden';
+      }
+    }
+    return 'Keine Angebote gefunden';
+  }
+  
   // Statistics
   int get totalOffersCount => _allOffers.length;
   int get filteredOffersCount => _filteredOffers.length;
@@ -97,21 +130,36 @@ class OffersProvider extends ChangeNotifier {
       .map((o) => o.savings)
       .fold(0.0, (sum, savings) => sum + savings);
   
-  // Load Offers
-  Future<void> loadOffers() async {
+  // Load Offers with regional filtering support (Task 5c.2)
+  Future<void> loadOffers({bool applyRegionalFilter = true}) async {
     if (_isLoading) return;
     
     _setLoading(true);
     _clearError();
     
     try {
+      // Load ALL offers from repository
       _allOffers = await _offersRepository.getAllOffers();
       
-      // Extract available retailers from loaded offers
-      _availableRetailers = _allOffers
-          .map((offer) => offer.retailer)
-          .toSet()
-          .toList();
+      // Apply regional filtering if requested and PLZ is available
+      if (applyRegionalFilter && _userPLZ != null && _userPLZ!.isNotEmpty) {
+        // Get regionally available retailers
+        final regionalRetailers = _locationProvider?.getAvailableRetailersForPLZ(_userPLZ!) ?? [];
+        
+        // Update available retailers list
+        _availableRetailers = regionalRetailers;
+        
+        // Filter offers to only show regionally available
+        _allOffers = _allOffers.where((offer) => 
+            regionalRetailers.contains(offer.retailer)
+        ).toList();
+      } else {
+        // Extract all retailers if no regional filtering
+        _availableRetailers = _allOffers
+            .map((offer) => offer.retailer)
+            .toSet()
+            .toList();
+      }
       
       _applyFilters();
       
@@ -145,6 +193,24 @@ class OffersProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+  
+  // NEW: Task 5c.2 - Public method for regional offers
+  List<Offer> getRegionalOffers([String? plz]) {
+    final targetPLZ = plz ?? _userPLZ;
+    
+    if (targetPLZ == null || targetPLZ.isEmpty) {
+      // No PLZ available - return all offers
+      return _allOffers;
+    }
+    
+    // Use LocationProvider logic to get available retailers
+    final availableRetailers = _locationProvider?.getAvailableRetailersForPLZ(targetPLZ) ?? [];
+    
+    // Filter ALL offers by available retailers (not the already filtered ones)
+    return _allOffers.where((offer) => 
+        availableRetailers.contains(offer.retailer)
+    ).toList();
   }
   
   // Category Filter
@@ -219,9 +285,12 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Apply All Filters
+  // Apply All Filters with regional awareness (Task 5c.2)
   void _applyFilters() {
     List<Offer> filtered = List.from(_allOffers);
+    
+    // Regional filtering is already applied in _allOffers
+    // So we don't need to filter again here
     
     // Category filter
     if (_selectedCategory != null) {
@@ -260,6 +329,13 @@ class OffersProvider extends ChangeNotifier {
     }
     
     _filteredOffers = filtered;
+    
+    // NEW: Track empty results for UI feedback (Task 5c.2)
+    if (hasRegionalFiltering && filtered.isEmpty && _allOffers.isNotEmpty) {
+      debugPrint('⚠️ Regional filtering active: No offers available in PLZ $_userPLZ');
+      debugPrint('Available retailers: $_availableRetailers');
+    }
+    
     if (_disposed) return; // Defensive check against disposed provider
     notifyListeners();
     

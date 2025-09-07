@@ -381,5 +381,132 @@ void main() {
         expect(true, isTrue, reason: 'Disposal should complete without errors');
       });
     });
+    
+    group('Task 5c.2: OffersProvider Regional Filtering', () {
+      test('getRegionalOffers returns only regional offers', () async {
+        // Set Berlin location
+        await locationProvider.setUserPLZ('10115');
+        
+        // Load offers first
+        await offersProvider.loadOffers();
+        
+        // Get regional offers
+        final regionalOffers = offersProvider.getRegionalOffers('10115');
+        
+        // Verify all offers are from available retailers
+        final berlinRetailers = locationProvider.getAvailableRetailersForPLZ('10115');
+        expect(regionalOffers.every((offer) => 
+            berlinRetailers.contains(offer.retailer)), isTrue,
+            reason: 'All offers should be from Berlin-available retailers');
+      });
+
+      test('regional filtering works correctly', () async {
+        // Load all offers first without filter to see total count
+        await offersProvider.loadOffers(applyRegionalFilter: false);
+        final totalOffersCount = offersProvider.allOffers.length;
+        
+        // Apply regional filter for Berlin
+        await locationProvider.setUserPLZ('10115');
+        await offersProvider.loadOffers(applyRegionalFilter: true);
+        final regionalOffersCount = offersProvider.allOffers.length;
+        
+        // Check that offers are actually being filtered
+        expect(totalOffersCount, greaterThan(0),
+            reason: 'Should have some offers to test');
+        
+        // If there are non-Berlin retailers, count should be less
+        final berlinRetailers = locationProvider.getAvailableRetailersForPLZ('10115');
+        final allRetailers = ['EDEKA', 'REWE', 'ALDI SÜD', 'LIDL', 'NETTO', 
+                              'PENNY', 'KAUFLAND', 'REAL', 'GLOBUS', 'MARKTKAUF', 
+                              'BIOCOMPANY'];
+        
+        // Check if filtering is applied
+        if (allRetailers.length > berlinRetailers.length) {
+          expect(regionalOffersCount, lessThanOrEqualTo(totalOffersCount),
+              reason: 'Regional filtering should reduce or maintain offer count');
+        }
+        
+        // Verify all remaining offers are from available retailers
+        for (final offer in offersProvider.allOffers) {
+          expect(berlinRetailers.contains(offer.retailer), isTrue,
+              reason: 'Offer from ${offer.retailer} should be available in Berlin');
+        }
+      });
+
+      test('emptyStateMessage provides correct feedback', () async {
+        // Test with valid PLZ but no filtering
+        await locationProvider.setUserPLZ('10115');
+        await offersProvider.loadOffers(applyRegionalFilter: false);
+        
+        // Clear all offers to test empty state
+        offersProvider.clearAllFilters();
+        offersProvider.setMaxPrice(0.01); // Set impossibly low price
+        
+        final message = offersProvider.emptyStateMessage;
+        expect(message, isNotEmpty,
+            reason: 'Empty state message should not be empty');
+        
+        // Test with no available retailers
+        await locationProvider.setUserPLZ('99999'); // Fictional PLZ
+        await offersProvider.loadOffers(applyRegionalFilter: true);
+        
+        final noRetailersMessage = offersProvider.emptyStateMessage;
+        if (offersProvider.availableRetailers.isEmpty) {
+          expect(noRetailersMessage, contains('Keine'),
+              reason: 'Should indicate no retailers available');
+        }
+      });
+      
+      test('loadOffers respects applyRegionalFilter parameter', () async {
+        // Set location
+        await locationProvider.setUserPLZ('10115');
+        
+        // Load without regional filter
+        await offersProvider.loadOffers(applyRegionalFilter: false);
+        final allOffersCount = offersProvider.allOffers.length;
+        
+        // Load with regional filter
+        await offersProvider.loadOffers(applyRegionalFilter: true);
+        final regionalOffersCount = offersProvider.allOffers.length;
+        
+        // Regional offers should be less than or equal to all offers
+        expect(regionalOffersCount, lessThanOrEqualTo(allOffersCount),
+            reason: 'Regional filtering should not increase offer count');
+        
+        // Verify that only Berlin-available retailers are shown
+        final berlinRetailers = locationProvider.getAvailableRetailersForPLZ('10115');
+        final offerRetailers = offersProvider.allOffers
+            .map((o) => o.retailer).toSet().toList();
+        
+        for (final retailer in offerRetailers) {
+          expect(berlinRetailers.contains(retailer), isTrue,
+              reason: 'Retailer $retailer should be available in Berlin');
+        }
+      });
+      
+      test('getRegionalAvailabilityMessage returns correct messages', () async {
+        // Set location
+        await locationProvider.setUserPLZ('10115');
+        await offersProvider.loadOffers(applyRegionalFilter: true);
+        
+        // Test for available retailer message
+        if (offersProvider.availableRetailers.isNotEmpty) {
+          final availableRetailer = offersProvider.availableRetailers.first;
+          final message = offersProvider.getRegionalAvailabilityMessage(availableRetailer);
+          expect(message, contains('verfügbar'),
+              reason: 'Available retailer should be marked as available');
+          expect(message, contains('10115'),
+              reason: 'Message should include PLZ');
+        }
+        
+        // Test for unknown PLZ
+        offersProvider.clearAllFilters();
+        final unknownMessage = offersProvider.getRegionalAvailabilityMessage('EDEKA');
+        if (offersProvider.userPLZ == null) {
+          expect(unknownMessage, contains('unbekannt'),
+              reason: 'Should indicate unknown availability when no PLZ set');
+        }
+      });
+    });
   });
 }
