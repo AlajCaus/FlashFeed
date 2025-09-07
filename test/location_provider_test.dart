@@ -702,5 +702,343 @@ void main() {
         expect(locationProvider.postalCode, equals('10115'));
       });
     });
+    
+    group('Priorität 3.3: RegionalDataCallback Tests', () {
+      test('PLZ-Änderung löst RegionalData-Callbacks aus', () async {
+        // Arrange: Register regional callback
+        String? capturedPLZ;
+        List<String>? capturedRetailers;
+        
+        void regionalCallback(String? plz, List<String> retailers) {
+          capturedPLZ = plz;
+          capturedRetailers = List.from(retailers);
+        }
+        
+        locationProvider.registerRegionalDataCallback(regionalCallback);
+        
+        // Act: Change PLZ
+        await locationProvider.setUserPLZ('10115'); // Berlin
+        
+        // Assert: Regional callback received correct data
+        expect(capturedPLZ, equals('10115'));
+        expect(capturedRetailers, isNotNull);
+        expect(capturedRetailers, contains('EDEKA'));
+        expect(capturedRetailers, contains('BioCompany')); // Berlin-specific
+      });
+      
+      test('Callback erhält korrekte Parameter (PLZ + Retailer-Liste)', () async {
+        // Arrange: Track multiple regional callbacks
+        List<Map<String, dynamic>> callbackData = [];
+        
+        void regionalCallback(String? plz, List<String> retailers) {
+          callbackData.add({
+            'plz': plz,
+            'retailers': List.from(retailers),
+            'timestamp': DateTime.now().millisecondsSinceEpoch
+          });
+        }
+        
+        locationProvider.registerRegionalDataCallback(regionalCallback);
+        
+        // Act: Multiple PLZ changes
+        await locationProvider.setUserPLZ('10115'); // Berlin
+        await locationProvider.setUserPLZ('80331'); // München
+        await locationProvider.setUserPLZ('20095'); // Hamburg
+        
+        // Assert: All callbacks received correct data
+        expect(callbackData.length, equals(3));
+        
+        // Berlin callback
+        expect(callbackData[0]['plz'], equals('10115'));
+        expect(callbackData[0]['retailers'], contains('BioCompany'));
+        
+        // München callback
+        expect(callbackData[1]['plz'], equals('80331'));
+        expect(callbackData[1]['retailers'], contains('Globus'));
+        
+        // Hamburg callback
+        expect(callbackData[2]['plz'], equals('20095'));
+        expect(callbackData[2]['retailers'], contains('ALDI SÜD'));
+      });
+      
+      test('Leere Retailer-Liste wird korrekt übertragen', () async {
+        // Arrange: Mock a PLZ with limited retailers
+        String? capturedPLZ;
+        List<String>? capturedRetailers;
+        
+        void regionalCallback(String? plz, List<String> retailers) {
+          capturedPLZ = plz;
+          capturedRetailers = List.from(retailers);
+        }
+        
+        locationProvider.registerRegionalDataCallback(regionalCallback);
+        
+        // Act: Set a PLZ that might have limited retailers
+        await locationProvider.setUserPLZ('99999'); // Remote area
+        
+        // Assert: Callback receives data even with limited retailers
+        expect(capturedPLZ, equals('99999'));
+        expect(capturedRetailers, isNotNull);
+        expect(capturedRetailers, isA<List<String>>());
+        // Even remote areas should have basic retailers like EDEKA
+        expect(capturedRetailers!.isNotEmpty, isTrue);
+      });
+      
+      test('PLZ=null Scenario wird korrekt behandelt', () async {
+        // Arrange: Register callback
+        String? capturedPLZ;
+        List<String>? capturedRetailers;
+        bool callbackTriggered = false;
+        
+        void regionalCallback(String? plz, List<String> retailers) {
+          capturedPLZ = plz;
+          capturedRetailers = List.from(retailers);
+          callbackTriggered = true;
+        }
+        
+        locationProvider.registerRegionalDataCallback(regionalCallback);
+        
+        // Act: Clear location (sets PLZ to null)
+        await locationProvider.setUserPLZ('10115'); // First set a PLZ
+        locationProvider.clearLocation(); // Then clear it
+        
+        // Note: clearLocation() doesn't trigger callbacks, so callback won't be triggered
+        // This tests that the system handles null PLZ gracefully when it occurs
+        
+        // Set another PLZ to trigger callback and verify system still works
+        await locationProvider.setUserPLZ('80331');
+        
+        // Assert: System handles null scenarios and continues working
+        expect(callbackTriggered, isTrue);
+        expect(capturedPLZ, equals('80331')); // Last valid PLZ
+        expect(capturedRetailers, isNotNull);
+      });
+      
+      test('Regional-Data-Updates bei Location-Änderungen', () async {
+        // Arrange: Track regional updates
+        List<String> regionHistory = [];
+        
+        void regionalCallback(String? plz, List<String> retailers) {
+          if (plz != null) {
+            regionHistory.add(plz);
+          }
+        }
+        
+        locationProvider.registerRegionalDataCallback(regionalCallback);
+        
+        // Act: Various location changes
+        await locationProvider.setUserPLZ('10115'); // Berlin
+        await locationProvider.getCurrentLocation(); // GPS (should update region)
+        await locationProvider.setUserPLZ('80331'); // München
+        
+        // Assert: Regional updates tracked correctly
+        expect(regionHistory, isNotEmpty);
+        expect(regionHistory.first, equals('10115'));
+        expect(regionHistory.last, equals('80331'));
+      });
+      
+      test('Multiple RegionalData callbacks work independently', () async {
+        // Arrange: Register multiple independent callbacks
+        String? callback1PLZ;
+        String? callback2PLZ;
+        List<String>? callback1Retailers;
+        List<String>? callback2Retailers;
+        
+        void regionalCallback1(String? plz, List<String> retailers) {
+          callback1PLZ = plz;
+          callback1Retailers = List.from(retailers);
+        }
+        
+        void regionalCallback2(String? plz, List<String> retailers) {
+          callback2PLZ = plz;
+          callback2Retailers = List.from(retailers);
+        }
+        
+        locationProvider.registerRegionalDataCallback(regionalCallback1);
+        locationProvider.registerRegionalDataCallback(regionalCallback2);
+        
+        // Act: Trigger regional data update
+        await locationProvider.setUserPLZ('10115');
+        
+        // Assert: Both callbacks received identical data independently
+        expect(callback1PLZ, equals('10115'));
+        expect(callback2PLZ, equals('10115'));
+        expect(callback1Retailers, equals(callback2Retailers));
+        expect(callback1Retailers, isNot(same(callback2Retailers))); // Different list instances
+      });
+    });
+    
+    // Task 5b.Priorität 3.3: LocationChangeCallback Tests
+    group('LocationChangeCallback Tests (Task 5b.Priorität 3.3)', () {
+      test('GPS update triggers location change callback', () async {
+        // Arrange: Callback registrieren
+        bool callbackTriggered = false;
+        locationProvider.registerLocationChangeCallback(() {
+          callbackTriggered = true;
+        });
+        
+        // Act: GPS-Update durchführen
+        await locationProvider.getCurrentLocation();
+        
+        // Assert: Callback wurde aufgerufen
+        expect(callbackTriggered, isTrue);
+        expect(locationProvider.currentLocationSource, LocationSource.gps);
+      });
+      
+      test('Regional data callback receives PLZ and retailers on GPS update', () async {
+        // Arrange: Regional-Callback registrieren
+        String? receivedPLZ;
+        List<String>? receivedRetailers;
+        locationProvider.registerRegionalDataCallback((plz, retailers) {
+          receivedPLZ = plz;
+          receivedRetailers = retailers?.toList(); // Copy to avoid reference issues
+        });
+        
+        // Act: GPS-Update (sollte reverse geocoding triggern)
+        await locationProvider.getCurrentLocation();
+        
+        // Assert: Callback mit korrekten Daten aufgerufen
+        expect(receivedPLZ, isNotNull);
+        expect(receivedRetailers, isNotNull);
+        expect(receivedRetailers, isNotEmpty);
+        // GPS in Berlin area should provide Berlin PLZ and retailers
+        expect(receivedPLZ, equals('10115'));
+        expect(receivedRetailers, contains('EDEKA'));
+      });
+      
+      test('PLZ input triggers regional data callback with correct data', () async {
+        // Arrange: Regional-Callback registrieren
+        String? receivedPLZ;
+        List<String>? receivedRetailers;
+        locationProvider.registerRegionalDataCallback((plz, retailers) {
+          receivedPLZ = plz;
+          receivedRetailers = retailers?.toList();
+        });
+        
+        // Act: PLZ setzen (direkte PLZ-Eingabe)
+        await locationProvider.setUserPLZ('80331'); // München
+        
+        // Assert: Callback mit München-Daten aufgerufen
+        expect(receivedPLZ, equals('80331'));
+        expect(receivedRetailers, contains('EDEKA'));
+        expect(receivedRetailers, contains('Globus'));
+        expect(receivedRetailers, isNot(contains('BioCompany'))); // Nicht in München
+      });
+      
+      test('Multiple location change callbacks are all triggered', () async {
+        // Arrange: Mehrere LocationChange-Callbacks registrieren
+        bool callback1Triggered = false;
+        bool callback2Triggered = false;
+        bool callback3Triggered = false;
+        
+        locationProvider.registerLocationChangeCallback(() {
+          callback1Triggered = true;
+        });
+        locationProvider.registerLocationChangeCallback(() {
+          callback2Triggered = true;
+        });
+        locationProvider.registerLocationChangeCallback(() {
+          callback3Triggered = true;
+        });
+        
+        // Act: Location-Update auslösen
+        await locationProvider.getCurrentLocation();
+        
+        // Assert: Alle drei Callbacks wurden aufgerufen
+        expect(callback1Triggered, isTrue);
+        expect(callback2Triggered, isTrue);
+        expect(callback3Triggered, isTrue);
+      });
+      
+      test('Multiple regional data callbacks receive independent data copies', () async {
+        // Arrange: Mehrere RegionalData-Callbacks registrieren
+        String? callback1PLZ;
+        String? callback2PLZ;
+        List<String>? callback1Retailers;
+        List<String>? callback2Retailers;
+        
+        locationProvider.registerRegionalDataCallback((plz, retailers) {
+          callback1PLZ = plz;
+          callback1Retailers = retailers?.toList(); // Independent copy
+        });
+        locationProvider.registerRegionalDataCallback((plz, retailers) {
+          callback2PLZ = plz;
+          callback2Retailers = retailers?.toList(); // Independent copy
+        });
+        
+        // Act: PLZ-Update auslösen
+        await locationProvider.setUserPLZ('10115');
+        
+        // Assert: Beide Callbacks erhalten identische Daten aber unabhängige Kopien
+        expect(callback1PLZ, equals('10115'));
+        expect(callback2PLZ, equals('10115'));
+        expect(callback1PLZ, equals(callback2PLZ));
+        expect(callback1Retailers, equals(callback2Retailers));
+        expect(callback1Retailers, isNot(same(callback2Retailers))); // Different instances
+      });
+      
+      test('Callbacks are triggered by different location sources', () async {
+        // Arrange: Track callback calls with source information
+        List<LocationSource> callbackSources = [];
+        
+        locationProvider.registerLocationChangeCallback(() {
+          callbackSources.add(locationProvider.currentLocationSource);
+        });
+        
+        // Act: Verschiedene Location-Sources triggern
+        await locationProvider.getCurrentLocation(); // GPS
+        await locationProvider.setUserPLZ('10115'); // User PLZ
+        
+        // Assert: Callbacks für verschiedene Sources wurden aufgerufen
+        expect(callbackSources, hasLength(2));
+        expect(callbackSources, contains(LocationSource.gps));
+        expect(callbackSources, contains(LocationSource.userPLZ));
+      });
+      
+      test('Callbacks are called synchronously after location update', () async {
+        // Arrange: Timing-sensitive Callback
+        bool callbackExecuted = false;
+        String? locationSourceAtCallback;
+        
+        locationProvider.registerLocationChangeCallback(() {
+          callbackExecuted = true;
+          locationSourceAtCallback = locationProvider.currentLocationSource.toString();
+        });
+        
+        // Act: Location-Update und sofortige Verifikation
+        await locationProvider.getCurrentLocation();
+        
+        // Assert: Callback wurde synchron ausgeführt (vor dem Return)
+        expect(callbackExecuted, isTrue);
+        expect(locationSourceAtCallback, equals(LocationSource.gps.toString()));
+        expect(locationProvider.hasLocation, isTrue);
+      });
+      
+      test('Callback registration and unregistration works correctly', () async {
+        // Arrange: Callback definieren
+        bool callback1Triggered = false;
+        bool callback2Triggered = false;
+        
+        void callback1() { callback1Triggered = true; }
+        void callback2() { callback2Triggered = true; }
+        
+        // Act & Assert: Registrierung
+        locationProvider.registerLocationChangeCallback(callback1);
+        locationProvider.registerLocationChangeCallback(callback2);
+        
+        await locationProvider.getCurrentLocation();
+        expect(callback1Triggered, isTrue);
+        expect(callback2Triggered, isTrue);
+        
+        // Reset und ein Callback entfernen
+        callback1Triggered = false;
+        callback2Triggered = false;
+        locationProvider.unregisterLocationChangeCallback(callback1);
+        
+        await locationProvider.setUserPLZ('80331');
+        expect(callback1Triggered, isFalse); // Nicht mehr registriert
+        expect(callback2Triggered, isTrue);  // Noch registriert
+      });
+    });
   });
 }

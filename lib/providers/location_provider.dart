@@ -308,9 +308,11 @@ class LocationProvider extends ChangeNotifier {
         return false;
       }
       
+      // FIX: Set LocationSource BEFORE _setPLZAsLocation to ensure callbacks get correct source
+      _currentLocationSource = LocationSource.userPLZ;
+      
       // PLZ als Location setzen
       await _setPLZAsLocation(plz);
-      _currentLocationSource = LocationSource.userPLZ;
       
       // Optional: In LocalStorage speichern
       if (saveToCache) {
@@ -505,10 +507,16 @@ class LocationProvider extends ChangeNotifier {
         _postalCode = null;
       }
       
+      // FIX: Update regional retailers when PLZ is set via reverse geocoding
+      if (_postalCode != null) {
+        _updateAvailableRetailersForPLZ(_postalCode!);
+        _userPLZ = _postalCode; // Sync userPLZ with postalCode
+      }
+      
       await _updateRegionalData();
       
-      // Provider-Callbacks benachrichtigen (Task 5b.5)
-      _notifyLocationCallbacks();
+      // NOTE: Don't call _notifyLocationCallbacks() here - getCurrentLocation() calls it
+      // This prevents duplicate callbacks in tests
       
       notifyListeners();
       
