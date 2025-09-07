@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flashfeed/providers/location_provider.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
+import 'package:flashfeed/services/gps/test_gps_service.dart';
 
 void main() {
   group('LocationProvider Core Tests', () {
@@ -18,7 +19,7 @@ void main() {
     // PATTERN aus todo.md verwenden - MockDataService Test-Mode
     testMockDataService = MockDataService();
     await testMockDataService.initializeMockData(testMode: true);
-    locationProvider = LocationProvider();
+    locationProvider = LocationProvider(gpsService: TestGPSService()); // Inject test GPS service
   });
     
     tearDown(() {
@@ -240,8 +241,10 @@ void main() {
     
     group('GPS Permission Tests', () {
       test('requestLocationPermission simulates permission grant', () async {
-        // Create a test-specific provider with testMode to start with false permissions
-        final testProvider = LocationProvider(testMode: true);
+        // Create a test-specific provider with no initial permissions
+        final testGpsService = TestGPSService();
+        testGpsService.setPermissionForTesting(false); // Start without permissions
+        final testProvider = LocationProvider(gpsService: testGpsService);
         
         // Initial state: no permission
         expect(testProvider.hasLocationPermission, isFalse);
@@ -407,7 +410,7 @@ void main() {
       
       testMockDataService = MockDataService();
       await testMockDataService.initializeMockData(testMode: true);
-      locationProvider = LocationProvider();
+      locationProvider = LocationProvider(gpsService: TestGPSService()); // Inject test GPS service
     });
     
     tearDown(() {
@@ -555,13 +558,15 @@ void main() {
       
       test('callback registration works immediately after provider creation', () async {
         // Arrange: Fresh provider
-        final freshProvider = LocationProvider();
+        final freshProvider = LocationProvider(gpsService: TestGPSService());
         bool callbackExecuted = false;
         
-        // Act: Register callback immediately
-        freshProvider.registerLocationChangeCallback(() {
+        void testCallback() {
           callbackExecuted = true;
-        });
+        }
+        
+        // Act: Register callback immediately
+        freshProvider.registerLocationChangeCallback(testCallback);
         
         // Trigger change
         await freshProvider.setUserPLZ('10115');
@@ -1300,7 +1305,7 @@ void main() {
       
       test('multiple dispose() calls are safe', () {
         // FIXED: Test multiple disposal behavior
-        final testProvider = LocationProvider();
+        final testProvider = LocationProvider(gpsService: TestGPSService());
         
         // Verify provider works initially
         testProvider.setUseGPS(true);
@@ -1312,7 +1317,7 @@ void main() {
       
       test('dispose() during active operation is safe', () async {
         // FIXED: Test disposal during async operation
-        final testProvider = LocationProvider();
+        final testProvider = LocationProvider(gpsService: TestGPSService());
         
         // Arrange: Start async operation
         final future = testProvider.setUserPLZ('10115');
@@ -1329,7 +1334,7 @@ void main() {
       
       test('disposed provider does not leak memory on method calls', () async {
         // FIXED: Test disposal behavior without calling disposed provider methods
-        final testProvider = LocationProvider();
+        final testProvider = LocationProvider(gpsService: TestGPSService());
         
         // Verify provider works before disposal
         await testProvider.setUserPLZ('10115');
@@ -1357,7 +1362,7 @@ void main() {
       
       test('callback registration after dispose has no effect', () {
         // FIXED: Test callback registration prevention after disposal
-        final testProvider = LocationProvider();
+        final testProvider = LocationProvider(gpsService: TestGPSService());
         bool callbackExecuted = false;
         
         // Verify provider works before disposal
@@ -1386,7 +1391,7 @@ void main() {
       
       test('provider cleanup prevents access after disposal', () async {
         // FIXED: Test cleanup without accessing disposed provider state
-        final testProvider = LocationProvider();
+        final testProvider = LocationProvider(gpsService: TestGPSService());
         
         // Arrange: Set up provider with data
         await testProvider.setUserPLZ('10115');
@@ -1407,7 +1412,7 @@ void main() {
       
       test('service references cleaned up on dispose', () async {
         // FIXED: Test service cleanup without double disposal
-        final testProvider = LocationProvider();
+        final testProvider = LocationProvider(gpsService: TestGPSService());
         
         // Arrange: Initialize services by using them
         await testProvider.setUserPLZ('10115', saveToCache: true);
@@ -1424,7 +1429,7 @@ void main() {
       
       test('large callback lists are cleaned efficiently', () {
         // Arrange: Provider with many callbacks
-        final testProvider = LocationProvider();
+        final testProvider = LocationProvider(gpsService: TestGPSService());
         final callbacks = <void Function()>[];
         
         // Register 100 callbacks

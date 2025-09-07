@@ -4,6 +4,7 @@ import 'package:flashfeed/providers/location_provider.dart';
 import 'package:flashfeed/providers/offers_provider.dart';
 import 'package:flashfeed/providers/flash_deals_provider.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
+import 'package:flashfeed/services/gps/test_gps_service.dart';
 
 void main() {
   group('Cross-Provider Integration Tests (PRIORITÄT 2)', () {
@@ -21,8 +22,8 @@ void main() {
       testMockDataService = MockDataService();
       await testMockDataService.initializeMockData(testMode: true);
       
-      // Initialize providers with test mode and test service
-      locationProvider = LocationProvider(testMode: true);
+      // Initialize providers with GPS service injection
+      locationProvider = LocationProvider(gpsService: TestGPSService());
       offersProvider = OffersProvider.mock(testService: testMockDataService);
       flashDealsProvider = FlashDealsProvider(testService: testMockDataService);
       

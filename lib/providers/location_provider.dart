@@ -5,6 +5,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../services/local_storage_service.dart';
 import '../services/plz_lookup_service.dart';
+import '../services/gps/gps_service.dart';
+import '../services/gps/production_gps_service.dart';
+import '../services/gps/test_gps_service.dart';
 import '../helpers/plz_helper.dart';
 
 /// Enum für Location-Datenquellen (Task 5b.3)
@@ -20,14 +23,15 @@ class LocationProvider extends ChangeNotifier {
   // Disposal tracking
   bool _disposed = false;
   
+  // GPS Service (injected)
+  final GPSService _gpsService;
+  
   // Location State
   double? _latitude;
   double? _longitude;
   String? _address;
   String? _city;
   String? _postalCode;
-  bool _hasLocationPermission = false;
-  bool _isLocationServiceEnabled = false;
   bool _isLoadingLocation = false;
   String? _locationError;
   
@@ -53,14 +57,9 @@ class LocationProvider extends ChangeNotifier {
   PLZLookupService? _plzLookupService;
   
   // Constructor
-  LocationProvider({bool testMode = false}) {
-    if (!testMode) {
-      // For MVP/Testing: Set default permissions to avoid test issues
-      _hasLocationPermission = true;
-      _isLocationServiceEnabled = true;
-      debugPrint('🔧 LocationProvider: Default permissions granted for MVP/Testing');
-    }
-    // In testMode, permissions start as false for proper testing
+  LocationProvider({GPSService? gpsService}) 
+    : _gpsService = gpsService ?? ProductionGPSService() {
+    debugPrint('🔧 LocationProvider: Initialized with ${_gpsService.runtimeType}');
   }
   
   // Disposal check helper
@@ -108,11 +107,11 @@ class LocationProvider extends ChangeNotifier {
   // Getters - Permissions & Status
   bool get hasLocationPermission {
     _checkDisposed();
-    return _hasLocationPermission;
+    return _gpsService.hasPermission;
   }
   bool get isLocationServiceEnabled {
     _checkDisposed();
-    return _isLocationServiceEnabled;
+    return _gpsService.hasPermission; // Same for MVP
   }
   bool get isLoadingLocation {
     _checkDisposed();
@@ -124,7 +123,7 @@ class LocationProvider extends ChangeNotifier {
   }
   bool get canUseLocation {
     _checkDisposed();
-    return _hasLocationPermission && _isLocationServiceEnabled;
+    return _gpsService.hasPermission;
   }
   
   // Getters - Settings
@@ -449,12 +448,9 @@ class LocationProvider extends ChangeNotifier {
   // Location Permission API
   Future<bool> requestLocationPermission() async {
     _checkDisposed();
-    // For MVP: Simulate permission grant
-    _hasLocationPermission = true;
-    _isLocationServiceEnabled = true;
-    debugPrint('🔧 Permissions granted after request');
+    final granted = await _gpsService.requestPermission();
     notifyListeners();
-    return true;
+    return granted;
   }
   
   Future<bool> getCurrentLocation() async {
@@ -469,30 +465,32 @@ class LocationProvider extends ChangeNotifier {
     debugPrint('🔧 getCurrentLocation: canUseLocation = $canUseLocation');
     
     try {
-      // For MVP: Simulate GPS delay
-      debugPrint('🔧 Starting GPS simulation...');
-      await Future.delayed(Duration(seconds: 2));
+      // Use GPS Service (handles delays based on implementation)
+      final result = await _gpsService.getCurrentLocation();
       
-      // Simulate GPS coordinates (Berlin for testing)
-      _latitude = 52.5200;
-      _longitude = 13.4050;
-      _currentLocationSource = LocationSource.gps;
-      
-      debugPrint('✅ getCurrentLocation: LocationSource set to GPS');
-      
-      // Start background updates if enabled
-      _startLocationUpdates();
-      
-      // Reverse geocoding (address lookup)
-      await _performReverseGeocoding();
-      
-      // Provider-Callbacks benachrichtigen (Task 5b.5)
-      _notifyLocationCallbacks();
-      
-      debugPrint('✅ getCurrentLocation: notifyListeners called');
-      notifyListeners();
-      
-      return true;
+      if (result.success) {
+        _latitude = result.latitude;
+        _longitude = result.longitude;
+        _currentLocationSource = LocationSource.gps;
+        
+        debugPrint('✅ getCurrentLocation: LocationSource set to GPS');
+        
+        // Start background updates if enabled
+        _startLocationUpdates();
+        
+        // Reverse geocoding (address lookup)
+        await _performReverseGeocoding();
+        
+        // Provider-Callbacks benachrichtigen
+        _notifyLocationCallbacks();
+        
+        debugPrint('✅ getCurrentLocation: notifyListeners called');
+        notifyListeners();
+        
+        return true;
+      } else {
+        throw Exception(result.error ?? 'GPS failed');
+      }
       
     } catch (e) {
       _setLocationError('GPS-Lokalisierung fehlgeschlagen: $e');
@@ -577,39 +575,23 @@ class LocationProvider extends ChangeNotifier {
   // Private Helper Methods
   Future<void> _performReverseGeocoding() async {
     try {
-      // TODO: In real app, use actual reverse geocoding service
-      // For MVP, simulate reverse geocoding
-      await Future.delayed(Duration(milliseconds: 300));
+      // Use GPS Service for reverse geocoding
+      final result = await _gpsService.reverseGeocode(_latitude!, _longitude!);
       
-      // Simulate address lookup based on coordinates
-      if (_latitude! > 52.4 && _latitude! < 52.6 && _longitude! > 13.3 && _longitude! < 13.5) {
-        // Berlin area
-        _address = 'Berlin, Deutschland';
-        _city = 'Berlin';
-        _postalCode = '10115';
-      } else if (_latitude! > 48.0 && _latitude! < 48.3 && _longitude! > 11.4 && _longitude! < 11.7) {
-        // München area
-        _address = 'München, Deutschland';
-        _city = 'München';
-        _postalCode = '80331';
-      } else {
-        _address = 'Deutschland';
-        _city = 'Unbekannt';
-        _postalCode = null;
+      if (result.success) {
+        _address = result.address;
+        _city = result.city;
+        _postalCode = result.postalCode;
+        
+        // Update regional retailers when PLZ is set via reverse geocoding
+        if (_postalCode != null) {
+          _updateAvailableRetailersForPLZ(_postalCode!);
+          _userPLZ = _postalCode; // Sync userPLZ with postalCode
+        }
+        
+        await _updateRegionalData();
+        notifyListeners();
       }
-      
-      // FIX: Update regional retailers when PLZ is set via reverse geocoding
-      if (_postalCode != null) {
-        _updateAvailableRetailersForPLZ(_postalCode!);
-        _userPLZ = _postalCode; // Sync userPLZ with postalCode
-      }
-      
-      await _updateRegionalData();
-      
-      // NOTE: Don't call _notifyLocationCallbacks() here - getCurrentLocation() calls it
-      // This prevents duplicate callbacks in tests
-      
-      notifyListeners();
       
     } catch (e) {
       debugPrint('Reverse geocoding error: $e');
@@ -618,8 +600,7 @@ class LocationProvider extends ChangeNotifier {
   
   void _startLocationUpdates() {
     if (_autoUpdateLocation && canUseLocation) {
-      // TODO: Implement periodic location updates
-      // For MVP, just refresh once
+      // Implement periodic location updates using GPS service
       Future.delayed(Duration(minutes: 5), () {
         if (_autoUpdateLocation) {
           getCurrentLocation();
