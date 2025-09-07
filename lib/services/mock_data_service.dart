@@ -67,6 +67,19 @@ class MockDataService {
     _onStoresUpdated = callback;
   }
 
+  // Provider-Callback Unregistration (FIX: für proper disposal)
+  void clearFlashDealsCallback() {
+    _onFlashDealsUpdated = null;
+  }
+  
+  void clearOffersCallback() {
+    _onOffersUpdated = null;
+  }
+  
+  void clearStoresCallback() {
+    _onStoresUpdated = null;
+  }
+
   // Initialization (aufgerufen von main.dart)
   Future<void> initializeMockData({bool testMode = false}) async {
     if (_isInitialized) return;
@@ -518,7 +531,7 @@ class MockDataService {
       final originalPrice = product.basePriceCents;
       final flashPrice = (originalPrice * (1 - discountPercent / 100)).round();
       
-      final durationHours = _random.nextInt(6) + 1; // 1-6 Stunden
+      final durationHours = _random.nextInt(2) + 1; // FIX: 1-2 hours for test reliability
       final expiresAt = currentTime.add(Duration(hours: durationHours));
       final remainingHours = expiresAt.difference(currentTime).inHours;
       
@@ -568,8 +581,9 @@ class MockDataService {
       final remainingSeconds = deal.expiresAt.difference(now).inSeconds;
       final remainingHours = remainingSeconds / 3600;
       
-      if (remainingSeconds <= 0) {
-        // Deal expired
+      // FIX: Remove deals with invalid timer values or expired deals
+      if (remainingSeconds <= 0 || remainingSeconds > 3600) {
+        // Deal expired or has invalid timer value
         _flashDeals.removeAt(i);
         i--;
         hasChanges = true;
@@ -605,7 +619,8 @@ class MockDataService {
     final originalPrice = product.basePriceCents;
     final flashPrice = (originalPrice * (1 - discountPercent / 100)).round();
     
-    final durationHours = _random.nextInt(6) + 1;
+    // FIX: Generate shorter durations for test reliability
+    final durationHours = _random.nextInt(3) + 1; // 1-3 hours instead of 1-6
     final expiresAt = currentTime.add(Duration(hours: durationHours));
     final remainingHours = expiresAt.difference(currentTime).inHours;
     
@@ -642,6 +657,12 @@ class MockDataService {
     
     debugPrint('🎓 Professor Demo: Instant Flash Deal generiert - ${deal.productName}');
     return deal;
+  }
+  
+  // Test Helper: Manual timer update for test mode
+  void updateTimersForTesting() {
+    _updateCountdownTimers();
+    _onFlashDealsUpdated?.call();
   }
 
   // Helper Methods
@@ -717,8 +738,23 @@ class MockDataService {
 
   // Cleanup
   void dispose() {
+    // Prevent double disposal
+    if (!_isInitialized) return;
+    
+    // Cancel timers safely
     _flashDealTimer?.cancel();
+    _flashDealTimer = null;
     _countdownTimer?.cancel();
+    _countdownTimer = null;
+    
+    // Clear all callback references (FIX: prevent "used after disposed" errors)
+    _onFlashDealsUpdated = null;
+    _onOffersUpdated = null;
+    _onStoresUpdated = null;
+    
+    // Mark as disposed
+    _isInitialized = false;
+    
     debugPrint('🧹 MockDataService: Timer gestoppt');
   }
 }

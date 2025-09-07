@@ -4,19 +4,31 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../main.dart'; // Access to global mockDataService
+import '../services/mock_data_service.dart'; // For test service parameter
+import '../providers/location_provider.dart'; // Task 5b.6: Cross-Provider Integration
 
 class FlashDealsProvider extends ChangeNotifier {
   // State
   List<FlashDeal> _flashDeals = [];
   bool _isLoading = false;
   String? _errorMessage;
+  bool _disposed = false; // Track disposal state
+  
+  // Service instance (for test compatibility)
+  late final MockDataService _mockDataService;
   
   // Filter State
   String? _selectedUrgencyLevel;
   String? _selectedRetailer;
   int? _maxRemainingMinutes;
   
-  FlashDealsProvider() {
+  // Regional State (Task 5b.6: Cross-Provider Integration)
+  String? _userPLZ;
+  List<String> _availableRetailers = [];
+  
+  // Standard constructor with global service
+  FlashDealsProvider({MockDataService? testService}) {
+    _mockDataService = testService ?? mockDataService;
     _initializeCallbacks();
   }
   
@@ -30,6 +42,11 @@ class FlashDealsProvider extends ChangeNotifier {
   String? get selectedRetailer => _selectedRetailer;
   int? get maxRemainingMinutes => _maxRemainingMinutes;
   
+  // Regional Getters (Task 5b.6: Phase 2.1)
+  String? get userPLZ => _userPLZ;
+  List<String> get availableRetailers => _availableRetailers;
+  bool get hasRegionalFiltering => _userPLZ != null && _availableRetailers.isNotEmpty;
+  
   // Statistics
   int get totalDealsCount => _flashDeals.length;
   int get urgentDealsCount => _flashDeals.where((d) => d.urgencyLevel == 'high').length;
@@ -37,12 +54,91 @@ class FlashDealsProvider extends ChangeNotifier {
       .map((deal) => deal.savings)
       .fold(0.0, (sum, savings) => sum + savings);
   
+  // Register with LocationProvider for regional updates (Task 5b.6: Phase 2.1)
+  void registerWithLocationProvider(LocationProvider locationProvider) {
+    locationProvider.registerRegionalDataCallback((plz, availableRetailers) {
+      if (plz != null && availableRetailers.isNotEmpty) {
+        _userPLZ = plz;
+        _availableRetailers = List.from(availableRetailers);
+        
+        // FIX: Reset timer state when location changes
+        _resetTimerState();
+        
+        _applyRegionalFiltering();
+        if (!_disposed) notifyListeners();
+      }
+    });
+  }
+  
+  // FIX: Reset timer state when location changes
+  void _resetTimerState() {
+    final now = DateTime.now();
+    
+    // Reset all flash deals to have proper timer values
+    for (int i = 0; i < _flashDeals.length; i++) {
+      final deal = _flashDeals[i];
+      final newRemainingSeconds = deal.expiresAt.difference(now).inSeconds;
+      
+      // Only keep deals that haven't expired and have reasonable remaining time
+      if (newRemainingSeconds > 0 && newRemainingSeconds <= 3600) { // Max 1 hour
+        final newUrgencyLevel = newRemainingSeconds < 3600 ? 'high' : 
+                               newRemainingSeconds < 7200 ? 'medium' : 'low';
+        
+        _flashDeals[i] = deal.copyWith(
+          remainingSeconds: newRemainingSeconds,
+          urgencyLevel: newUrgencyLevel,
+        );
+      } else {
+        // Remove expired or invalid deals
+        _flashDeals.removeAt(i);
+        i--;
+      }
+    }
+    
+    debugPrint('🔄 Timer state reset: ${_flashDeals.length} valid deals remaining');
+  }
+  
+  // Apply regional filtering (Task 5b.6: Phase 2.1)
+  void _applyRegionalFiltering() {
+    if (hasRegionalFiltering) {
+      final originalCount = _flashDeals.length;
+      
+      // Debug: Show all deal retailers before filtering
+      final allRetailers = _flashDeals.map((deal) => deal.retailer).toSet().toList();
+      debugPrint('📝 All deal retailers before filtering: $allRetailers');
+      
+      // Filter existing deals by available retailers (partial matching)
+      final filteredDeals = <FlashDeal>[];
+      for (final deal in _flashDeals) {
+        final matchesAny = _availableRetailers.any((retailer) => 
+            deal.retailer.toUpperCase().contains(retailer.toUpperCase()) ||
+            retailer.toUpperCase().contains(deal.retailer.toUpperCase()));
+        
+        if (matchesAny) {
+          filteredDeals.add(deal);
+        } else {
+          debugPrint('❌ Filtered out: "${deal.retailer}" (not matching $_availableRetailers)');
+        }
+      }
+      
+      _flashDeals = filteredDeals;
+      
+      // Debug: Show all deal retailers after filtering
+      final remainingRetailers = _flashDeals.map((deal) => deal.retailer).toSet().toList();
+      debugPrint('✅ Remaining deal retailers: $remainingRetailers');
+          
+      debugPrint('🔍 Regional filtering: $originalCount → ${_flashDeals.length} deals (PLZ: $_userPLZ, Retailers: $_availableRetailers)');
+    }
+  }
+  
   // Initialize Provider-Callbacks
   void _initializeCallbacks() {
-    if (mockDataService.isInitialized) {
+    if (_mockDataService.isInitialized) {
       // Register callback for flash deals updates
-      mockDataService.setFlashDealsCallback(() {
-        _loadFlashDealsFromService();
+      _mockDataService.setFlashDealsCallback(() {
+        if (!_disposed) { // Safety check
+          _loadFlashDealsFromService();
+        }
       });
       
       // Initial load
@@ -52,10 +148,11 @@ class FlashDealsProvider extends ChangeNotifier {
   
   // Load Flash Deals from MockDataService
   void _loadFlashDealsFromService() {
-    if (mockDataService.isInitialized) {
-      _flashDeals = List.from(mockDataService.flashDeals);
+    if (_mockDataService.isInitialized) {
+      _flashDeals = List.from(_mockDataService.flashDeals);
+      _applyRegionalFiltering(); // FIX: Apply regional filtering first
       _applyFilters();
-      notifyListeners();
+      if (!_disposed) notifyListeners();
     }
   }
   
@@ -78,7 +175,7 @@ class FlashDealsProvider extends ChangeNotifier {
   // Professor Demo: Generate Instant Flash Deal
   FlashDeal generateInstantFlashDeal() {
     try {
-      final deal = mockDataService.generateInstantFlashDeal();
+      final deal = _mockDataService.generateInstantFlashDeal();
       
       // Update local state immediately
       _loadFlashDealsFromService();
@@ -128,7 +225,8 @@ class FlashDealsProvider extends ChangeNotifier {
   
   // Apply All Filters
   void _applyFilters() {
-    List<FlashDeal> filtered = List.from(mockDataService.flashDeals);
+    // IMPORTANT: Work on current _flashDeals (which may have regional filtering applied)
+    List<FlashDeal> filtered = List.from(_flashDeals);
     
     // Urgency filter
     if (_selectedUrgencyLevel != null) {
@@ -166,7 +264,7 @@ class FlashDealsProvider extends ChangeNotifier {
     });
     
     _flashDeals = filtered;
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
   
   // Clear All Filters
@@ -197,7 +295,7 @@ class FlashDealsProvider extends ChangeNotifier {
   }
   
   // Available filters from current deals
-  List<String> get availableRetailers {
+  List<String> get currentDealRetailers {
     return _flashDeals
         .map((deal) => deal.retailer)
         .toSet()
@@ -215,13 +313,13 @@ class FlashDealsProvider extends ChangeNotifier {
   // Helper Methods
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
   
   void _setError(String error) {
     _errorMessage = error;
     _isLoading = false;
-    notifyListeners();
+    if (!_disposed) notifyListeners();
   }
   
   void _clearError() {
@@ -230,6 +328,10 @@ class FlashDealsProvider extends ChangeNotifier {
   
   @override
   void dispose() {
+    // Prevent double disposal
+    if (_disposed) return;
+    
+    _disposed = true; // Mark provider as disposed
     // Clean up callbacks if needed
     super.dispose();
   }

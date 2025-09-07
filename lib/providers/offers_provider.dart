@@ -7,6 +7,7 @@ import '../repositories/mock_offers_repository.dart';
 import '../data/product_category_mapping.dart';
 import '../models/models.dart';
 import '../main.dart'; // Access to global mockDataService
+import '../services/mock_data_service.dart'; // For test service parameter
 import '../providers/location_provider.dart'; // Task 5b.5: Provider-Callbacks
 
 class OffersProvider extends ChangeNotifier {
@@ -17,6 +18,10 @@ class OffersProvider extends ChangeNotifier {
   List<Offer> _filteredOffers = [];
   bool _isLoading = false;
   String? _errorMessage;
+  bool _disposed = false; // Track disposal state
+  
+  // Service reference for proper callback cleanup (FIX)
+  MockDataService? _registeredService;
   
   // Filter State
   String? _selectedCategory;
@@ -34,17 +39,22 @@ class OffersProvider extends ChangeNotifier {
     _initializeCallbacks();
   }
   
-  // Factory constructor with mock repository
-  OffersProvider.mock() : _offersRepository = MockOffersRepository() {
-    _initializeCallbacks();
+  // Factory constructor with mock repository (backwards-compatible)
+  OffersProvider.mock({MockDataService? testService}) : _offersRepository = MockOffersRepository() {
+    _initializeCallbacks(testService);
   }
   
-  // Initialize Provider-Callbacks
-  void _initializeCallbacks() {
-    if (mockDataService.isInitialized) {
+  // Initialize Provider-Callbacks with optional test service
+  void _initializeCallbacks([MockDataService? testService]) {
+    final service = testService ?? mockDataService; // Fall back to global instance
+    _registeredService = service; // Track service for cleanup (FIX)
+    
+    if (service.isInitialized) {
       // Register callback for offers updates
-      mockDataService.setOffersCallback(() {
-        refresh();
+      service.setOffersCallback(() {
+        if (!_disposed) { // Safety check
+          refresh();
+        }
       });
     }
   }
@@ -250,6 +260,7 @@ class OffersProvider extends ChangeNotifier {
     }
     
     _filteredOffers = filtered;
+    if (_disposed) return; // Defensive check against disposed provider
     notifyListeners();
     
     // Apply sorting (async)
@@ -261,6 +272,7 @@ class OffersProvider extends ChangeNotifier {
   Future<void> _applySorting() async {
     try {
       _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, _sortType);
+      if (_disposed) return; // Defensive check against disposed provider
       notifyListeners();
     } catch (e) {
       // Sorting errors are non-critical, just log
@@ -308,11 +320,13 @@ class OffersProvider extends ChangeNotifier {
   
   // Helper Methods
   void _setLoading(bool loading) {
+    if (_disposed) return; // Defensive check against disposed provider
     _isLoading = loading;
     notifyListeners();
   }
   
   void _setError(String error) {
+    if (_disposed) return; // Defensive check against disposed provider
     _errorMessage = error;
     _isLoading = false;
     notifyListeners();
@@ -324,6 +338,16 @@ class OffersProvider extends ChangeNotifier {
   
   @override
   void dispose() {
+    // Prevent double disposal
+    if (_disposed) return;
+    
+    // CRITICAL FIX: Unregister callback BEFORE marking as disposed
+    if (_registeredService != null) {
+      _registeredService!.clearOffersCallback();
+      _registeredService = null;
+    }
+    
+    _disposed = true; // Mark provider as disposed
     // Clean up resources
     super.dispose();
   }
