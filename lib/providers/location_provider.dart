@@ -42,7 +42,7 @@ class LocationProvider extends ChangeNotifier {
   
   // PLZ Fallback State (Task 5b.3)
   String? _userPLZ; // Cached user PLZ from LocalStorage
-  bool _hasAskedForLocation = false;
+  final bool _hasAskedForLocation = false;
   LocationSource _currentLocationSource = LocationSource.none;
   
   // Services (Lazy Loading)
@@ -407,7 +407,7 @@ class LocationProvider extends ChangeNotifier {
       
     } catch (e) {
       _setLocationError('GPS-Lokalisierung fehlgeschlagen: $e');
-      throw e;
+      rethrow;
     } finally {
       _setLoadingLocation(false);
     }

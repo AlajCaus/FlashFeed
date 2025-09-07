@@ -342,9 +342,9 @@ void main() {
         
         // Create many callbacks
         for (int i = 0; i < 100; i++) {
-          final callback = (String? plz, List<String> retailers) {
+          void callback(String? plz, List<String> retailers) {
             // Dummy operation
-          };
+          }
           callbacks.add(callback);
           locationProvider.registerRegionalDataCallback(callback);
         }

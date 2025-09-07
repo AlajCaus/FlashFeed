@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/plz_lookup_service.dart';
 import '../services/plz_cache_memory_manager.dart';
@@ -36,7 +35,7 @@ class _PLZPerformanceDashboardState extends State<PLZPerformanceDashboard> {
   Timer? _refreshTimer;
   Map<String, dynamic> _cacheStats = {};
   Map<String, dynamic> _memoryStats = {};
-  List<Map<String, dynamic>> _performanceHistory = [];
+  final List<Map<String, dynamic>> _performanceHistory = [];
   bool _isExpanded = false;
   
   @override
@@ -145,7 +144,7 @@ class _PLZPerformanceDashboardState extends State<PLZPerformanceDashboard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
@@ -163,7 +162,7 @@ class _PLZPerformanceDashboardState extends State<PLZPerformanceDashboard> {
             label,
             style: TextStyle(
               fontSize: 10,
-              color: color.withOpacity(0.7),
+              color: color.withValues(alpha: 0.7),
             ),
           ),
         ],

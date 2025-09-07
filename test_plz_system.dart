@@ -1,8 +1,6 @@
 // Task 5a PLZ-System Test
 // Standalone Test-Datei zum Verifizieren der PLZ-Funktionalität
 
-import 'dart:io';
-
 // Import der Models (vereinfacht für Standalone-Test)
 class PLZRange {
   final String startPLZ;
@@ -170,7 +168,7 @@ void main() {
   
   // Test 1: Berlin PLZ in Berlin/Brandenburg Range
   final berlinRange = PLZRange(startPLZ: '10000', endPLZ: '16999', regionName: 'Berlin/Brandenburg');
-  print('  Berlin Range ${berlinRange}:');
+  print('  Berlin Range $berlinRange:');
   print('    PLZ 10115: ${berlinRange.containsPLZ('10115') ? "✅" : "❌"}');
   print('    PLZ 16999: ${berlinRange.containsPLZ('16999') ? "✅" : "❌"}');
   print('    PLZ 17000: ${berlinRange.containsPLZ('17000') ? "❌" : "✅"} (sollte außerhalb sein)');

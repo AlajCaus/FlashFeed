@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flashfeed/main.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
 
 void main() {
