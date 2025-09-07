@@ -19,7 +19,10 @@ void main() {
     // PATTERN aus todo.md verwenden - MockDataService Test-Mode
     testMockDataService = MockDataService();
     await testMockDataService.initializeMockData(testMode: true);
-    locationProvider = LocationProvider(gpsService: TestGPSService()); // Inject test GPS service
+    locationProvider = LocationProvider(
+      gpsService: TestGPSService(), 
+      mockDataService: testMockDataService
+    ); // Inject test GPS service + MockDataService
   });
     
     tearDown(() {
@@ -244,7 +247,10 @@ void main() {
         // Create a test-specific provider with no initial permissions
         final testGpsService = TestGPSService();
         testGpsService.setPermissionForTesting(false); // Start without permissions
-        final testProvider = LocationProvider(gpsService: testGpsService);
+        final testProvider = LocationProvider(
+          gpsService: testGpsService,
+          mockDataService: testMockDataService
+        );
         
         // Initial state: no permission
         expect(testProvider.hasLocationPermission, isFalse);
@@ -410,7 +416,10 @@ void main() {
       
       testMockDataService = MockDataService();
       await testMockDataService.initializeMockData(testMode: true);
-      locationProvider = LocationProvider(gpsService: TestGPSService()); // Inject test GPS service
+      locationProvider = LocationProvider(
+        gpsService: TestGPSService(),
+        mockDataService: testMockDataService
+      ); // Inject test GPS service + MockDataService
     });
     
     tearDown(() {
@@ -558,7 +567,10 @@ void main() {
       
       test('callback registration works immediately after provider creation', () async {
         // Arrange: Fresh provider
-        final freshProvider = LocationProvider(gpsService: TestGPSService());
+        final freshProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         bool callbackExecuted = false;
         
         void testCallback() {
@@ -738,7 +750,7 @@ void main() {
         expect(capturedPLZ, equals('10115'));
         expect(capturedRetailers, isNotNull);
         expect(capturedRetailers, contains('EDEKA'));
-        expect(capturedRetailers, contains('BioCompany')); // Berlin-specific
+        expect(capturedRetailers, contains('BIOCOMPANY')); // Berlin-specific
       });
       
       test('Callback erhält korrekte Parameter (PLZ + Retailer-Liste)', () async {
@@ -765,11 +777,11 @@ void main() {
         
         // Berlin callback
         expect(callbackData[0]['plz'], equals('10115'));
-        expect(callbackData[0]['retailers'], contains('BioCompany'));
+        expect(callbackData[0]['retailers'], contains('BIOCOMPANY'));
         
         // München callback
         expect(callbackData[1]['plz'], equals('80331'));
-        expect(callbackData[1]['retailers'], contains('Globus'));
+        expect(callbackData[1]['retailers'], contains('GLOBUS'));
         
         // Hamburg callback
         expect(callbackData[2]['plz'], equals('20095'));
@@ -936,8 +948,8 @@ void main() {
         // Assert: Callback mit München-Daten aufgerufen
         expect(receivedPLZ, equals('80331'));
         expect(receivedRetailers, contains('EDEKA'));
-        expect(receivedRetailers, contains('Globus'));
-        expect(receivedRetailers, isNot(contains('BioCompany'))); // Nicht in München
+        expect(receivedRetailers, contains('GLOBUS')); // FIXED: Case sensitivity - 'GLOBUS' not 'Globus'
+        expect(receivedRetailers, isNot(contains('BIOCOMPANY'))); // FIXED: Case sensitivity - 'BIOCOMPANY' not 'BioCompany'
       });
       
       test('Multiple location change callbacks are all triggered', () async {
@@ -1143,7 +1155,10 @@ void main() {
       
       test('Callbacks do not execute after provider disposal', () async {
         // Arrange: Create disposable provider
-        final disposableProvider = LocationProvider();
+        final disposableProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         bool callbackExecuted = false;
         
         disposableProvider.registerLocationChangeCallback(() {
@@ -1282,7 +1297,10 @@ void main() {
         expect(() {locationProvider.dispose();}, returnsNormally);
     
         // Verify disposal by testing with independent provider
-        final testProvider = LocationProvider();
+        final testProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         locationCallbacks = 0;
         regionalCallbacks = 0;
         
@@ -1305,7 +1323,10 @@ void main() {
       
       test('multiple dispose() calls are safe', () {
         // FIXED: Test multiple disposal behavior
-        final testProvider = LocationProvider(gpsService: TestGPSService());
+        final testProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         
         // Verify provider works initially
         testProvider.setUseGPS(true);
@@ -1317,7 +1338,10 @@ void main() {
       
       test('dispose() during active operation is safe', () async {
         // FIXED: Test disposal during async operation
-        final testProvider = LocationProvider(gpsService: TestGPSService());
+        final testProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         
         // Arrange: Start async operation
         final future = testProvider.setUserPLZ('10115');
@@ -1334,7 +1358,10 @@ void main() {
       
       test('disposed provider does not leak memory on method calls', () async {
         // FIXED: Test disposal behavior without calling disposed provider methods
-        final testProvider = LocationProvider(gpsService: TestGPSService());
+        final testProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         
         // Verify provider works before disposal
         await testProvider.setUserPLZ('10115');
@@ -1362,7 +1389,10 @@ void main() {
       
       test('callback registration after dispose has no effect', () {
         // FIXED: Test callback registration prevention after disposal
-        final testProvider = LocationProvider(gpsService: TestGPSService());
+        final testProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         bool callbackExecuted = false;
         
         // Verify provider works before disposal
@@ -1391,7 +1421,10 @@ void main() {
       
       test('provider cleanup prevents access after disposal', () async {
         // FIXED: Test cleanup without accessing disposed provider state
-        final testProvider = LocationProvider(gpsService: TestGPSService());
+        final testProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         
         // Arrange: Set up provider with data
         await testProvider.setUserPLZ('10115');
@@ -1412,7 +1445,10 @@ void main() {
       
       test('service references cleaned up on dispose', () async {
         // FIXED: Test service cleanup without double disposal
-        final testProvider = LocationProvider(gpsService: TestGPSService());
+        final testProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         
         // Arrange: Initialize services by using them
         await testProvider.setUserPLZ('10115', saveToCache: true);
@@ -1429,7 +1465,10 @@ void main() {
       
       test('large callback lists are cleaned efficiently', () {
         // Arrange: Provider with many callbacks
-        final testProvider = LocationProvider(gpsService: TestGPSService());
+        final testProvider = LocationProvider(
+          gpsService: TestGPSService(),
+          mockDataService: testMockDataService
+        );
         final callbacks = <void Function()>[];
         
         // Register 100 callbacks

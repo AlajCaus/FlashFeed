@@ -9,6 +9,9 @@ import '../services/gps/gps_service.dart';
 import '../services/gps/production_gps_service.dart';
 import '../services/gps/test_gps_service.dart';
 import '../helpers/plz_helper.dart';
+import '../services/mock_data_service.dart';
+import '../main.dart'; // For global mockDataService
+import '../models/models.dart' show Retailer, Offer; // Specific imports to avoid PLZHelper conflict
 
 /// Enum für Location-Datenquellen (Task 5b.3)
 enum LocationSource {
@@ -25,6 +28,22 @@ class LocationProvider extends ChangeNotifier {
   
   // GPS Service (injected)
   final GPSService _gpsService;
+  
+  // MockDataService (injected for Task 5c.1)
+  MockDataService? _mockDataServiceInstance;
+  
+  // Lazy getter for MockDataService
+  MockDataService get _mockDataService {
+    if (_mockDataServiceInstance != null) {
+      return _mockDataServiceInstance!;
+    }
+    // Try global mockDataService from main.dart
+    try {
+      return mockDataService;
+    } catch (e) {
+      throw StateError('MockDataService not available - must be provided in tests');
+    }
+  }
   
   // Location State
   double? _latitude;
@@ -57,8 +76,9 @@ class LocationProvider extends ChangeNotifier {
   PLZLookupService? _plzLookupService;
   
   // Constructor
-  LocationProvider({GPSService? gpsService}) 
-    : _gpsService = gpsService ?? ProductionGPSService() {
+  LocationProvider({GPSService? gpsService, MockDataService? mockDataService}) 
+    : _gpsService = gpsService ?? ProductionGPSService(),
+      _mockDataServiceInstance = mockDataService {
     debugPrint('🔧 LocationProvider: Initialized with ${_gpsService.runtimeType}');
   }
   
@@ -148,6 +168,25 @@ class LocationProvider extends ChangeNotifier {
   bool get hasRegionalData {
     _checkDisposed();
     return _availableRetailersInRegion.isNotEmpty;
+  }
+  
+  // Task 5c.1: Regional Retailer API Methods
+  /// Returns list of retailer names available in the given PLZ
+  List<String> getAvailableRetailersForPLZ(String plz) {
+    _checkDisposed();
+    return _mockDataService.retailers
+        .where((retailer) => retailer.isAvailableInPLZ(plz))
+        .map((r) => r.name)
+        .toList();
+  }
+  
+  /// Returns filtered offers for regional availability in the given PLZ
+  List<Offer> getRegionalFilteredOffers(String plz) {
+    _checkDisposed();
+    final availableRetailers = getAvailableRetailersForPLZ(plz);
+    return _mockDataService.offers
+        .where((offer) => availableRetailers.contains(offer.retailer))
+        .toList();
   }
   
   // Getters - PLZ Fallback (Task 5b.3)
@@ -312,24 +351,15 @@ class LocationProvider extends ChangeNotifier {
     }
   }
   
-  /// FIX: Update available retailers based on PLZ region
+  /// Task 5c.1: Update available retailers based on PLZ using MockDataService
   void _updateAvailableRetailersForPLZ(String plz) {
-    // Get the region for this PLZ
+    // Use MockDataService with PLZRange system from Task 5a
+    _availableRetailersInRegion = getAvailableRetailersForPLZ(plz);
+    
     final region = _getRegionForPLZ(plz);
-    
-    // Define retailers available in each region
-    if (region.contains('Berlin') || region.contains('Brandenburg')) {
-      _availableRetailersInRegion = ['EDEKA', 'REWE', 'BioCompany', 'NETTO'];
-    } else if (region.contains('München') || region.contains('Bayern')) {
-      _availableRetailersInRegion = ['EDEKA', 'Globus'];
-    } else if (region.contains('Hamburg')) {
-      _availableRetailersInRegion = ['EDEKA', 'REWE', 'ALDI SÜD'];
-    } else {
-      // Default retailers for other regions
-      _availableRetailersInRegion = ['EDEKA', 'REWE', 'ALDI SÜD', 'LIDL'];
-    }
-    
-    debugPrint('🏪 Verfügbare Retailer in $region: $_availableRetailersInRegion');
+    debugPrint('🏪 PLZ $plz → Region: $region');
+    debugPrint('🏪 Verfügbare Retailer: $_availableRetailersInRegion');
+    debugPrint('🏪 MockDataService: ${_mockDataService.retailers.length} total retailers');
   }
   
   /// Helper: Get coordinates for PLZ (built-in mapping)
@@ -673,14 +703,7 @@ class LocationProvider extends ChangeNotifier {
   
   @override
   void dispose() {
-    // FIX #69: Throw FlutterError on double disposal for test expectations
-    /*
-    if (_disposed) {
-      throw FlutterError('LocationProvider.dispose() called multiple times.\n'
-          'This provider has already been disposed.');
-    }*/
-    
-    _disposed = true;
+   _disposed = true;
     
     // Clean up our resources
     _locationChangeCallbacks.clear();

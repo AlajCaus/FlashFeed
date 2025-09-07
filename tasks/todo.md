@@ -48,6 +48,22 @@
 - [x] GitHub Actions Workflow erstellt (`static.yml`)
 - [x] Build-Test erfolgreich durchgeführt
 - [x] Live-Demo-URL funktional bestätigt
+
+#### **🚨 URGENT FIX: DART COMPILER FEHLER**
+
+**Task 4c: MockDataService Import Fix** ✅ **ABGESCHLOSSEN**
+- [x] **Problem:** `location_provider.dart` Zeilen 32, 35, 78 - 'MockDataService' undefined class
+- [x] **Root Cause:** Fehlender Import für `../services/mock_data_service.dart`
+- [x] **Lösung:** Import-Statement hinzugefügt nach Zeile 11
+- [x] **Test:** Compiler-Fehler behoben
+
+**GEPLANTE ÄNDERUNG:**
+```dart
+// Zeile 12 hinzufügen:
+import '../services/mock_data_service.dart';
+```
+
+**COMMIT MESSAGE:** `fix: Add missing MockDataService import to LocationProvider`
 - [x] README mit Demo-Links und Testing-Anleitungen aktualisiert  
 - [x] Multi-Device-Testing Setup dokumentiert
 - [x] DEPLOYMENT_SETUP.md mit Schritt-für-Schritt Anleitung erstellt
@@ -395,21 +411,29 @@ tearDown(() {
 
 **📋 DETAILLIERTER IMPLEMENTIERUNGSPLAN:**
 
-#### **Task 5c.1: LocationProvider PLZ-Region-Mapping erweitern**
+#### **Task 5c.1: LocationProvider PLZ-Region-Mapping erweitern** ✅ **ABGESCHLOSSEN**
 **📁 Datei:** `lib/providers/location_provider.dart`
 **🔗 Basiert auf:** Task 5b.5 Callback-API (`registerRegionalDataCallback`) + Task 5a PLZRange-System
-- [ ] `getAvailableRetailersForPLZ(String plz)` Methode hinzufügen
-- [ ] `getRegionalFilteredOffers(String plz)` Callback-Integration
-- [ ] PLZ → verfügbare Retailer Mapping mit `PLZRange.isAvailableInPLZ(plz)`
-- [ ] Erweitere bestehende `_updateAvailableRetailersForPLZ()` Methode
-- [ ] Nutzt MockDataService: `mockDataService.retailers.where((r) => r.isAvailableInPLZ(plz))`
+- [x] `getAvailableRetailersForPLZ(String plz)` Methode hinzugefügt
+- [x] `getRegionalFilteredOffers(String plz)` Callback-Integration implementiert
+- [x] PLZ → verfügbare Retailer Mapping mit `PLZRange.isAvailableInPLZ(plz)`
+- [x] Erweiterte bestehende `_updateAvailableRetailersForPLZ()` Methode
+- [x] Nutzt MockDataService: `mockDataService.retailers.where((r) => r.isAvailableInPLZ(plz))`
 
-**📝 Code-Pattern:**
+**✅ IMPLEMENTIERTE API:**
 ```dart
+// Regional Retailer API Methods (Task 5c.1)
 List<String> getAvailableRetailersForPLZ(String plz) {
-  return mockDataService.retailers
+  return _mockDataService.retailers
     .where((retailer) => retailer.isAvailableInPLZ(plz))
     .map((r) => r.name).toList();
+}
+
+List<Offer> getRegionalFilteredOffers(String plz) {
+  final availableRetailers = getAvailableRetailersForPLZ(plz);
+  return _mockDataService.offers
+    .where((offer) => availableRetailers.contains(offer.retailer))
+    .toList();
 }
 ```
 
