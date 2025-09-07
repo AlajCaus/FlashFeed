@@ -32,14 +32,14 @@ jobs:
         
     - name: Install Dependencies
       run: flutter pub get
-      working-directory: flashfeed
+      working-directory: ./
       
     - name: Run Unit Tests
       run: |
         flutter test --reporter=expanded
         flutter test test/integration --reporter=expanded
         flutter test test/performance --reporter=expanded
-      working-directory: flashfeed
+      working-directory: ./
 
     - name: Test Summary
       run: echo "✅ All tests passed! Proceeding with deployment..."
@@ -68,19 +68,19 @@ jobs:
         
     - name: Install Dependencies
       run: flutter pub get
-      working-directory: flashfeed
-      
+      working-directory: ./
+
     - name: Enable Web Support
       run: flutter config --enable-web
-      working-directory: flashfeed
-      
+      working-directory: ./
+
     - name: Setup Pages
       uses: actions/configure-pages@v4
       
     - name: Build Web App
       run: flutter build web --release --base-href "/FlashFeed/"
-      working-directory: flashfeed
-        
+      working-directory: ./
+
     - name: Upload Pages Artifact
       uses: actions/upload-pages-artifact@v3
       with:
