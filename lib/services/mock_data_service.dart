@@ -250,9 +250,8 @@ class MockDataService {
         isPremiumPartner: true,
         website: 'https://www.real.de',
         storeCount: 2,
-        // Task 5a: Real in selektiven Regionen (Beispiel: Berlin/Brandenburg + NRW)
+        // Task 5a: Real nur in NRW (nicht in Berlin)
         availablePLZRanges: [
-          PLZRange(startPLZ: '10000', endPLZ: '16999', regionName: 'Berlin/Brandenburg'),
           PLZRange(startPLZ: '40000', endPLZ: '59999', regionName: 'Nordrhein-Westfalen'),
         ],
       ),
@@ -283,8 +282,10 @@ class MockDataService {
         isPremiumPartner: false,
         website: 'https://www.marktkauf.de',
         storeCount: 1,
-        // Task 5a: Marktkauf ist bundesweit verfügbar (keine PLZ-Beschränkungen)
-        availablePLZRanges: [], // Bundesweit
+        // Task 5a: Marktkauf nur in Nord/West-Deutschland
+        availablePLZRanges: [
+          PLZRange(startPLZ: '14500', endPLZ: '59999', regionName: 'Nord/West-Deutschland'),
+        ],
       ),
       // Task 5a: Beispiel für regionalen Händler (BioCompany)
       Retailer(

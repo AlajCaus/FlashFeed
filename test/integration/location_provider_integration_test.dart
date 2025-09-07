@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../../lib/providers/location_provider.dart';
 import '../../lib/providers/offers_provider.dart';
 import '../../lib/services/mock_data_service.dart';
+import '../../lib/services/gps/test_gps_service.dart';
 import '../../lib/helpers/plz_helper.dart';
 
 void main() {
@@ -30,12 +31,15 @@ void main() {
     });
 
     setUp(() async {
-      // Initialize MockDataService in test mode
+      // Initialize MockDataService in test mode (pattern from successful unit tests)
       testMockDataService = MockDataService();
       await testMockDataService.initializeMockData(testMode: true);
       
-      // Create providers with test service
-      locationProvider = LocationProvider();
+      // Create providers with test service and test mode
+      locationProvider = LocationProvider(
+        gpsService: TestGPSService(),
+        mockDataService: testMockDataService,
+      );
       offersProvider = OffersProvider.mock(testService: testMockDataService);
     });
 

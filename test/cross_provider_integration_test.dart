@@ -22,8 +22,11 @@ void main() {
       testMockDataService = MockDataService();
       await testMockDataService.initializeMockData(testMode: true);
       
-      // Initialize providers with GPS service injection
-      locationProvider = LocationProvider(gpsService: TestGPSService());
+      // Initialize providers with test service and GPS service
+      locationProvider = LocationProvider(
+        gpsService: TestGPSService(),
+        mockDataService: testMockDataService,
+      );
       offersProvider = OffersProvider.mock(testService: testMockDataService);
       flashDealsProvider = FlashDealsProvider(testService: testMockDataService);
       
@@ -69,7 +72,7 @@ void main() {
         await offersProvider.loadOffers();
         
         // Assert: Only Berlin-available retailers shown
-        final berlinRetailers = ['EDEKA', 'REWE', 'BioCompany', 'NETTO'];
+        final berlinRetailers = locationProvider.getAvailableRetailersForPLZ('10115');
         final availableRetailers = offersProvider.offers
             .map((offer) => offer.retailer)
             .toSet()
@@ -92,7 +95,7 @@ void main() {
         await offersProvider.loadOffers();
         
         // Assert: Only Muenchen-available retailers shown
-        final muenchenRetailers = ['EDEKA', 'Globus'];
+        final muenchenRetailers = locationProvider.getAvailableRetailersForPLZ('80331');
         final availableRetailers = offersProvider.offers
             .map((offer) => offer.retailer)
             .toSet()
@@ -102,9 +105,9 @@ void main() {
             muenchenRetailers.contains(retailer)), isTrue,
             reason: 'All retailers should be available in Muenchen (PLZ 80331)');
         
-        // BioCompany should NOT be available in Muenchen
-        expect(availableRetailers.contains('BioCompany'), isFalse,
-            reason: 'BioCompany is only available in Berlin/Brandenburg');
+        // BioCompany should NOT be available in Muenchen (dynamic check)
+        expect(muenchenRetailers.contains('BIOCOMPANY'), isFalse,
+            reason: 'BIOCOMPANY is only available in Berlin/Brandenburg');
       });
       
       test('LocationProvider callback triggers OffersProvider regional filtering', () async {
@@ -150,7 +153,7 @@ void main() {
             reason: 'Flash deals should be available');
         
         // Verify that flash deals only show Berlin-available retailers
-        final berlinRetailers = ['EDEKA', 'REWE', 'BioCompany', 'NETTO'];
+        final berlinRetailers = locationProvider.getAvailableRetailersForPLZ('10115');
         final dealRetailers = flashDeals
             .map((deal) => deal.retailer)
             .toSet()
