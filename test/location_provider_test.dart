@@ -390,4 +390,178 @@ void main() {
       });
     });
   });
+  
+  // PRIORITÄT 3: Provider-Callback System Tests (WICHTIG - Robustheit)
+  group('Provider Callback System Tests', () {
+    late LocationProvider locationProvider;
+    late MockDataService testMockDataService;
+    
+    setUp(() async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      SharedPreferences.setMockInitialValues({});
+      
+      testMockDataService = MockDataService();
+      await testMockDataService.initializeMockData(testMode: true);
+      locationProvider = LocationProvider();
+    });
+    
+    tearDown(() {
+      testMockDataService.dispose();
+      locationProvider.dispose();
+    });
+    
+    group('Priorität 3.1: Callback Registration/Unregistration Tests', () {
+      test('registerLocationChangeCallback adds callback to list', () async {
+        // Arrange: Create test callback
+        bool callbackExecuted = false;
+        void testCallback() {
+          callbackExecuted = true;
+        }
+        
+        // Act: Register callback
+        locationProvider.registerLocationChangeCallback(testCallback);
+        
+        // Trigger location change to test callback execution
+        await locationProvider.setUserPLZ('10115');
+        
+        // Assert: Callback was executed
+        expect(callbackExecuted, isTrue);
+      });
+      
+      test('registerRegionalDataCallback works correctly', () async {
+        // Arrange: Create test callback with captured data
+        String? capturedPLZ;
+        List<String>? capturedRetailers;
+        
+        void testRegionalCallback(String? plz, List<String> retailers) {
+          capturedPLZ = plz;
+          capturedRetailers = retailers;
+        }
+        
+        // Act: Register regional callback
+        locationProvider.registerRegionalDataCallback(testRegionalCallback);
+        
+        // Trigger PLZ change to test callback execution
+        await locationProvider.setUserPLZ('10115');
+        
+        // Assert: Callback received correct data
+        expect(capturedPLZ, equals('10115'));
+        expect(capturedRetailers, isNotNull);
+        expect(capturedRetailers, isA<List<String>>());
+      });
+      
+      test('multiple LocationChange callbacks can be registered', () async {
+        // Arrange: Create multiple test callbacks
+        int callback1Count = 0;
+        int callback2Count = 0;
+        int callback3Count = 0;
+        
+        void callback1() { callback1Count++; }
+        void callback2() { callback2Count++; }
+        void callback3() { callback3Count++; }
+        
+        // Act: Register multiple callbacks
+        locationProvider.registerLocationChangeCallback(callback1);
+        locationProvider.registerLocationChangeCallback(callback2);
+        locationProvider.registerLocationChangeCallback(callback3);
+        
+        // Trigger location change
+        await locationProvider.setUserPLZ('80331');
+        
+        // Assert: All callbacks executed once
+        expect(callback1Count, equals(1));
+        expect(callback2Count, equals(1));
+        expect(callback3Count, equals(1));
+        
+        // Trigger another change
+        await locationProvider.setUserPLZ('20095');
+        
+        // Assert: All callbacks executed again
+        expect(callback1Count, equals(2));
+        expect(callback2Count, equals(2));
+        expect(callback3Count, equals(2));
+      });
+      
+      test('multiple RegionalData callbacks can be registered', () async {
+        // Arrange: Create multiple regional callbacks
+        List<String?> capturedPLZs = [];
+        List<List<String>> capturedRetailerLists = [];
+        
+        void regionalCallback1(String? plz, List<String> retailers) {
+          capturedPLZs.add(plz);
+          capturedRetailerLists.add(List.from(retailers));
+        }
+        
+        void regionalCallback2(String? plz, List<String> retailers) {
+          capturedPLZs.add(plz);
+          capturedRetailerLists.add(List.from(retailers));
+        }
+        
+        // Act: Register multiple regional callbacks
+        locationProvider.registerRegionalDataCallback(regionalCallback1);
+        locationProvider.registerRegionalDataCallback(regionalCallback2);
+        
+        // Trigger regional data change
+        await locationProvider.setUserPLZ('10115');
+        
+        // Assert: Both callbacks executed
+        expect(capturedPLZs.length, equals(2));
+        expect(capturedRetailerLists.length, equals(2));
+        expect(capturedPLZs[0], equals('10115'));
+        expect(capturedPLZs[1], equals('10115'));
+      });
+      
+      test('duplicate callback registration is handled gracefully', () async {
+        // Arrange: Create same callback reference
+        int callbackCount = 0;
+        void testCallback() { callbackCount++; }
+        
+        // Act: Register same callback multiple times
+        locationProvider.registerLocationChangeCallback(testCallback);
+        locationProvider.registerLocationChangeCallback(testCallback);
+        locationProvider.registerLocationChangeCallback(testCallback);
+        
+        // Trigger location change
+        await locationProvider.setUserPLZ('10115');
+        
+        // Assert: Callback executed multiple times (duplicate registrations allowed)
+        // This tests that the system doesn't crash with duplicates
+        expect(callbackCount, greaterThan(0));
+        expect(callbackCount, lessThanOrEqualTo(3)); // Should be 3 if duplicates allowed
+      });
+      
+      test('null callback registration is handled gracefully', () {
+        // This test ensures the system doesn't crash with edge cases
+        // Since Dart doesn't allow null VoidCallback, we test with empty callback
+        
+        void emptyCallback() {}
+        
+        // Act: Register empty callback (shouldn't crash)
+        expect(() {
+          locationProvider.registerLocationChangeCallback(emptyCallback);
+          locationProvider.registerRegionalDataCallback((plz, retailers) {});
+        }, returnsNormally);
+      });
+      
+      test('callback registration works immediately after provider creation', () async {
+        // Arrange: Fresh provider
+        final freshProvider = LocationProvider();
+        bool callbackExecuted = false;
+        
+        // Act: Register callback immediately
+        freshProvider.registerLocationChangeCallback(() {
+          callbackExecuted = true;
+        });
+        
+        // Trigger change
+        await freshProvider.setUserPLZ('10115');
+        
+        // Assert: Callback works on fresh provider
+        expect(callbackExecuted, isTrue);
+        
+        // Cleanup
+        freshProvider.dispose();
+      });
+    });
+  });
 }
