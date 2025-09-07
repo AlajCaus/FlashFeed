@@ -13,6 +13,7 @@ void main() {
   group('Task 5b.6: LocationProvider Integration Tests', () {
     late LocationProvider locationProvider;
     late OffersProvider offersProvider;
+    late MockDataService testMockDataService;
 
     setUpAll(() async {
       // Initialize Flutter test bindings for LocalStorage
@@ -28,12 +29,18 @@ void main() {
       });
     });
 
-    setUp(() {
+    setUp(() async {
+      // Initialize MockDataService in test mode
+      testMockDataService = MockDataService();
+      await testMockDataService.initializeMockData(testMode: true);
+      
+      // Create providers with test service
       locationProvider = LocationProvider();
-      offersProvider = OffersProvider.mock(); // Use factory constructor
+      offersProvider = OffersProvider.mock(testService: testMockDataService);
     });
 
     tearDown(() {
+      testMockDataService.dispose();
       locationProvider.dispose();
       offersProvider.dispose();
     });
@@ -85,9 +92,9 @@ void main() {
 
     group('Mock-GPS Testing for German Cities', () {
       final testCities = [
-        {'plz': '10115', 'city': 'Berlin', 'expectedRetailers': 5},
-        {'plz': '80331', 'city': 'München', 'expectedRetailers': 5},
-        {'plz': '20095', 'city': 'Hamburg', 'expectedRetailers': 4},
+        {'plz': '10115', 'city': 'Berlin', 'expectedRetailers': 4},
+        {'plz': '80331', 'city': 'München', 'expectedRetailers': 2},
+        {'plz': '20095', 'city': 'Hamburg', 'expectedRetailers': 3},
         {'plz': '40213', 'city': 'Düsseldorf', 'expectedRetailers': 4},
         {'plz': '50667', 'city': 'Köln', 'expectedRetailers': 4},
       ];
@@ -213,12 +220,12 @@ void main() {
     });
 
     group('Error Handling & Edge Cases', () {
-      test('should handle null context gracefully in ensureLocationData', () async {
-        // Act: Call with null context
-        final result = await locationProvider.ensureLocationData(context: null);
+      test('should handle ensureLocationData gracefully', () async {
+        // Act: Call ensureLocationData without context
+        final result = await locationProvider.ensureLocationData();
 
-        // Assert: Should handle gracefully without crashing
-        expect(() => result, returnsNormally);
+        // Assert: Should handle gracefully and return boolean
+        expect(result, isA<bool>());
       });
 
       test('should handle provider registration with null values', () {
