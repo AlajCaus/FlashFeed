@@ -11,10 +11,18 @@
 7. Füge abschließend einen Überprüfungsbereich in die Datei [todo.md](http://todo.md/) ein, der eine Zusammenfassung der vorgenommenen Änderungen und alle anderen relevanten Informationen enthält.
 8. Führe keine Änderungen selbstständig aus ohne dich vorher mit mir zu beraten.
 9. Wenn du im todo.md einen Task als komplett markirst, erstelle mir eine kompakte GitHub commit Message.
+10. AUSWIRKUNGSANALYSE PFLICHT: Vor jeder Lösungspräsentation MUSS analysiert werden:
+    - Welche bestehenden Dateien werden beeinflusst?
+    - Welche Provider/Services benötigen Anpassungen?
+    - Welche Tests müssen aktualisiert werden?
+    - Welche Breaking Changes können entstehen?
+    - Welche Abhängigkeiten sind betroffen?
+11. Wenn du einen Fehler bearbeitest und eine Lösung hast, lege ein Text File mit der Task Nummer im Namen in den Ordner flashfeed/tasks, wo du alle deine Analysen und Erkenntnisse dokumentierst, damit der nächste claude weiss wo er anzusetzen hat, wenn du unterbrochen wirst bei der Implementierung der Lösung.
 
 ## 🔒 COMPLIANCE CHECK (für jede Claude-Instanz)
 Bevor du IRGENDETWAS anderes machst:
 ☐ Hast du diese Regeln vollständig gelesen?
 ☐ Verstehst du, dass du NICHTS ohne Rücksprache ändern darfst?
 ☐ Wirst du einen Plan erstellen BEVOR du arbeitest?
+☐ Wirst du IMMER eine Auswirkungsanalyse vor Lösungsvorschlägen durchführen?
 ☐ Bestätige diese Punkte explizit am Anfang jeder Session

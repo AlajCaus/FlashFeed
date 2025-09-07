@@ -16,9 +16,9 @@ class UserProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
   
   // Freemium Limits & Usage
-  static const int FREE_OFFERS_LIMIT = 10;        // Max. 10 Angebote für Free User
-  static const int FREE_SEARCHES_LIMIT = 5;       // Max. 5 Suchen pro Tag
-  static const int FREE_FLASH_DEALS_LIMIT = 3;    // Max. 3 Flash Deals
+  static const int freeOffersLimit = 10;        // Max. 10 Angebote für Free User
+  static const int freeSearchesLimit = 5;       // Max. 5 Suchen pro Tag
+  static const int freeFlashDealsLimit = 3;    // Max. 3 Flash Deals
   
   int _offersViewed = 0;
   int _searchesToday = 0;
@@ -60,9 +60,9 @@ class UserProvider extends ChangeNotifier {
   int get offersViewed => _offersViewed;
   int get searchesToday => _searchesToday;
   int get flashDealsViewed => _flashDealsViewed;
-  int get remainingOffers => isPremium ? -1 : (FREE_OFFERS_LIMIT - _offersViewed).clamp(0, FREE_OFFERS_LIMIT);
-  int get remainingSearches => isPremium ? -1 : (FREE_SEARCHES_LIMIT - _searchesToday).clamp(0, FREE_SEARCHES_LIMIT);
-  int get remainingFlashDeals => isPremium ? -1 : (FREE_FLASH_DEALS_LIMIT - _flashDealsViewed).clamp(0, FREE_FLASH_DEALS_LIMIT);
+  int get remainingOffers => isPremium ? -1 : (freeOffersLimit - _offersViewed).clamp(0, freeOffersLimit);
+  int get remainingSearches => isPremium ? -1 : (freeSearchesLimit - _searchesToday).clamp(0, freeSearchesLimit);
+  int get remainingFlashDeals => isPremium ? -1 : (freeFlashDealsLimit - _flashDealsViewed).clamp(0, freeFlashDealsLimit);
   
   // Getters - Settings
   bool get pushNotificationsEnabled => _pushNotificationsEnabled;
@@ -112,17 +112,17 @@ class UserProvider extends ChangeNotifier {
   // Usage Tracking & Limits
   bool canViewOffers() {
     _checkDailyReset();
-    return isPremium || _offersViewed < FREE_OFFERS_LIMIT;
+    return isPremium || _offersViewed < freeOffersLimit;
   }
   
   bool canPerformSearch() {
     _checkDailyReset();
-    return isPremium || _searchesToday < FREE_SEARCHES_LIMIT;
+    return isPremium || _searchesToday < freeSearchesLimit;
   }
   
   bool canViewFlashDeals() {
     _checkDailyReset();
-    return isPremium || _flashDealsViewed < FREE_FLASH_DEALS_LIMIT;
+    return isPremium || _flashDealsViewed < freeFlashDealsLimit;
   }
   
   void incrementOffersViewed() {
@@ -262,7 +262,7 @@ class UserProvider extends ChangeNotifier {
   void _updatePremiumFeatures() {
     _hasUnlimitedOffers = isPremium;
     _hasAdvancedFilters = isPremium;
-    _hasFlashDealsAccess = isPremium || _flashDealsViewed < FREE_FLASH_DEALS_LIMIT;
+    _hasFlashDealsAccess = isPremium || _flashDealsViewed < freeFlashDealsLimit;
     _hasMapFeatures = isPremium;
   }
   

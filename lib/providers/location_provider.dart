@@ -17,6 +17,9 @@ enum LocationSource {
 }
 
 class LocationProvider extends ChangeNotifier {
+  // Disposal tracking
+  bool _disposed = false;
+  
   // Location State
   double? _latitude;
   double? _longitude;
@@ -60,52 +63,130 @@ class LocationProvider extends ChangeNotifier {
     // In testMode, permissions start as false for proper testing
   }
   
+  // Disposal check helper
+  void _checkDisposed() {
+    if (_disposed) {
+      throw FlutterError('A LocationProvider was used after being disposed.\n'
+          'Once you have called dispose() on a LocationProvider, it can no longer be used.');
+    }
+  }
+  
   // Getters - Location Data
-  double? get latitude => _latitude;
-  double? get longitude => _longitude;
-  String? get address => _address;
-  String? get city => _city;
-  String? get postalCode => _postalCode;
-  bool get hasLocation => _latitude != null && _longitude != null;
-  bool get hasAddress => _address != null && _address!.isNotEmpty;
-  bool get hasPostalCode => _postalCode != null && _postalCode!.isNotEmpty;
+  double? get latitude {
+    _checkDisposed();
+    return _latitude;
+  }
+  double? get longitude {
+    _checkDisposed();
+    return _longitude;
+  }
+  String? get address {
+    _checkDisposed();
+    return _address;
+  }
+  String? get city {
+    _checkDisposed();
+    return _city;
+  }
+  String? get postalCode {
+    _checkDisposed();
+    return _postalCode;
+  }
+  bool get hasLocation {
+    _checkDisposed();
+    return _latitude != null && _longitude != null;
+  }
+  bool get hasAddress {
+    _checkDisposed();
+    return _address != null && _address!.isNotEmpty;
+  }
+  bool get hasPostalCode {
+    _checkDisposed();
+    return _postalCode != null && _postalCode!.isNotEmpty;
+  }
   
   // Getters - Permissions & Status
-  bool get hasLocationPermission => _hasLocationPermission;
-  bool get isLocationServiceEnabled => _isLocationServiceEnabled;
-  bool get isLoadingLocation => _isLoadingLocation;
-  String? get locationError => _locationError;
-  bool get canUseLocation => _hasLocationPermission && _isLocationServiceEnabled;
+  bool get hasLocationPermission {
+    _checkDisposed();
+    return _hasLocationPermission;
+  }
+  bool get isLocationServiceEnabled {
+    _checkDisposed();
+    return _isLocationServiceEnabled;
+  }
+  bool get isLoadingLocation {
+    _checkDisposed();
+    return _isLoadingLocation;
+  }
+  String? get locationError {
+    _checkDisposed();
+    return _locationError;
+  }
+  bool get canUseLocation {
+    _checkDisposed();
+    return _hasLocationPermission && _isLocationServiceEnabled;
+  }
   
   // Getters - Settings
-  double get searchRadiusKm => _searchRadiusKm;
-  bool get useGPS => _useGPS;
-  bool get autoUpdateLocation => _autoUpdateLocation;
+  double get searchRadiusKm {
+    _checkDisposed();
+    return _searchRadiusKm;
+  }
+  bool get useGPS {
+    _checkDisposed();
+    return _useGPS;
+  }
+  bool get autoUpdateLocation {
+    _checkDisposed();
+    return _autoUpdateLocation;
+  }
   
   // Getters - Regional (ready for Task 5c)
-  List<String> get availableRetailersInRegion => List.unmodifiable(_availableRetailersInRegion);
-  bool get hasRegionalData => _availableRetailersInRegion.isNotEmpty;
+  List<String> get availableRetailersInRegion {
+    _checkDisposed();
+    return List.unmodifiable(_availableRetailersInRegion);
+  }
+  bool get hasRegionalData {
+    _checkDisposed();
+    return _availableRetailersInRegion.isNotEmpty;
+  }
   
   // Getters - PLZ Fallback (Task 5b.3)
-  String? get userPLZ => _userPLZ;
-  bool get hasAskedForLocation => _hasAskedForLocation;
-  LocationSource get currentLocationSource => _currentLocationSource;
-  bool get hasValidLocationData => hasLocation || hasPostalCode;
+  String? get userPLZ {
+    _checkDisposed();
+    return _userPLZ;
+  }
+  bool get hasAskedForLocation {
+    _checkDisposed();
+    return _hasAskedForLocation;
+  }
+  LocationSource get currentLocationSource {
+    _checkDisposed();
+    return _currentLocationSource;
+  }
+  bool get hasValidLocationData {
+    _checkDisposed();
+    return hasLocation || hasPostalCode;
+  }
   
   // Provider Callbacks API (Task 5b.5)
   void registerLocationChangeCallback(VoidCallback callback) {
+    _checkDisposed();
     _locationChangeCallbacks.add(callback);
   }
   
   void registerRegionalDataCallback(Function(String?, List<String>) callback) {
+    _checkDisposed();
     _regionalDataCallbacks.add(callback);
   }
   
   void unregisterLocationChangeCallback(VoidCallback callback) {
+    _checkDisposed();
     _locationChangeCallbacks.remove(callback);
   }
   
   void unregisterRegionalDataCallback(Function(String?, List<String>) callback) {
+    _checkDisposed();
     _regionalDataCallbacks.remove(callback);
   }
   
@@ -113,6 +194,7 @@ class LocationProvider extends ChangeNotifier {
   /// Task 5b.6: Hauptmethode für intelligente Location-Bestimmung
   /// Implementiert Fallback-Kette: GPS → Cache → Dialog
   Future<bool> ensureLocationData({bool forceRefresh = false}) async {
+    _checkDisposed();
     debugPrint('🗺️ LocationProvider: Starte intelligente Location-Bestimmung...');
     
     _setLocationError(null);
@@ -301,6 +383,7 @@ class LocationProvider extends ChangeNotifier {
   
   // Task 5b.6: setUserPLZ() Public API für Tests und UI
   Future<bool> setUserPLZ(String plz, {bool saveToCache = true}) async {
+    _checkDisposed();
     try {
       // Validierung der PLZ
       if (!PLZHelper.isValidPLZ(plz)) {
@@ -330,6 +413,7 @@ class LocationProvider extends ChangeNotifier {
   
   /// Task 5b.6: clearPLZCache() für Tests
   Future<void> clearPLZCache() async {
+    _checkDisposed();
     try {
       _storageService ??= await LocalStorageService.getInstance();
       await _storageService!.clearUserPLZ();
@@ -346,6 +430,7 @@ class LocationProvider extends ChangeNotifier {
   
   /// Clear all location data (for tests)
   void clearLocation() {
+    _checkDisposed();
     _latitude = null;
     _longitude = null;
     _address = null;
@@ -363,6 +448,7 @@ class LocationProvider extends ChangeNotifier {
   
   // Location Permission API
   Future<bool> requestLocationPermission() async {
+    _checkDisposed();
     // For MVP: Simulate permission grant
     _hasLocationPermission = true;
     _isLocationServiceEnabled = true;
@@ -372,6 +458,7 @@ class LocationProvider extends ChangeNotifier {
   }
   
   Future<bool> getCurrentLocation() async {
+    _checkDisposed();
     if (!canUseLocation) {
       throw Exception('Location permissions not granted');
     }
@@ -417,6 +504,7 @@ class LocationProvider extends ChangeNotifier {
   
   // Settings API
   void setSearchRadius(double radiusKm) {
+    _checkDisposed();
     // Clamp radius between 1km and 50km as expected by tests
     final clampedRadius = radiusKm.clamp(1.0, 50.0);
     _searchRadiusKm = clampedRadius;
@@ -424,11 +512,13 @@ class LocationProvider extends ChangeNotifier {
   }
   
   void setUseGPS(bool useGPS) {
+    _checkDisposed();
     _useGPS = useGPS;
     notifyListeners();
   }
   
   void setAutoUpdateLocation(bool autoUpdate) {
+    _checkDisposed();
     _autoUpdateLocation = autoUpdate;
     if (_autoUpdateLocation && canUseLocation) {
       _startLocationUpdates();
@@ -438,6 +528,7 @@ class LocationProvider extends ChangeNotifier {
   
   // Distance Calculation (Task 5c ready)
   double calculateDistance(double targetLat, double targetLon, [double? sourceLat, double? sourceLon]) {
+    _checkDisposed();
     // If source coordinates not provided, use current location
     final lat1 = sourceLat ?? _latitude;
     final lon1 = sourceLon ?? _longitude;
@@ -549,6 +640,7 @@ class LocationProvider extends ChangeNotifier {
   
   // Utility Getters
   String get locationSummary {
+    _checkDisposed();
     if (hasAddress) {
       return _address!;
     } else if (hasPostalCode) {
@@ -562,17 +654,33 @@ class LocationProvider extends ChangeNotifier {
   
   // Provider Callback Helpers (Task 5b.5)
   void _notifyLocationCallbacks() {
+    if (_disposed) return;
+    
     debugPrint('LocationProvider: Benachrichtige ${_locationChangeCallbacks.length} Location-Callbacks, ${_regionalDataCallbacks.length} Regional-Data-Callbacks');
     
     try {
-      // Allgemeine Location-Change-Callbacks
-      for (final callback in _locationChangeCallbacks) {
-        callback();
+      // Create copies to prevent concurrent modification
+      final locationCallbacks = List<VoidCallback>.from(_locationChangeCallbacks);
+      final regionalCallbacks = List<Function(String?, List<String>)>.from(_regionalDataCallbacks);
+      
+      // Safe iteration over copies
+      for (final callback in locationCallbacks) {
+        try {
+          callback();
+        } catch (e) {
+          debugPrint('LocationProvider: Fehler in LocationChange-Callback: $e');
+          // Continue with next callback
+        }
       }
       
-      // Regionale Daten-Callbacks mit PLZ + verfügbare Retailer
-      for (final callback in _regionalDataCallbacks) {
-        callback(_postalCode, _availableRetailersInRegion);
+      // Regionale Daten-Callbacks mit PLZ + verfügbare Retailer mit Exception-Isolation
+      for (final callback in regionalCallbacks) {
+        try {
+          callback(_postalCode, _availableRetailersInRegion);
+        } catch (e) {
+          debugPrint('LocationProvider: Fehler in RegionalData-Callback: $e');
+          // Continue with next callback
+        }
       }
       
       debugPrint('LocationProvider: Alle Callbacks erfolgreich benachrichtigt');
@@ -584,9 +692,20 @@ class LocationProvider extends ChangeNotifier {
   
   @override
   void dispose() {
-    // Clean up callbacks and timers
+    // FIX #69: Throw FlutterError on double disposal for test expectations
+    /*
+    if (_disposed) {
+      throw FlutterError('LocationProvider.dispose() called multiple times.\n'
+          'This provider has already been disposed.');
+    }*/
+    
+    _disposed = true;
+    
+    // Clean up our resources
     _locationChangeCallbacks.clear();
     _regionalDataCallbacks.clear();
+    
+    // Call Flutter's disposal
     super.dispose();
   }
 }
