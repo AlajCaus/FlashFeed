@@ -7,9 +7,13 @@ import 'providers/offers_provider.dart';
 import 'providers/user_provider.dart';
 import 'providers/location_provider.dart';
 import 'providers/flash_deals_provider.dart';
+import 'providers/retailers_provider.dart';
 
 // FlashFeed Services
 import 'services/mock_data_service.dart';
+
+// FlashFeed Repositories
+import 'repositories/mock_retailers_repository.dart';
 
 // FlashFeed Screens
 import 'screens/main_layout_screen.dart';
@@ -73,6 +77,14 @@ class FlashFeedApp extends StatelessWidget {
         // Location Provider - GPS & Regional Filtering
         ChangeNotifierProvider<LocationProvider>(
           create: (context) => LocationProvider(),
+        ),
+        
+        // Retailers Provider - Händler-Verfügbarkeit & PLZ-Filterung
+        ChangeNotifierProvider<RetailersProvider>(
+          create: (context) => RetailersProvider(
+            repository: MockRetailersRepository(testService: mockDataService),
+            mockDataService: mockDataService,
+          ),
         ),
       ],
       child: Consumer<AppProvider>(

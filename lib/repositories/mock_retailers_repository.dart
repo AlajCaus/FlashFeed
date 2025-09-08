@@ -4,8 +4,15 @@
 import 'retailers_repository.dart';
 import '../models/models.dart';
 import '../data/product_category_mapping.dart';
+import '../services/mock_data_service.dart';
 
 class MockRetailersRepository implements RetailersRepository {
+  final MockDataService? _testService; // Optional test service
+  
+  MockRetailersRepository({MockDataService? testService}) : _testService = testService;
+  
+  // Helper to check if we have a service
+  bool get _hasDataService => _testService != null && _testService!.isInitialized;
   static final List<Retailer> _mockRetailers = [
     Retailer(
       id: 'edeka',
@@ -239,6 +246,10 @@ class MockRetailersRepository implements RetailersRepository {
   @override
   Future<List<Retailer>> getAllRetailers() async {
     await Future.delayed(Duration(milliseconds: 200));
+    // Use data from MockDataService if available, fallback to static list
+    if (_hasDataService) {
+      return List.from(_testService!.retailers);
+    }
     return List.from(_mockRetailers);
   }
 
@@ -259,7 +270,10 @@ class MockRetailersRepository implements RetailersRepository {
   Future<List<Store>> getStoresByRetailer(String retailerName) async {
     await Future.delayed(Duration(milliseconds: 150));
     
-    return _mockStores.where((store) =>
+    // Use data from MockDataService if available, fallback to static list
+    final stores = _hasDataService ? _testService!.stores : _mockStores;
+    
+    return stores.where((store) =>
       store.retailerName.toLowerCase() == retailerName.toLowerCase()
     ).toList();
   }
@@ -268,7 +282,10 @@ class MockRetailersRepository implements RetailersRepository {
   Future<List<Store>> getStoresByLocation(double latitude, double longitude, double radiusKm) async {
     await Future.delayed(Duration(milliseconds: 200));
     
-    return _mockStores.where((store) =>
+    // Use data from MockDataService if available, fallback to static list
+    final stores = _hasDataService ? _testService!.stores : _mockStores;
+    
+    return stores.where((store) =>
       store.distanceTo(latitude, longitude) <= radiusKm
     ).toList();
   }
@@ -298,7 +315,10 @@ class MockRetailersRepository implements RetailersRepository {
   Future<List<Store>> getOpenStores(DateTime dateTime) async {
     await Future.delayed(Duration(milliseconds: 100));
     
-    return _mockStores.where((store) => store.isOpenAt(dateTime)).toList();
+    // Use data from MockDataService if available, fallback to static list
+    final stores = _hasDataService ? _testService!.stores : _mockStores;
+    
+    return stores.where((store) => store.isOpenAt(dateTime)).toList();
   }
   
   /// Zusätzliche Mock-Methoden für Demo

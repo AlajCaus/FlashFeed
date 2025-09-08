@@ -6,6 +6,7 @@ import '../providers/offers_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/flash_deals_provider.dart';
+import '../providers/retailers_provider.dart';
 
 /*
  * FlashFeed Main Layout Screen
@@ -45,13 +46,15 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
     final offersProvider = context.read<OffersProvider>();
     final flashDealsProvider = context.read<FlashDealsProvider>();
     final locationProvider = context.read<LocationProvider>();
+    final retailersProvider = context.read<RetailersProvider>();
     
     try {
       // Set loading state
       appProvider.setLoading(true);
       
-      // Connect providers through callback system (Task 5b.5)
+      // Connect providers through callback system (Task 5b.5 & 5c.3)
       offersProvider.registerWithLocationProvider(locationProvider);
+      retailersProvider.registerWithLocationProvider(locationProvider);
       
       // Initialize location (with permission request)
       await locationProvider.requestLocationPermission();
