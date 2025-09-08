@@ -250,7 +250,7 @@ class MockDataService {
         isPremiumPartner: true,
         website: 'https://www.real.de',
         storeCount: 2,
-        // Task 5a: Real nur in NRW (nicht in Berlin)
+        // Task 5a: Real nur in NRW (Stores in PLZ 42277, 40249)
         availablePLZRanges: [
           PLZRange(startPLZ: '40000', endPLZ: '59999', regionName: 'Nordrhein-Westfalen'),
         ],
@@ -266,7 +266,7 @@ class MockDataService {
         isPremiumPartner: true,
         website: 'https://www.globus.de',
         storeCount: 1,
-        // Task 5a: Globus primär in Süd/West-Deutschland
+        // Task 5a: Globus in Süd/West-Deutschland (Store in PLZ 54974)
         availablePLZRanges: [
           PLZRange(startPLZ: '50000', endPLZ: '99999', regionName: 'Süd/West-Deutschland'),
         ],
@@ -282,9 +282,9 @@ class MockDataService {
         isPremiumPartner: false,
         website: 'https://www.marktkauf.de',
         storeCount: 1,
-        // Task 5a: Marktkauf nur in Nord/West-Deutschland
+        // Task 5a: Marktkauf in Brandenburg/NRW (Store in PLZ 14503 Teltow)
         availablePLZRanges: [
-          PLZRange(startPLZ: '14500', endPLZ: '59999', regionName: 'Nord/West-Deutschland'),
+          PLZRange(startPLZ: '14500', endPLZ: '59999', regionName: 'Brandenburg bis NRW'),
         ],
       ),
       // Task 5a: Beispiel für regionalen Händler (BioCompany)
@@ -366,14 +366,14 @@ class MockDataService {
         {'name': 'Kaufland Spandau', 'street': 'Neuendorfer Straße 60', 'plz': '13585', 'lat': 52.537923, 'lng': 13.201234}
       ],
       'real': [
-        {'name': 'Real Marienfelde', 'street': 'Großbeerenstraße 263', 'plz': '12277', 'lat': 52.418734, 'lng': 13.373912},
-        {'name': 'Real Lichtenberg', 'street': 'Landsberger Allee 563', 'plz': '10249', 'lat': 52.524123, 'lng': 13.491234}
+        {'name': 'Real Wuppertal', 'street': 'Großbeerenstraße 263', 'plz': '42277', 'lat': 52.418734, 'lng': 13.373912},
+        {'name': 'Real Düsseldorf', 'street': 'Landsberger Allee 563', 'plz': '40249', 'lat': 52.524123, 'lng': 13.491234}
       ],
       'globus': [
-        {'name': 'Globus Genshagen (Berlin)', 'street': 'Lüdenscheider Weg 1', 'plz': '14974', 'lat': 52.367834, 'lng': 13.212345}
+        {'name': 'Globus Neustadt', 'street': 'Lüdenscheider Weg 1', 'plz': '54974', 'lat': 52.367834, 'lng': 13.212345}
       ],
       'marktkauf': [
-        {'name': 'Marktkauf Steglitz', 'street': 'Unter den Eichen 96a', 'plz': '12203', 'lat': 52.436712, 'lng': 13.318456}
+        {'name': 'Marktkauf Teltow', 'street': 'Unter den Eichen 96a', 'plz': '14503', 'lat': 52.436712, 'lng': 13.318456}
       ]
     };
     

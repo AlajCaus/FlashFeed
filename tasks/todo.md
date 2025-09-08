@@ -442,71 +442,20 @@ List<Offer> getRegionalFilteredOffers(String plz) {
 }
 ```
 
-#### **Task 5c.2: OffersProvider regionale Filterung** ✅ **VEREINFACHT & IMPLEMENTIERT**
+#### **Task 5c.2: OffersProvider regionale Filterung** ✅ **ABGESCHLOSSEN**
 
-## 🎯 **FINALE IMPLEMENTIERUNG (nach Review):**
+**Implementiert:**
+- MockOffersRepository test service injection bug behoben
+- loadOffers() mit applyRegionalFilter parameter
+- getRegionalOffers() method für PLZ-basierte Filterung
+- emptyStateMessage für sinnvolles User-Feedback
+- getRegionalAvailabilityMessage() für Händler-Status
 
-### **Was wurde umgesetzt:**
-1. **MockOffersRepository Bug behoben:** TestService wird korrekt injiziert
-2. **loadOffers() mit regionalem Filter:** Parameter `applyRegionalFilter` funktioniert
-3. **getRegionalOffers() Method:** Filtert Angebote nach PLZ
-4. **emptyStateMessage:** Sinnvolle Nachrichten für leere Ergebnisse
-5. **getRegionalAvailabilityMessage():** Status-Messages für Händler
+**Entfernt (da unsinnig):**
+- unavailableOffers getter - frustriert nur User
+- hasUnavailableOffers - unnötige Komplexität
 
-### **Was wurde ENTFERNT (da unsinnig):**
-- ❌ `unavailableOffers` getter - macht keinen Sinn im regionalen Kontext
-- ❌ `hasUnavailableOffers` - unnötige Komplexität
-- ❌ `_unfilteredOffers` - nicht benötigt
-
-### **Warum unavailableOffers entfernt wurde:**
-Bei regionaler Filterung soll der User NUR Angebote sehen, die er auch wahrnehmen kann.
-Es frustriert nur zu wissen, dass es bei Globus (nicht in Berlin) ein tolles Angebot gibt.
-
-### **Der echte Bug (behoben):**
-```dart
-// PROBLEM: MockOffersRepository nutzte immer globalen mockDataService
-if (mockDataService.isInitialized) {  // ← GLOBAL, nicht Test-Service!
-  return List.from(mockDataService.offers);
-}
-
-// LÖSUNG: MockOffersRepository bekommt optional testService
-class MockOffersRepository implements OffersRepository {
-  final MockDataService? _testService;
-  MockDataService get _dataService => _testService ?? mockDataService;
-}
-```
-
-## ✅ **DEFINITION OF DONE:**
-
-- [x] MockOffersRepository testService injection implementiert
-- [x] `getRegionalOffers()` method implementiert und funktional
-- [x] `loadOffers()` berücksichtigt regionale Filterung mit Parameter
-- [x] `emptyStateMessage` gibt sinnvolle Nachrichten aus
-- [x] `getRegionalAvailabilityMessage()` gibt korrekte Messages
-- [x] 4 Tests angepasst (unavailableOffers Test durch regional filtering Test ersetzt)
-- [x] Keine Compiler-Fehler
-- [x] Integration mit LocationProvider funktioniert
-- [x] _applyFilters() arbeitet mit regional gefilterten Daten
-
-**✅ IMPLEMENTIERUNG ABGESCHLOSSEN:** Task 5c.2 vereinfacht und vollständig implementiert
-
-**🗝️ COMMIT MESSAGE:**
-```bash
-git add -A
-git commit -m "fix: MockOffersRepository test service injection + simplify regional filtering
-
-Root cause: MockOffersRepository always used global mockDataService,
-not the test-specific service instance
-
-Solution:
-- Add optional testService parameter to MockOffersRepository
-- Pass testService through OffersProvider.mock()
-- Remove unnecessary unavailableOffers feature (doesn't make sense in regional context)
-- Simplify regional filtering logic
-- Update tests to verify regional filtering works correctly
-
-This fixes the failing test and removes unnecessary complexity."
-```
+**Tests:** 4 Tests angepasst, alle bestehen
 
 #### **Task 5c.3: RetailersProvider Verfügbarkeitsprüfung**
 **📁 Datei:** `lib/providers/retailers_provider.dart` (ERSTELLEN - existiert noch nicht)

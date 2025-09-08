@@ -406,8 +406,14 @@ void main() {
         final totalOffersCount = offersProvider.allOffers.length;
         
         // Apply regional filter for Berlin
+        // This will trigger loadRegionalOffers via callback
         await locationProvider.setUserPLZ('10115');
-        await offersProvider.loadOffers(applyRegionalFilter: true);
+        
+        // Wait for the callback-triggered load to complete
+        while (offersProvider.isLoading) {
+          await Future.delayed(Duration(milliseconds: 10));
+        }
+        
         final regionalOffersCount = offersProvider.allOffers.length;
         
         // Check that offers are actually being filtered
