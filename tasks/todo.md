@@ -1078,13 +1078,13 @@ Task 5a ready for Task 5b (GPS-to-PLZ mapping)"
 - [x] FlashDealsProvider Integration, Auto-Refresh alle 10s
 - [x] Regional gefilterte Deals mit Store-Info (text-sm, #666666)
 
-**Task 6.5: CustomAppBar Widget** ⏳ **BEREIT**
-- [ ] `lib/widgets/custom_app_bar.dart` erstellen
-- [ ] Height: 64px, Background: #2E8B57 (primary-green)
-- [ ] Logo: 32x32px weiß, Text: "FlashFeed" (20px, bold, white)
-- [ ] Hamburger: 24x24px Icon, 44x44px Touch-Area (A11y)
-- [ ] Settings-Overlay: Dark Mode Toggle, PLZ-Input Field
-- [ ] UserProvider Integration für Preferences
+**Task 6.5: CustomAppBar Widget** ✅ **ABGESCHLOSSEN**
+- [x] `lib/widgets/custom_app_bar.dart` erstellen
+- [x] Height: 64px, Background: #2E8B57 (primary-green)
+- [x] Logo: 32x32px weiß, Text: "FlashFeed" (20px, bold, white)
+- [x] Hamburger: 24x24px Icon, 44x44px Touch-Area (A11y)
+- [x] Settings-Overlay: Dark Mode Toggle, PLZ-Input Field
+- [x] UserProvider Integration für Preferences
 
 **Task 6.6: Responsive Layout System** ⏳ **BEREIT**
 - [ ] `lib/utils/responsive_helper.dart` erstellen

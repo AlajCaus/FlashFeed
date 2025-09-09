@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/custom_app_bar.dart';
+
 import 'offers_screen.dart';
 import 'map_screen.dart';
 import 'flash_deals_screen.dart';
@@ -72,90 +74,13 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     
     return Scaffold(
       backgroundColor: backgroundLight,
-      body: Column(
-        children: [
-          // Header Panel (64px)
-          _buildHeader(context),
-          
-          // Content Area with Tab Navigation
-          Expanded(
-            child: isDesktop 
-                ? _buildDesktopLayout()
-                : _buildMobileTabletLayout(),
-          ),
-        ],
-      ),
+      appBar: const CustomAppBar(),
+      body: isDesktop 
+          ? _buildDesktopLayout()
+          : _buildMobileTabletLayout(),
     );
   }
-  
-  Widget _buildHeader(BuildContext context) {
-    
-    return Container(
-      height: 64,
-      decoration: BoxDecoration(
-        color: primaryGreen,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Logo + App Name
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.flash_on,
-                    color: Color(0xFF2E8B57),
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'FlashFeed',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto',
-                  ),
-                ),
-              ],
-            ),
-            
-            // Hamburger Menu (44x44 touch area for A11y)
-            InkWell(
-              onTap: () => _showSettingsMenu(context),
-              borderRadius: BorderRadius.circular(22),
-              child: Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                child: const Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
   
   Widget _buildMobileTabletLayout() {
     return Column(
@@ -301,96 +226,5 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   Widget _buildFlashDealsPanel() {
     return const FlashDealsScreen();
   }
-  
-  void _showSettingsMenu(BuildContext context) {
-    final userProvider = context.read<UserProvider>();
-    final locationProvider = context.read<LocationProvider>();
-    
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.dark_mode),
-              title: const Text('Dark Mode'),
-              trailing: Switch(
-                value: context.read<AppProvider>().isDarkMode,
-                onChanged: (value) {
-                  context.read<AppProvider>().setDarkMode(value);
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.location_on),
-              title: const Text('PLZ ändern'),
-              subtitle: Text(locationProvider.postalCode ?? locationProvider.userPLZ ?? 'Nicht gesetzt'),
-              onTap: () {
-                Navigator.pop(context);
-                _showPLZDialog(context);
-              },
-            ),
-            if (!userProvider.isPremium)
-              ListTile(
-                leading: const Icon(Icons.star),
-                title: const Text('Premium aktivieren'),
-                subtitle: const Text('Alle Features freischalten'),
-                onTap: () {
-                  userProvider.enableDemoMode();
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Premium aktiviert!'),
-                      backgroundColor: Color(0xFF2E8B57),
-                    ),
-                  );
-                },
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  void _showPLZDialog(BuildContext context) {
-    final controller = TextEditingController();
-    final locationProvider = context.read<LocationProvider>();
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('PLZ eingeben'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          maxLength: 5,
-          decoration: const InputDecoration(
-            hintText: 'z.B. 10115',
-            labelText: 'Postleitzahl',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (controller.text.length == 5) {
-                locationProvider.setUserPLZ(controller.text);
-                Navigator.pop(context);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryGreen,
-            ),
-            child: const Text('Speichern'),
-          ),
-        ],
-      ),
-    );
-  }
+
 }
