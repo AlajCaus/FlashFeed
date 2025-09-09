@@ -1060,14 +1060,14 @@ Task 5a ready for Task 5b (GPS-to-PLZ mapping)"
 - [x] Freemium: Grayscale(100%) für gesperrte, opacity 0.5
 - [x] "Nicht verfügbar" mit error-message Styling (#FFF5F5 BG)
 
-**Task 6.3: MapScreen - Panel 2** ⏳ **BEREIT**
-- [ ] `lib/screens/map_screen.dart` erstellen  
-- [ ] Map-Container: calc(100vh - 120px), Maps-Placeholder Image
-- [ ] Store-Pins: 40x40px Teardrops, Chain-Farben (EDEKA #005CA9, REWE #CC071E)
-- [ ] Radius-Filter: Top-Left Overlay, 1-20km Slider, primary-green track
-- [ ] Filial-Details Bottom Sheet mit weißem BG, 16px border-radius
-- [ ] RetailersProvider Integration + GPS-Button (Bottom-Right)
-- [ ] Hover-Animation: scale 1.2, bounce 0.3s ease
+**Task 6.3: MapScreen - Panel 2** ✅ **ABGESCHLOSSEN**
+- [x] `lib/screens/map_screen.dart` erstellen  
+- [x] Map-Container: calc(100vh - 120px), Maps-Placeholder Image
+- [x] Store-Pins: 40x40px Teardrops, Chain-Farben (EDEKA #005CA9, REWE #CC071E)
+- [x] Radius-Filter: Top-Left Overlay, 1-20km Slider, primary-green track
+- [x] Filial-Details Bottom Sheet mit weißem BG, 16px border-radius
+- [x] RetailersProvider Integration + GPS-Button (Bottom-Right)
+- [x] Hover-Animation: scale 1.2, bounce 0.3s ease
 
 **Task 6.4: FlashDealsScreen - Panel 3** ⏳ **BEREIT**
 - [ ] `lib/screens/flash_deals_screen.dart` erstellen

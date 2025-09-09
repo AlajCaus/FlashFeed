@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'offers_screen.dart';
+import 'map_screen.dart';
 
 import '../providers/location_provider.dart';
 import '../providers/app_provider.dart';
 import '../providers/user_provider.dart';
 
 import '../providers/flash_deals_provider.dart';
-import '../providers/retailers_provider.dart';
+
 
 /// MainLayoutScreen - Haupt-Navigation für FlashFeed
 /// 
@@ -295,36 +296,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   }
   
   Widget _buildMapPanel() {
-    final retailersProvider = context.watch<RetailersProvider>();
-    
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.map,
-            size: 64,
-            color: Color(0xFF1E90FF),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Karte Panel',
-            style: TextStyle(
-              fontSize: 18,
-              color: textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${retailersProvider.availableRetailers.length} Händler in der Nähe',
-            style: TextStyle(
-              fontSize: 14,
-              color: textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
+    return const MapScreen();
   }
   
   Widget _buildFlashDealsPanel() {
