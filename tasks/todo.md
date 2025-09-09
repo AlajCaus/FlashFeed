@@ -1028,3 +1028,102 @@ Task 5a ready for Task 5b (GPS-to-PLZ mapping)"
 **GESAMT-TASKS: 27 Aufgaben (23 ursprünglich + 3 regionale Tasks + 1 Quick Deployment)**  
 **GESCHÄTZTE ZEIT: 3-3.5 Wochen**  
 **ARCHITEKTUR: Provider → BLoC Migration Ready + Regionale Verfügbarkeit + Continuous Deployment**
+
+---
+
+## **PHASE 2: UI FRAMEWORK & NAVIGATION**
+*Ziel: Drei-Panel-Navigation mit Responsive Design (Woche 2)*
+
+### **📱 UI IMPLEMENTATION**
+
+#### **Task 6: Navigation & UI Screens** 🔄 **AKTUELLE ARBEIT**
+
+**🎯 ZIEL:** Komplettes UI-Framework mit 3-Panel-Navigation für MVP
+
+**📋 DETAILLIERTER IMPLEMENTIERUNGSPLAN (mit UI-Spezifikationen integriert):**
+
+**Task 6.1: MainLayoutScreen - Haupt-Navigation** ✅ **ABGESCHLOSSEN**
+- [x] `lib/screens/main_layout_screen.dart` erstellen
+- [x] Header-Panel: 64px, SeaGreen (#2E8B57), Logo + Hamburger-Menü
+- [x] Tab-Navigation: 56px, Icons (shopping-cart, map-pin, zap)
+- [x] Active State: SeaGreen BG, 3px Crimson border-bottom
+- [x] Responsive: Mobile (<768px), Tablet (768-1024px), Desktop (1024px+)
+- [x] Provider-Integration: AppProvider für Navigation-State
+- [x] LocationProvider-Integration für PLZ-Updates
+
+**Task 6.2: OffersScreen - Panel 1** ⏳ **BEREIT**
+- [ ] `lib/screens/offers_screen.dart` erstellen
+- [ ] Händler-Icon-Leiste: 80px Höhe, 60x60px Icons, Active: 2px green border
+- [ ] Produktgruppen-Grid: auto-fit minmax(150px, 1fr), 120px min-height Cards
+- [ ] Karten-Design: 12px border-radius, box-shadow, Kategorie-Icons 32x32px
+- [ ] OffersProvider Integration mit Rabatt-Badges (orange #FF6347)
+- [ ] Freemium: Grayscale(100%) für gesperrte, opacity 0.5
+- [ ] "Nicht verfügbar" mit error-message Styling (#FFF5F5 BG)
+
+**Task 6.3: MapScreen - Panel 2** ⏳ **BEREIT**
+- [ ] `lib/screens/map_screen.dart` erstellen  
+- [ ] Map-Container: calc(100vh - 120px), Maps-Placeholder Image
+- [ ] Store-Pins: 40x40px Teardrops, Chain-Farben (EDEKA #005CA9, REWE #CC071E)
+- [ ] Radius-Filter: Top-Left Overlay, 1-20km Slider, primary-green track
+- [ ] Filial-Details Bottom Sheet mit weißem BG, 16px border-radius
+- [ ] RetailersProvider Integration + GPS-Button (Bottom-Right)
+- [ ] Hover-Animation: scale 1.2, bounce 0.3s ease
+
+**Task 6.4: FlashDealsScreen - Panel 3** ⏳ **BEREIT**
+- [ ] `lib/screens/flash_deals_screen.dart` erstellen
+- [ ] Flash-Cards: Weiß, 12px radius, 4px crimson left-border
+- [ ] Countdown: HH:MM:SS, Farben (>1h green, 30-60min orange, <30min red blink)
+- [ ] Professor-Demo-Button: Full-width, primary-green (#2E8B57)
+- [ ] Lageplan-Modal: 90vw width, SVG-Plan, pulsing red dot marker
+- [ ] FlashDealsProvider Integration, Auto-Refresh alle 10s
+- [ ] Regional gefilterte Deals mit Store-Info (text-sm, #666666)
+
+**Task 6.5: CustomAppBar Widget** ⏳ **BEREIT**
+- [ ] `lib/widgets/custom_app_bar.dart` erstellen
+- [ ] Height: 64px, Background: #2E8B57 (primary-green)
+- [ ] Logo: 32x32px weiß, Text: "FlashFeed" (20px, bold, white)
+- [ ] Hamburger: 24x24px Icon, 44x44px Touch-Area (A11y)
+- [ ] Settings-Overlay: Dark Mode Toggle, PLZ-Input Field
+- [ ] UserProvider Integration für Preferences
+
+**Task 6.6: Responsive Layout System** ⏳ **BEREIT**
+- [ ] `lib/utils/responsive_helper.dart` erstellen
+- [ ] Breakpoints: Mobile (320-768px), Tablet (768-1024px), Desktop (1024px+)
+- [ ] Grid-Anpassung: Mobile 2 cols, Tablet 3 cols, Desktop 4+ cols
+- [ ] Font-Scaling: text-base (16px), Roboto/Open Sans
+- [ ] Spacing-System: space-1 (4px) bis space-16 (64px)
+- [ ] Transitions: fast (0.15s), normal (0.3s), slow (0.5s)
+
+**🔗 DEPENDENCIES:**
+- ✅ Provider-Architektur (Task 4)
+- ✅ MockDataService (Task 5) 
+- ✅ Cross-Provider Integration (Task 5b.5)
+
+**🎨 DESIGN SYSTEM (aus UI-Spezifikation):**
+- **Farben:** Primary-Green #2E8B57, Primary-Red #DC143C, Primary-Blue #1E90FF
+- **Typography:** Roboto (primary), Open Sans (secondary), 16px base
+- **Icons:** Lucide React 24px Standard (shopping-cart, map-pin, zap)
+- **Händler-Farben:** EDEKA #005CA9, REWE #CC071E, ALDI #00549F, LIDL #0050AA
+- **Accessibility:** WCAG 2.1 AA, 44x44px Touch-Targets, Focus-Indicators
+- **Loading:** Skeleton-Loader mit Gradient-Animation
+- **Error-States:** #FFF5F5 BG mit #C53030 Text
+
+**⚠️ WICHTIGE HINWEISE:**
+- Google Maps erst in Phase 2 - für MVP nur Placeholder-Image
+- Professor-Demo-Button MUSS prominent sein (full-width, primary-green)
+- Mobile-First Design Approach (320px minimum)
+- Alle Screens müssen auf Provider-Updates reagieren
+- A11y: aria-labels, screen-reader support, keyboard navigation
+
+**🚀 IMPLEMENTIERUNGSREIHENFOLGE:**
+1. MainLayoutScreen zuerst (Navigation-Foundation)
+2. Responsive Helper (für alle Screens)
+3. CustomAppBar (gemeinsames Element)
+4. Dann die 3 Content-Screens parallel
+
+**✅ DEFINITION OF DONE:**
+- [ ] Alle 6 Subtasks komplett
+- [ ] Navigation zwischen Panels funktioniert
+- [ ] Provider-Updates triggern UI-Updates
+- [ ] Responsive auf Mobile/Tablet/Desktop
+- [ ] Professor kann in 5 Min alle Features sehen

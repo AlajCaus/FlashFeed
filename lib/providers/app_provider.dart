@@ -41,6 +41,19 @@ class AppProvider extends ChangeNotifier {
   void switchToMap() => switchToPanel(AppPanel.map);
   void switchToFlashDeals() => switchToPanel(AppPanel.flashDeals);
   
+  // Dark Mode
+  void setDarkMode(bool value) {
+    if (_isDarkMode != value) {
+      _isDarkMode = value;
+      notifyListeners();
+    }
+  }
+  
+  void toggleDarkMode() {
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+  }
+  
   // Loading State
   void setLoading(bool loading) {
     if (_isLoading != loading) {

@@ -1,28 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/app_provider.dart';
-import '../providers/offers_provider.dart';
-import '../providers/user_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/app_provider.dart';
+import '../providers/user_provider.dart';
+import '../providers/offers_provider.dart';
 import '../providers/flash_deals_provider.dart';
 import '../providers/retailers_provider.dart';
 
-/*
- * FlashFeed Main Layout Screen
- * 
- * ARCHITEKTUR: Provider Pattern (statt BLoC)
- * 
- * AUFBAU:
- * - Drei-Panel Navigation: Angebote | Karte | Flash Deals
- * - Provider-basierte State-Verwaltung
- * - Consumer-Widgets für reaktive UI-Updates
- * 
- * MIGRATION-READY: 
- * - UI-Logic ist Provider-agnostisch
- * - Einfache Umstellung auf BLoC später möglich
- */
-
+/// MainLayoutScreen - Haupt-Navigation für FlashFeed
+/// 
+/// UI-Spezifikationen:
+/// - Header: 64px, #2E8B57 (SeaGreen)
+/// - Tab-Navigation: 56px mit 3 Icons
+/// - Responsive: Mobile (<768), Tablet (768-1024), Desktop (1024+)
 class MainLayoutScreen extends StatefulWidget {
   const MainLayoutScreen({super.key});
 
@@ -30,84 +21,77 @@ class MainLayoutScreen extends StatefulWidget {
   State<MainLayoutScreen> createState() => _MainLayoutScreenState();
 }
 
-class _MainLayoutScreenState extends State<MainLayoutScreen> {
+class _MainLayoutScreenState extends State<MainLayoutScreen> 
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  
+  // Design System Colors
+  static const Color primaryGreen = Color(0xFF2E8B57);
+  static const Color primaryRed = Color(0xFFDC143C);
+
+  static const Color textSecondary = Color(0xFF666666);
+  static const Color backgroundLight = Color(0xFFFAFAFA);
+  
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     
-    // Initialize data when screen loads
+    // LocationProvider initialization
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeApp();
+      _initializeProviders();
     });
   }
-
-  void _initializeApp() async {
-    final appProvider = context.read<AppProvider>();
-    final offersProvider = context.read<OffersProvider>();
-    final flashDealsProvider = context.read<FlashDealsProvider>();
+  
+  void _initializeProviders() async {
     final locationProvider = context.read<LocationProvider>();
-    final retailersProvider = context.read<RetailersProvider>();
     
-    try {
-      // Set loading state
-      appProvider.setLoading(true);
-      
-      // Connect providers through callback system (Task 5b.5 & 5c.3)
-      offersProvider.registerWithLocationProvider(locationProvider);
-      retailersProvider.registerWithLocationProvider(locationProvider);
-      
-      // Initialize location (with permission request)
-      await locationProvider.requestLocationPermission();
-      
-      // Load initial data
-      await offersProvider.loadOffers();
-      await flashDealsProvider.loadFlashDeals();
-      
-      // Mark first launch as complete
-      if (appProvider.isFirstLaunch) {
-        appProvider.completeFirstLaunch();
-      }
-      
-    } catch (e) {
-      appProvider.setError('Fehler beim Laden der App: ${e.toString()}');
-    } finally {
-      appProvider.setLoading(false);
-    }
+    // Register LocationProvider callbacks
+    locationProvider.registerLocationChangeCallback(() {
+      // Retailers already registered via ProviderInitializer
+      debugPrint('Location updated');
+    });
+    
+    // Ensure location data is available
+    await locationProvider.ensureLocationData();
   }
-
+  
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+  
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 1024;
+
+    
     return Scaffold(
+      backgroundColor: backgroundLight,
       body: Column(
         children: [
-          // App Header
-          _buildAppHeader(),
+          // Header Panel (64px)
+          _buildHeader(context),
           
-          // Main Content Area
+          // Content Area with Tab Navigation
           Expanded(
-            child: Consumer<AppProvider>(
-              builder: (context, appProvider, child) {
-                if (appProvider.isLoading) {
-                  return _buildLoadingScreen();
-                }
-                
-                return _buildMainContent();
-              },
-            ),
+            child: isDesktop 
+                ? _buildDesktopLayout()
+                : _buildMobileTabletLayout(),
           ),
-          
-          // Bottom Navigation
-          _buildBottomNavigation(),
         ],
       ),
     );
   }
-
-  Widget _buildAppHeader() {
+  
+  Widget _buildHeader(BuildContext context) {
+    
     return Container(
-      height: 80,
+      height: 64,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: primaryGreen,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -116,603 +100,417 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
           ),
         ],
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            children: [
-              // App Logo/Title
-              const Text(
-                '⚡ FlashFeed',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E8B57), // FlashFeed Green
-                ),
-              ),
-              
-              const Spacer(),
-              
-              // User Status & Settings
-              Consumer<UserProvider>(
-                builder: (context, userProvider, child) {
-                  return Row(
-                    children: [
-                      // Premium Status
-                      if (userProvider.isPremium)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.amber,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            'PREMIUM',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ),
-                      
-                      const SizedBox(width: 8),
-                      
-                      // Settings Button
-                      IconButton(
-                        icon: const Icon(Icons.settings),
-                        onPressed: () => _showSettingsDialog(),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMainContent() {
-    return Consumer<AppProvider>(
-      builder: (context, appProvider, child) {
-        switch (appProvider.currentPanel) {
-          case AppPanel.offers:
-            return _buildOffersPanel();
-          case AppPanel.map:
-            return _buildMapPanel();
-          case AppPanel.flashDeals:
-            return _buildFlashDealsPanel();
-        }
-      },
-    );
-  }
-
-  Widget _buildOffersPanel() {
-    return Consumer<OffersProvider>(
-      builder: (context, offersProvider, child) {
-        if (offersProvider.isLoading) {
-          return _buildLoadingWidget('Lade Angebote...');
-        }
-        
-        if (offersProvider.errorMessage != null) {
-          return _buildErrorWidget(
-            offersProvider.errorMessage!,
-            () => offersProvider.refresh(),
-          );
-        }
-        
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title
-              Text(
-                'Aktuelle Angebote',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              
-              const SizedBox(height: 8),
-              
-              // Stats
-              Text(
-                '${offersProvider.filteredOffersCount} von ${offersProvider.totalOffersCount} Angeboten',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Quick Actions
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () => offersProvider.refresh(),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Aktualisieren'),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: () => _showFilterDialog(),
-                    icon: const Icon(Icons.filter_list),
-                    label: const Text('Filter'),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Offers List
-              Expanded(
-                child: offersProvider.offers.isEmpty
-                    ? _buildEmptyState('Keine Angebote gefunden')
-                    : ListView.builder(
-                        itemCount: offersProvider.offers.length,
-                        itemBuilder: (context, index) {
-                          final offer = offersProvider.offers[index];
-                          return _buildOfferCard(offer);
-                        },
-                      ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildMapPanel() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Text(
-            'Karten-Ansicht',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.map_outlined,
-                      size: 64,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Karte wird in Task 6-8 implementiert',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFlashDealsPanel() {
-    return Consumer<FlashDealsProvider>(
-      builder: (context, flashDealsProvider, child) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Flash Deals',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const Spacer(),
-                  // Stats
-                  Text(
-                    '${flashDealsProvider.totalDealsCount} Deals • ${flashDealsProvider.urgentDealsCount} dringend',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Professor Demo Button
-                  ElevatedButton.icon(
-                    onPressed: () => _triggerProfessorDemo(),
-                    icon: const Icon(Icons.flash_on),
-                    label: const Text('Professor Demo'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 8),
-              
-              // Quick Actions
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () => flashDealsProvider.refresh(),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Aktualisieren'),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: () => flashDealsProvider.clearAllFilters(),
-                    icon: const Icon(Icons.clear_all),
-                    label: const Text('Filter zurücksetzen'),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Flash Deals List
-              Expanded(
-                child: flashDealsProvider.isLoading
-                    ? _buildLoadingWidget('Lade Flash Deals...')
-                    : flashDealsProvider.errorMessage != null
-                        ? _buildErrorWidget(
-                            flashDealsProvider.errorMessage!,
-                            () => flashDealsProvider.refresh(),
-                          )
-                        : flashDealsProvider.flashDeals.isEmpty
-                            ? _buildEmptyState('Keine Flash Deals verfügbar')
-                            : ListView.builder(
-                                itemCount: flashDealsProvider.flashDeals.length,
-                                itemBuilder: (context, index) {
-                                  final deal = flashDealsProvider.flashDeals[index];
-                                  return _buildFlashDealCard(deal);
-                                },
-                              ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBottomNavigation() {
-    return Consumer<AppProvider>(
-      builder: (context, appProvider, child) {
-        return BottomNavigationBar(
-          currentIndex: appProvider.currentPanel.index,
-          onTap: (index) {
-            final panel = AppPanel.values[index];
-            appProvider.switchToPanel(panel);
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.local_offer),
-              label: 'Angebote',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Karte',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.flash_on),
-              label: 'Flash Deals',
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildLoadingScreen() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('FlashFeed wird geladen...'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingWidget(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Text(message),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorWidget(String error, VoidCallback onRetry) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
-          Text(
-            error,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.red),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: onRetry,
-            child: const Text('Erneut versuchen'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: TextStyle(color: Colors.grey[600]),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOfferCard(dynamic offer) {
-    // Offer Card mit echten Daten aus MockDataService
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: offer.hasDiscount ? Colors.green : Colors.blue,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            offer.hasDiscount ? Icons.local_offer : Icons.shopping_cart,
-            color: Colors.white,
-            size: 20,
-          ),
-        ),
-        title: Text(
-          offer.productName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('   ${offer.retailer}'),
-            Text('   ${offer.storeAddress}'),
-            if (offer.hasDiscount)
-              Text(
-                '   Gültig bis: ${offer.validUntil.day}.${offer.validUntil.month}.${offer.validUntil.year}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+            // Logo + App Name
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.flash_on,
+                    color: Color(0xFF2E8B57),
+                    size: 24,
+                  ),
                 ),
-              ),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '€${offer.price.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+                const SizedBox(width: 12),
+                const Text(
+                  'FlashFeed',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+              ],
+            ),
+            
+            // Hamburger Menu (44x44 touch area for A11y)
+            InkWell(
+              onTap: () => _showSettingsMenu(context),
+              borderRadius: BorderRadius.circular(22),
+              child: Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.menu,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
             ),
-            if (offer.hasDiscount) ...[
-              Text(
-                'statt €${offer.originalPrice!.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  decoration: TextDecoration.lineThrough,
-                  fontSize: 10,
-                  color: Colors.grey,
-                ),
-              ),
-              Text(
-                'Ersparnis: €${offer.savings.toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: Colors.green[600],
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
           ],
         ),
       ),
     );
   }
   
-  Widget _buildFlashDealCard(dynamic deal) {
-    // Flash Deal Card mit echten Daten
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 4,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          gradient: LinearGradient(
-            colors: [
-              deal.urgencyLevel == 'high' ? Colors.red[50]! : 
-              deal.urgencyLevel == 'medium' ? Colors.orange[50]! : Colors.blue[50]!,
-              Colors.white,
-            ],
-          ),
-        ),
-        child: ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: deal.urgencyLevel == 'high' ? Colors.red : 
-                     deal.urgencyLevel == 'medium' ? Colors.orange : Colors.blue,
-              borderRadius: BorderRadius.circular(8),
+  Widget _buildMobileTabletLayout() {
+    return Column(
+      children: [
+        // Tab Bar (56px)
+        Container(
+          height: 56,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(
+                color: textSecondary.withValues(alpha: 0.2),
+                width: 1,
+              ),
             ),
-            child: const Icon(Icons.flash_on, color: Colors.white, size: 20),
           ),
-          title: Text(
-            deal.productName,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          child: TabBar(
+            controller: _tabController,
+            indicatorColor: primaryRed,
+            indicatorWeight: 3,
+            labelColor: primaryGreen,
+            unselectedLabelColor: textSecondary,
+            tabs: [
+              _buildTab(Icons.shopping_cart, 'Angebote'),
+              _buildTab(Icons.map, 'Karte'),
+              _buildTab(Icons.flash_on, 'Flash'),
+            ],
           ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        
+        // Tab Content
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
             children: [
-              Text('   ${deal.brand} • ${deal.retailer}'),
-              Text('   ${deal.storeName}'),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.timer,
-                    size: 14,
-                    color: deal.urgencyLevel == 'high' ? Colors.red : Colors.orange,
+              _buildOffersPanel(),
+              _buildMapPanel(),
+              _buildFlashDealsPanel(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildDesktopLayout() {
+    // Desktop: 3-column layout
+    return Row(
+      children: [
+        // Panel 1: Angebote
+        Expanded(
+          flex: 1,
+          child: _buildPanelContainer(_buildOffersPanel(), 'Angebote'),
+        ),
+        
+        // Panel 2: Karte (larger in center)
+        Expanded(
+          flex: 2,
+          child: _buildPanelContainer(_buildMapPanel(), 'Karte'),
+        ),
+        
+        // Panel 3: Flash Deals
+        Expanded(
+          flex: 1,
+          child: _buildPanelContainer(_buildFlashDealsPanel(), 'Flash Deals'),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildPanelContainer(Widget child, String title) {
+    return Container(
+      margin: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Panel Header
+          Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: primaryGreen.withAlpha(25),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2E8B57),
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '  ${deal.remainingMinutes} Min verbleibend',
-                    style: TextStyle(
-                      color: deal.urgencyLevel == 'high' ? Colors.red : Colors.orange,
-                      fontWeight: FontWeight.w500,
+                ),
+              ],
+            ),
+          ),
+          
+          // Panel Content
+          Expanded(child: child),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildTab(IconData icon, String label) {
+    return Tab(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Placeholder Panels - will be replaced with actual screens
+  Widget _buildOffersPanel() {
+    final offersProvider = context.watch<OffersProvider>();
+    final locationProvider = context.watch<LocationProvider>();
+    
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.shopping_cart,
+            size: 64,
+            color: Color(0xFF2E8B57),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Angebote Panel',
+            style: TextStyle(
+              fontSize: 18,
+              color: textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'PLZ: ${locationProvider.postalCode ?? locationProvider.userPLZ ?? "Nicht gesetzt"}',
+            style: TextStyle(
+              fontSize: 14,
+              color: textSecondary,
+            ),
+          ),
+          Text(
+            '${offersProvider.offers.length} Angebote verfügbar',
+            style: TextStyle(
+              fontSize: 14,
+              color: textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildMapPanel() {
+    final retailersProvider = context.watch<RetailersProvider>();
+    
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.map,
+            size: 64,
+            color: Color(0xFF1E90FF),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Karte Panel',
+            style: TextStyle(
+              fontSize: 18,
+              color: textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${retailersProvider.availableRetailers.length} Händler in der Nähe',
+            style: TextStyle(
+              fontSize: 14,
+              color: textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildFlashDealsPanel() {
+    final flashDealsProvider = context.watch<FlashDealsProvider>();
+    
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.flash_on,
+            size: 64,
+            color: Color(0xFFDC143C),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Flash Deals Panel',
+            style: TextStyle(
+              fontSize: 18,
+              color: textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${flashDealsProvider.flashDeals.length} aktive Deals',
+            style: TextStyle(
+              fontSize: 14,
+              color: textSecondary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Professor Demo Button (prominent!)
+          ElevatedButton(
+            onPressed: () {
+              // Generate demo deals for professor
+              flashDealsProvider.loadFlashDeals();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Flash Deals generiert!'),
+                  backgroundColor: Color(0xFF2E8B57),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryGreen,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 32,
+                vertical: 16,
+              ),
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            child: const Text('PROFESSOR DEMO'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showSettingsMenu(BuildContext context) {
+    final userProvider = context.read<UserProvider>();
+    final locationProvider = context.read<LocationProvider>();
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.dark_mode),
+              title: const Text('Dark Mode'),
+              trailing: Switch(
+                value: context.read<AppProvider>().isDarkMode,
+                onChanged: (value) {
+                  context.read<AppProvider>().setDarkMode(value);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('PLZ ändern'),
+              subtitle: Text(locationProvider.postalCode ?? locationProvider.userPLZ ?? 'Nicht gesetzt'),
+              onTap: () {
+                Navigator.pop(context);
+                _showPLZDialog(context);
+              },
+            ),
+            if (!userProvider.isPremium)
+              ListTile(
+                leading: const Icon(Icons.star),
+                title: const Text('Premium aktivieren'),
+                subtitle: const Text('Alle Features freischalten'),
+                onTap: () {
+                  userProvider.enableDemoMode();
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Premium aktiviert!'),
+                      backgroundColor: Color(0xFF2E8B57),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
-            ],
-          ),
-          trailing: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '€${deal.flashPrice.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.green,
-                ),
-              ),
-              Text(
-                'statt €${deal.originalPrice.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  decoration: TextDecoration.lineThrough,
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
-              Text(
-                '-${deal.discountPercentage}%',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: Colors.red,
-                ),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
-
-  void _showSettingsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Einstellungen'),
-        content: const Text('Einstellungen werden in Task 7-8 implementiert'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Filter'),
-        content: const Text('Filter werden in Task 9-10 implementiert'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _triggerProfessorDemo() {
-    final appProvider = context.read<AppProvider>();
-    final userProvider = context.read<UserProvider>();
-    final flashDealsProvider = context.read<FlashDealsProvider>();
+  
+  void _showPLZDialog(BuildContext context) {
+    final controller = TextEditingController();
+    final locationProvider = context.read<LocationProvider>();
     
-    try {
-      // Enable demo mode
-      userProvider.enableDemoMode();
-      appProvider.triggerProfessorDemo();
-      
-      // Generate instant flash deal
-      final newDeal = flashDealsProvider.generateInstantFlashDeal();
-      
-      // Show demo message with deal details
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '🎓 Professor Demo aktiviert! '
-            'Neuer Flash Deal: ${newDeal.productName} (-${newDeal.discountPercentage}%)'
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('PLZ eingeben'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          maxLength: 5,
+          decoration: const InputDecoration(
+            hintText: 'z.B. 10115',
+            labelText: 'Postleitzahl',
           ),
-          backgroundColor: Colors.orange,
-          duration: const Duration(seconds: 4),
-          action: SnackBarAction(
-            label: 'Anzeigen',
-            textColor: Colors.white,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          ElevatedButton(
             onPressed: () {
-              // Switch to flash deals panel if not already there
-              if (appProvider.currentPanel != AppPanel.flashDeals) {
-                appProvider.switchToPanel(AppPanel.flashDeals);
+              if (controller.text.length == 5) {
+                locationProvider.setUserPLZ(controller.text);
+                Navigator.pop(context);
               }
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryGreen,
+            ),
+            child: const Text('Speichern'),
           ),
-        ),
-      );
-      
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('❌ Professor Demo Fehler: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+        ],
+      ),
+    );
   }
 }
