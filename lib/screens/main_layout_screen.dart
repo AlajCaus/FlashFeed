@@ -29,6 +29,7 @@ class MainLayoutScreen extends StatefulWidget {
 class _MainLayoutScreenState extends State<MainLayoutScreen> 
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isInitialized = false;
   
   // Design System Colors
   static const Color primaryGreen = Color(0xFF2E8B57);
@@ -42,9 +43,27 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     
+    // Task 7: Sync TabController with AppProvider
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      if (!_isInitialized) return;  // Prevent during init
+      
+      final appProvider = context.read<AppProvider>();
+      final userProvider = context.read<UserProvider>();
+      
+      // Check Premium for Map Panel (index 1)
+      if (!appProvider.canNavigateToPanel(_tabController.index, userProvider.isPremium)) {
+        _tabController.index = appProvider.selectedPanelIndex;  // Revert
+        _showPremiumDialog();
+      } else {
+        appProvider.navigateToPanel(_tabController.index);
+      }
+    });
+    
     // LocationProvider initialization
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeProviders();
+      _syncWithAppProvider();
     });
   }
   
@@ -61,6 +80,44 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     await locationProvider.ensureLocationData();
   }
   
+  // Task 7: Sync TabController with AppProvider
+  void _syncWithAppProvider() {
+    final appProvider = context.read<AppProvider>();
+    _tabController.index = appProvider.selectedPanelIndex;
+    _isInitialized = true;
+  }
+  
+  // Task 7: Show Premium dialog for locked panels
+  void _showPremiumDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Premium Feature'),
+        content: const Text('Die Kartenansicht ist nur für Premium-Nutzer verfügbar.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Activate Premium via Professor Demo
+              context.read<UserProvider>().activatePremiumDemo();
+              // Navigate to Map after activation
+              context.read<AppProvider>().navigateToPanel(1);
+              _tabController.index = 1;
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryGreen,
+            ),
+            child: const Text('Professor Demo'),
+          ),
+        ],
+      ),
+    );
+  }
+  
   @override
   void dispose() {
     _tabController.dispose();
@@ -72,13 +129,22 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth >= 1024;
 
-    
-    return Scaffold(
-      backgroundColor: backgroundLight,
-      appBar: const CustomAppBar(),
-      body: isDesktop 
-          ? _buildDesktopLayout()
-          : _buildMobileTabletLayout(),
+    // Task 7: Listen to AppProvider for external navigation
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, child) {
+        // Sync TabController if AppProvider changed externally
+        if (_isInitialized && _tabController.index != appProvider.selectedPanelIndex) {
+          _tabController.index = appProvider.selectedPanelIndex;
+        }
+        
+        return Scaffold(
+          backgroundColor: backgroundLight,
+          appBar: const CustomAppBar(),
+          body: isDesktop 
+              ? _buildDesktopLayout()
+              : _buildMobileTabletLayout(),
+        );
+      },
     );
   }
 

@@ -12,9 +12,9 @@
 8. Führe keine Änderungen selbstständig aus ohne dich vorher mit mir zu beraten.
 9. Wenn du im todo.md einen Task als komplett markirst, erstelle mir eine kompakte GitHub commit Message.
 10. AUSWIRKUNGSANALYSE PFLICHT: Vor jeder Lösungspräsentation MUSS analysiert werden:
-    - Welche bestehenden Dateien werden beeinflusst?
-    - Welche Provider/Services benötigen Anpassungen?
-    - Welche Tests müssen aktualisiert werden?
+    - Welche bestehenden Dateien werden beeinflusst? Lese immer die komplette Datei, Zeile für Zeile, und nicht nur die ersten 100 Zeilen
+    - Welche Provider/Services benötigen Anpassungen? Nicht engstirnig immer nur auf die Stelle schauen, wo der Fehler passiert ist. Methoden, welche die fehlerquelle aufrufen, müssen genauso betrachtet werden.
+    - Welche Tests müssen aktualisiert werden? Tests testen Codeverhalten. Es ist nicht Aufgabe vom Code Testverhalten zu fixen.
     - Welche Breaking Changes können entstehen?
     - Welche Abhängigkeiten sind betroffen?
 11. Wenn du einen Fehler bearbeitest und eine Lösung hast, lege ein Text File mit der Task Nummer im Namen in den Ordner ./tasks, wo du alle deine Analysen und Erkenntnisse dokumentierst, damit der nächste claude weiss wo er anzusetzen hat, wenn du unterbrochen wirst bei der Implementierung der Lösung.

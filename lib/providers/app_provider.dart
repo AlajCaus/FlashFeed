@@ -12,6 +12,8 @@ enum AppPanel {
 class AppProvider extends ChangeNotifier {
   // Navigation State
   AppPanel _currentPanel = AppPanel.offers;
+  int _selectedPanelIndex = 0;  // Task 7: For TabController integration
+  List<int> _navigationHistory = [];  // Task 7: For back navigation
   bool _isLoading = false;
   String? _errorMessage;
   
@@ -22,6 +24,8 @@ class AppProvider extends ChangeNotifier {
   
   // Getters
   AppPanel get currentPanel => _currentPanel;
+  int get selectedPanelIndex => _selectedPanelIndex;  // Task 7
+  List<int> get navigationHistory => List.unmodifiable(_navigationHistory);  // Task 7
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isDarkMode => _isDarkMode;
@@ -37,9 +41,56 @@ class AppProvider extends ChangeNotifier {
     }
   }
   
-  void switchToOffers() => switchToPanel(AppPanel.offers);
-  void switchToMap() => switchToPanel(AppPanel.map);
-  void switchToFlashDeals() => switchToPanel(AppPanel.flashDeals);
+  // Task 7: Navigation with index (for TabController)
+  void navigateToPanel(int index) {
+    if (index < 0 || index > 2) return;
+    
+    // Save to history
+    if (_selectedPanelIndex != index) {
+      _navigationHistory.add(_selectedPanelIndex);
+      if (_navigationHistory.length > 10) {
+        _navigationHistory.removeAt(0);  // Keep max 10 history items
+      }
+    }
+    
+    _selectedPanelIndex = index;
+    _currentPanel = AppPanel.values[index];
+    clearError();
+    notifyListeners();
+  }
+  
+  // Task 7: Check if user can navigate to panel (Premium check)
+  bool canNavigateToPanel(int index, bool isPremium) {
+    // Panel 1 (Map) requires Premium
+    if (index == 1 && !isPremium) {
+      return false;
+    }
+    return true;
+  }
+  
+  // Task 7: Navigate back
+  void navigateBack() {
+    if (_navigationHistory.isNotEmpty) {
+      final previousIndex = _navigationHistory.removeLast();
+      _selectedPanelIndex = previousIndex;
+      _currentPanel = AppPanel.values[previousIndex];
+      clearError();
+      notifyListeners();
+    }
+  }
+  
+  // Task 7: Reset navigation
+  void resetNavigation() {
+    _selectedPanelIndex = 0;
+    _currentPanel = AppPanel.offers;
+    _navigationHistory.clear();
+    clearError();
+    notifyListeners();
+  }
+  
+  void switchToOffers() => navigateToPanel(0);
+  void switchToMap() => navigateToPanel(1);
+  void switchToFlashDeals() => navigateToPanel(2);
   
   // Dark Mode
   void setDarkMode(bool value) {

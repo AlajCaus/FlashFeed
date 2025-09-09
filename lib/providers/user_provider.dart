@@ -274,6 +274,11 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
   
+  // Task 7: Alias for Professor Demo activation
+  void activatePremiumDemo() {
+    enableDemoMode();
+  }
+  
   void resetToFreeMode() {
     _userTier = UserTier.free;
     _updatePremiumFeatures();

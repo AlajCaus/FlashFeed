@@ -565,10 +565,39 @@ Task 5c bereitet State-Management für Tasks 9-10 vor:
 - [ ] `lib/widgets/map_panel.dart` - Panel 2: Karten-Ansicht
 - [ ] `lib/widgets/flash_deals_panel.dart` - Panel 3: Flash Deals
 
-#### **Task 7: App Provider Integration**
-- [ ] AppProvider in main.dart einbinden (MultiProvider Setup)
-- [ ] Navigation State Management
-- [ ] Panel-Wechsel-Logik implementieren
+#### **Task 7: App Provider Integration** ✅ **ABGESCHLOSSEN**
+- [x] AppProvider in main.dart einbinden (MultiProvider Setup) ✅ BEREITS VORHANDEN
+- [x] Navigation State Management ✅ IMPLEMENTIERT
+- [x] Panel-Wechsel-Logik implementieren ✅ IMPLEMENTIERT
+
+**📋 IMPLEMENTIERUNGSPLAN FÜR TASK 7:**
+
+**Schritt 1: Analyse der bestehenden Implementierung**
+- AppProvider in main.dart prüfen (Zeile 58-60) → bereits eingebunden ✅
+- AppProvider.dart analysieren → nur Dark Mode und Error State vorhanden
+- MainLayoutScreen.dart prüfen → nutzt eigenen TabController
+
+**Schritt 2: AppProvider erweitern (lib/providers/app_provider.dart)**
+- `int _selectedPanelIndex = 0;` hinzufügen
+- `int get selectedPanelIndex => _selectedPanelIndex;` getter
+- `void navigateToPanel(int index)` Methode mit Validierung (0-2)
+- `bool canNavigateToPanel(int index)` für Premium-Check bei Panel 1 (Karte)
+- `List<int> _navigationHistory = [];` für Back-Button Support
+
+**Schritt 3: MainLayoutScreen Integration**
+- TabController mit AppProvider synchronisieren
+- Consumer<AppProvider> für selectedPanelIndex
+- navigateToPanel() bei Tab-Wechsel aufrufen
+- Premium-Dialog wenn canNavigateToPanel() false
+
+**Schritt 4: Testing**
+- Navigation zwischen allen 3 Panels testen
+- Premium-Lock für Map Panel verifizieren
+- Back-Button Funktionalität prüfen
+
+**Geschätzter Aufwand:** 30-45 Minuten
+**Risiko:** Keine Breaking Changes erwartet
+**Dependencies:** UserProvider für Premium-Status
 
 #### **Task 8: Theme & Responsive Design**
 - [ ] FlashFeed Theme in `lib/theme/app_theme.dart`
