@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/custom_app_bar.dart';
+import '../utils/responsive_helper.dart';
 
 import 'offers_screen.dart';
 import 'map_screen.dart';

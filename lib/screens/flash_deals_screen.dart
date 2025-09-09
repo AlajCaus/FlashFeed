@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/flash_deals_provider.dart';
 import '../providers/location_provider.dart';
 import '../models/models.dart';
+import '../utils/responsive_helper.dart';
 
 /// FlashDealsScreen - Panel 3: Echtzeit-Rabatte
 /// 
@@ -83,14 +84,29 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
                         onRefresh: () async {
                           await flashDealsProvider.loadFlashDeals();
                         },
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: flashDealsProvider.flashDeals.length,
-                          itemBuilder: (context, index) {
-                            final deal = flashDealsProvider.flashDeals[index];
-                            return _buildFlashDealCard(deal);
-                          },
-                        ),
+                        child: ResponsiveHelper.isDesktop(context)
+                            ? GridView.builder(
+                                padding: ResponsiveHelper.getScreenPadding(context),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: ResponsiveHelper.isTablet(context) ? 2 : 3,
+                                  childAspectRatio: 2.5,
+                                  crossAxisSpacing: ResponsiveHelper.space4,
+                                  mainAxisSpacing: ResponsiveHelper.space4,
+                                ),
+                                itemCount: flashDealsProvider.flashDeals.length,
+                                itemBuilder: (context, index) {
+                                  final deal = flashDealsProvider.flashDeals[index];
+                                  return _buildFlashDealCard(deal);
+                                },
+                              )
+                            : ListView.builder(
+                                padding: ResponsiveHelper.getScreenPadding(context),
+                                itemCount: flashDealsProvider.flashDeals.length,
+                                itemBuilder: (context, index) {
+                                  final deal = flashDealsProvider.flashDeals[index];
+                                  return _buildFlashDealCard(deal);
+                                },
+                              ),
                       ),
           ),
         ],

@@ -5,6 +5,7 @@ import '../providers/user_provider.dart';
 import '../providers/retailers_provider.dart';
 import '../providers/location_provider.dart';
 import '../models/models.dart';
+import '../utils/responsive_helper.dart';
 
 /// OffersScreen - Panel 1: Angebotsvergleich
 /// 
@@ -235,13 +236,21 @@ class _OffersScreenState extends State<OffersScreen> {
       );
     }
     
+    // Use ResponsiveHelper for dynamic grid columns
+    final gridColumns = ResponsiveHelper.getAdaptiveGridColumns(
+      context,
+      mobileColumns: 2,
+      tabletColumns: 3,
+      desktopColumns: 4,
+    );
+    
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
-        childAspectRatio: 1.2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+      padding: ResponsiveHelper.getScreenPadding(context),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: gridColumns,
+        childAspectRatio: ResponsiveHelper.isMobile(context) ? 1.0 : 1.2,
+        crossAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space4),
+        mainAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space4),
       ),
       itemCount: offersByCategory.keys.length,
       itemBuilder: (context, index) {

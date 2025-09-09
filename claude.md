@@ -17,7 +17,7 @@
     - Welche Tests müssen aktualisiert werden?
     - Welche Breaking Changes können entstehen?
     - Welche Abhängigkeiten sind betroffen?
-11. Wenn du einen Fehler bearbeitest und eine Lösung hast, lege ein Text File mit der Task Nummer im Namen in den Ordner flashfeed/tasks, wo du alle deine Analysen und Erkenntnisse dokumentierst, damit der nächste claude weiss wo er anzusetzen hat, wenn du unterbrochen wirst bei der Implementierung der Lösung.
+11. Wenn du einen Fehler bearbeitest und eine Lösung hast, lege ein Text File mit der Task Nummer im Namen in den Ordner ./tasks, wo du alle deine Analysen und Erkenntnisse dokumentierst, damit der nächste claude weiss wo er anzusetzen hat, wenn du unterbrochen wirst bei der Implementierung der Lösung.
 
 ## 🔒 COMPLIANCE CHECK (für jede Claude-Instanz)
 Bevor du IRGENDETWAS anderes machst:

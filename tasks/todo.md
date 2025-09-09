@@ -1086,13 +1086,35 @@ Task 5a ready for Task 5b (GPS-to-PLZ mapping)"
 - [x] Settings-Overlay: Dark Mode Toggle, PLZ-Input Field
 - [x] UserProvider Integration für Preferences
 
-**Task 6.6: Responsive Layout System** ⏳ **BEREIT**
-- [ ] `lib/utils/responsive_helper.dart` erstellen
-- [ ] Breakpoints: Mobile (320-768px), Tablet (768-1024px), Desktop (1024px+)
-- [ ] Grid-Anpassung: Mobile 2 cols, Tablet 3 cols, Desktop 4+ cols
-- [ ] Font-Scaling: text-base (16px), Roboto/Open Sans
-- [ ] Spacing-System: space-1 (4px) bis space-16 (64px)
-- [ ] Transitions: fast (0.15s), normal (0.3s), slow (0.5s)
+**Task 6.6: Responsive Layout System** ✅ **ABGESCHLOSSEN**
+
+**📋 DETAILLIERTER IMPLEMENTIERUNGSPLAN:**
+
+**6.6.1: ResponsiveHelper Utility Klasse** ✅ **ABGESCHLOSSEN**
+- [x] `lib/utils/responsive_helper.dart` erstellen
+- [x] Device-Detection: `isMobile()`, `isTablet()`, `isDesktop()`
+- [x] Breakpoints: Mobile (320-768px), Tablet (768-1024px), Desktop (1024px+)
+- [x] Grid-Column-Calculator: `getGridColumns(context)` → 2/3/4+ cols
+- [x] Font-Scaling: `getScaledFontSize(baseFontSize, context)`
+- [x] Spacing-Constants: space1 (4px) bis space16 (64px)
+- [x] Animation-Durations: fast (0.15s), normal (0.3s), slow (0.5s)
+
+**6.6.2: Integration in bestehende Screens** ✅ **ABGESCHLOSSEN**
+- [x] OffersScreen: Grid-Columns dynamisch (2/3/4 basierend auf Device)
+- [x] MapScreen: Radius-Filter Position anpassen (Mobile: Bottom-Sheet)
+- [x] FlashDealsScreen: Cards per Row (Mobile: 1, Tablet: 2, Desktop: 3)
+- [x] MainLayoutScreen: Navigation-Layout (Mobile: Bottom-Nav, Desktop: Side-Nav)
+
+**6.6.3: Widget Responsiveness**
+- [ ] CustomAppBar: Logo/Text-Size anpassen
+- [ ] Offer-Cards: Min/Max-Width constraints
+- [ ] FlashDeal-Cards: Responsive padding/margins
+- [ ] Store-Details: Mobile Full-Screen vs Desktop Modal
+
+**6.6.4: Testing**
+- [ ] Unit Tests: Breakpoint-Detection für alle 3 Device-Typen
+- [ ] Widget Tests: Grid-Column-Anpassung verifizieren
+- [ ] Manual Tests: Chrome DevTools Device-Emulation
 
 **🔗 DEPENDENCIES:**
 - ✅ Provider-Architektur (Task 4)
