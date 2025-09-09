@@ -1051,14 +1051,14 @@ Task 5a ready for Task 5b (GPS-to-PLZ mapping)"
 - [x] Provider-Integration: AppProvider für Navigation-State
 - [x] LocationProvider-Integration für PLZ-Updates
 
-**Task 6.2: OffersScreen - Panel 1** ⏳ **BEREIT**
-- [ ] `lib/screens/offers_screen.dart` erstellen
-- [ ] Händler-Icon-Leiste: 80px Höhe, 60x60px Icons, Active: 2px green border
-- [ ] Produktgruppen-Grid: auto-fit minmax(150px, 1fr), 120px min-height Cards
-- [ ] Karten-Design: 12px border-radius, box-shadow, Kategorie-Icons 32x32px
-- [ ] OffersProvider Integration mit Rabatt-Badges (orange #FF6347)
-- [ ] Freemium: Grayscale(100%) für gesperrte, opacity 0.5
-- [ ] "Nicht verfügbar" mit error-message Styling (#FFF5F5 BG)
+**Task 6.2: OffersScreen - Panel 1** ✅ **ABGESCHLOSSEN**
+- [x] `lib/screens/offers_screen.dart` erstellen
+- [x] Händler-Icon-Leiste: 80px Höhe, 60x60px Icons, Active: 2px green border
+- [x] Produktgruppen-Grid: auto-fit minmax(150px, 1fr), 120px min-height Cards
+- [x] Karten-Design: 12px border-radius, box-shadow, Kategorie-Icons 32x32px
+- [x] OffersProvider Integration mit Rabatt-Badges (orange #FF6347)
+- [x] Freemium: Grayscale(100%) für gesperrte, opacity 0.5
+- [x] "Nicht verfügbar" mit error-message Styling (#FFF5F5 BG)
 
 **Task 6.3: MapScreen - Panel 2** ⏳ **BEREIT**
 - [ ] `lib/screens/map_screen.dart` erstellen  

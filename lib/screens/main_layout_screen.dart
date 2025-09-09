@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'offers_screen.dart';
+
 import '../providers/location_provider.dart';
 import '../providers/app_provider.dart';
 import '../providers/user_provider.dart';
-import '../providers/offers_provider.dart';
+
 import '../providers/flash_deals_provider.dart';
 import '../providers/retailers_provider.dart';
 
@@ -289,44 +291,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   
   // Placeholder Panels - will be replaced with actual screens
   Widget _buildOffersPanel() {
-    final offersProvider = context.watch<OffersProvider>();
-    final locationProvider = context.watch<LocationProvider>();
-    
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.shopping_cart,
-            size: 64,
-            color: Color(0xFF2E8B57),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Angebote Panel',
-            style: TextStyle(
-              fontSize: 18,
-              color: textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'PLZ: ${locationProvider.postalCode ?? locationProvider.userPLZ ?? "Nicht gesetzt"}',
-            style: TextStyle(
-              fontSize: 14,
-              color: textSecondary,
-            ),
-          ),
-          Text(
-            '${offersProvider.offers.length} Angebote verfügbar',
-            style: TextStyle(
-              fontSize: 14,
-              color: textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
+    return const OffersScreen();
   }
   
   Widget _buildMapPanel() {
