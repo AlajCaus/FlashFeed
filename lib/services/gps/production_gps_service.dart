@@ -1,6 +1,6 @@
 // Production GPS Service with realistic delays
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+
 import 'gps_service.dart';
 
 class ProductionGPSService implements GPSService {

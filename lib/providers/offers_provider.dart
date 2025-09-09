@@ -18,6 +18,7 @@ class OffersProvider extends ChangeNotifier {
   
   // State
   List<Offer> _allOffers = [];
+  List<Offer> _unfilteredOffers = []; // Keep ALL offers before regional filtering
   List<Offer> _filteredOffers = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -139,7 +140,8 @@ class OffersProvider extends ChangeNotifier {
     
     try {
       // Load ALL offers from repository
-      _allOffers = await _offersRepository.getAllOffers();
+      _unfilteredOffers = await _offersRepository.getAllOffers();
+      _allOffers = List.from(_unfilteredOffers); // Copy for filtering
       
       // Apply regional filtering if requested and PLZ is available
       if (applyRegionalFilter && _userPLZ != null && _userPLZ!.isNotEmpty) {
@@ -180,7 +182,8 @@ class OffersProvider extends ChangeNotifier {
     
     try {
       // Load all offers first
-      _allOffers = await _offersRepository.getAllOffers();
+      _unfilteredOffers = await _offersRepository.getAllOffers();
+      _allOffers = List.from(_unfilteredOffers); // Keep a copy
       
       // Filter by regionally available retailers
       _allOffers = _allOffers.where((offer) => 
@@ -324,7 +327,7 @@ class OffersProvider extends ChangeNotifier {
       filtered = filtered.where((offer) =>
           offer.productName.toLowerCase().contains(query) ||
           offer.retailer.toLowerCase().contains(query) ||
-          offer.storeAddress.toLowerCase().contains(query)
+          (offer.storeAddress?.toLowerCase().contains(query) ?? false)
       ).toList();
     }
     
@@ -392,6 +395,120 @@ class OffersProvider extends ChangeNotifier {
         .toSet()
         .toList()
       ..sort();
+  }
+  
+  // Task 5c.4: Regional unavailability fallback methods
+  
+  // Get offers that are not available in user's region
+  List<Offer> get unavailableOffers {
+    if (_userPLZ == null) return [];
+    // Use _unfilteredOffers to find offers from unavailable retailers
+    return _unfilteredOffers
+        .where((offer) => !_availableRetailers.contains(offer.retailer))
+        .toList();
+  }
+  
+  // Check if there are unavailable offers
+  bool get hasUnavailableOffers => unavailableOffers.isNotEmpty;
+  
+  // Get alternative retailers for an unavailable retailer
+  List<String> getAlternativeRetailers(String unavailableRetailer) {
+    if (_availableRetailers.isEmpty) return [];
+    
+    // Return available retailers except the unavailable one
+    return _availableRetailers
+        .where((retailer) => retailer != unavailableRetailer)
+        .take(3) // Limit to 3 alternatives
+        .toList();
+  }
+  
+  // Get alternative offers for a specific product
+  List<Offer> getAlternativeOffers(Offer unavailableOffer) {
+    // Find similar offers from available retailers
+    final category = ProductCategoryMapping.mapToFlashFeedCategory(
+        unavailableOffer.retailer, unavailableOffer.originalCategory);
+    
+    return _filteredOffers
+        .where((offer) => 
+            offer.id != unavailableOffer.id &&
+            _availableRetailers.contains(offer.retailer) &&
+            ProductCategoryMapping.mapToFlashFeedCategory(
+                offer.retailer, offer.originalCategory) == category)
+        .take(3) // Limit to 3 alternatives
+        .toList();
+  }
+  
+  // Get nearby regions with better availability
+  List<String> getNearbyRegions(String plz, int radiusKm) {
+    // This would typically call a service to find nearby PLZ ranges
+    // For MVP, return hardcoded nearby regions
+    if (plz.startsWith('10')) {
+      return ['Berlin-Mitte', 'Berlin-Charlottenburg', 'Potsdam'];
+    } else if (plz.startsWith('80')) {
+      return ['München-Zentrum', 'München-Schwabing', 'Freising'];
+    } else {
+      return ['Nachbarregion Nord', 'Nachbarregion Süd'];
+    }
+  }
+  
+  // Get expanded search results
+  Future<List<Offer>> getExpandedSearchResults(int additionalRadiusKm) async {
+    // Simulate expanded search by including more offers
+    // In production, this would query based on extended radius
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // For demo: return all unfiltered offers regardless of region
+    return List.from(_unfilteredOffers);
+  }
+  
+  // Enhanced empty state message
+  String getEmptyStateMessage() {
+    if (_selectedCategory != null && _selectedRetailer != null) {
+      return 'Keine Angebote für "$_selectedCategory" bei $_selectedRetailer in Ihrer Region.';
+    } else if (_selectedCategory != null) {
+      return 'Keine Angebote für "$_selectedCategory" in PLZ $_userPLZ gefunden.';
+    } else if (_selectedRetailer != null) {
+      return '$_selectedRetailer hat keine Angebote in PLZ $_userPLZ.';
+    } else if (_userPLZ != null && _availableRetailers.isEmpty) {
+      return 'Keine Händler in PLZ $_userPLZ verfügbar. Bitte erweitern Sie den Suchradius.';
+    } else if (_userPLZ != null) {
+      return 'Keine Angebote in PLZ $_userPLZ gefunden.';
+    } else {
+      return 'Keine Angebote verfügbar. Bitte geben Sie Ihre PLZ ein.';
+    }
+  }
+  
+  // Filter Methods (for tests)
+  void clearFilters() {
+    _selectedCategory = null;
+    _selectedRetailer = null;
+    _sortType = OfferSortType.priceAsc;
+    _searchQuery = '';
+    _maxPrice = null;
+    _showOnlyWithDiscount = false;
+    _applyFilters();
+  }
+  
+  void applyFilters({
+    String? category,
+    String? retailer,
+    OfferSortType? sortType,
+    String? searchQuery,
+    double? maxPrice,
+    bool? showOnlyWithDiscount,
+  }) {
+    if (category != null) _selectedCategory = category;
+    if (retailer != null) _selectedRetailer = retailer;
+    if (sortType != null) _sortType = sortType;
+    if (searchQuery != null) _searchQuery = searchQuery;
+    if (maxPrice != null) _maxPrice = maxPrice;
+    if (showOnlyWithDiscount != null) _showOnlyWithDiscount = showOnlyWithDiscount;
+    _applyFilters();
+  }
+  
+  void setSelectedCategory(String? category) {
+    _selectedCategory = category;
+    _applyFilters();
   }
   
   // Helper Methods

@@ -2,12 +2,13 @@
 // Task 5b.6: Performance Testing (Fixed Test Bindings)
 
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../../lib/providers/location_provider.dart';
-import '../../lib/services/plz_lookup_service.dart';
+import '../lib/providers/location_provider.dart';
+import '../lib/services/plz_lookup_service.dart';
 
 void main() {
   group('Task 5b.6: PLZ Cache Performance Benchmarks', () {

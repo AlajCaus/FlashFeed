@@ -1,3 +1,4 @@
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/services/plz_lookup_service.dart';
 
@@ -14,11 +15,12 @@ void main() {
     group('GPS-Koordinaten Validierung', () {
       test('Gültige deutsche GPS-Koordinaten werden akzeptiert', () {
         // Berlin
-        expect(() => service._isValidCoordinate(52.5200, 13.4050), returnsNormally);
+        // Test indirekt über getPLZFromCoordinates
+        expect(service.getPLZFromCoordinates(52.5200, 13.4050), isNotNull);
         // München 
-        expect(() => service._isValidCoordinate(48.1351, 11.5820), returnsNormally);
+        expect(service.getPLZFromCoordinates(48.1351, 11.5820), isNotNull);
         // Hamburg
-        expect(() => service._isValidCoordinate(53.5511, 9.9937), returnsNormally);
+        expect(service.getPLZFromCoordinates(53.5511, 9.9937), isNotNull);
       });
 
       test('Ungültige GPS-Koordinaten werden abgelehnt', () async {

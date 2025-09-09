@@ -7,11 +7,11 @@ import '../services/local_storage_service.dart';
 import '../services/plz_lookup_service.dart';
 import '../services/gps/gps_service.dart';
 import '../services/gps/production_gps_service.dart';
-import '../services/gps/test_gps_service.dart';
+
 import '../helpers/plz_helper.dart';
 import '../services/mock_data_service.dart';
 import '../main.dart'; // For global mockDataService
-import '../models/models.dart' show Retailer, Offer; // Specific imports to avoid PLZHelper conflict
+import '../models/models.dart' show Offer; // Specific imports to avoid PLZHelper conflict
 
 /// Enum für Location-Datenquellen (Task 5b.3)
 enum LocationSource {

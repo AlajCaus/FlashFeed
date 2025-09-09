@@ -1,6 +1,7 @@
 // Test-Skript für RetailersProvider Verification
 // Dieses Skript testet die grundlegende Funktionalität des RetailersProviders
 
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/providers/retailers_provider.dart';
 import 'package:flashfeed/services/mock_data_service.dart';

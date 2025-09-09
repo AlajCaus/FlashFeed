@@ -12,7 +12,7 @@ class MockRetailersRepository implements RetailersRepository {
   MockRetailersRepository({MockDataService? testService}) : _testService = testService;
   
   // Helper to check if we have a service
-  bool get _hasDataService => _testService != null && _testService!.isInitialized;
+  bool get _hasDataService => _testService != null && _testService.isInitialized;
   static final List<Retailer> _mockRetailers = [
     Retailer(
       id: 'edeka',

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flashfeed/providers/location_provider.dart';
@@ -1333,7 +1334,7 @@ void main() {
         expect(testProvider.canUseLocation, isTrue);
         
         // Act: First dispose should work normally
-        expect(() {testProvider.dispose();}, returnsNormally);
+        expect(() => testProvider.dispose(), returnsNormally);
       });
       
       test('dispose() during active operation is safe', () async {
@@ -1350,10 +1351,10 @@ void main() {
         testProvider.dispose();
         
         // Assert: Future should throw FlutterError when trying to use disposed provider
-        await expectLater(future, throwsFlutterError);
+        await expectLater(future, throwsA(isA<FlutterError>()));
         
         // System should remain stable after disposal
-        expect(() => testProvider.dispose(), throwsFlutterError);
+        expect(() => testProvider.dispose(), throwsA(isA<FlutterError>()));
       });
       
       test('disposed provider does not leak memory on method calls', () async {
@@ -1373,18 +1374,18 @@ void main() {
         // Assert: Test throws on synchronous method calls
         expect(() {
           testProvider.setSearchRadius(25.0);
-        }, throwsFlutterError);
+        }, throwsA(isA<FlutterError>()));
         expect(() {
           testProvider.setUseGPS(false);
-        }, throwsFlutterError);
+        }, throwsA(isA<FlutterError>()));
         expect(() {
           testProvider.clearLocation();
-        }, throwsFlutterError);
+        }, throwsA(isA<FlutterError>()));
         
         // Test throws on async method calls - wrapped in expectLater
-        await expectLater(() => testProvider.setUserPLZ('10115'), throwsFlutterError);
-        await expectLater(() => testProvider.getCurrentLocation(), throwsFlutterError);
-        await expectLater(() => testProvider.clearPLZCache(), throwsFlutterError);
+        await expectLater(testProvider.setUserPLZ('10115'), throwsA(isA<FlutterError>()));
+        await expectLater(testProvider.getCurrentLocation(), throwsA(isA<FlutterError>()));
+        await expectLater(testProvider.clearPLZCache(), throwsA(isA<FlutterError>()));
       });
       
       test('callback registration after dispose has no effect', () {
@@ -1408,12 +1409,12 @@ void main() {
           testProvider.registerLocationChangeCallback(() {
             callbackExecuted = true;
           });
-        }, throwsFlutterError);
+        }, throwsA(isA<FlutterError>()));
         expect(() {
           testProvider.registerRegionalDataCallback((plz, retailers) {
             callbackExecuted = true;
           });
-        }, throwsFlutterError);
+        }, throwsA(isA<FlutterError>()));
         
         // Callback execution state is irrelevant after disposal
         expect(callbackExecuted, isFalse);
@@ -1438,9 +1439,9 @@ void main() {
         testProvider.dispose();
         
         // Assert: Property access throws FlutterError after disposal
-        expect(() => testProvider.currentLocationSource, throwsFlutterError);
-        expect(() => testProvider.availableRetailersInRegion, throwsFlutterError);
-        expect(() => testProvider.postalCode, throwsFlutterError);
+        expect(() => testProvider.currentLocationSource, throwsA(isA<FlutterError>()));
+        expect(() => testProvider.availableRetailersInRegion, throwsA(isA<FlutterError>()));
+        expect(() => testProvider.postalCode, throwsA(isA<FlutterError>()));
       });
       
       test('service references cleaned up on dispose', () async {
@@ -1459,8 +1460,8 @@ void main() {
         testProvider.dispose();
         
         // Assert: Access throws after disposal (indicates cleanup)
-        expect(() => testProvider.postalCode, throwsFlutterError);
-        expect(() => testProvider.currentLocationSource, throwsFlutterError);
+        expect(() => testProvider.postalCode, throwsA(isA<FlutterError>()));
+        expect(() => testProvider.currentLocationSource, throwsA(isA<FlutterError>()));
       });
       
       test('large callback lists are cleaned efficiently', () {

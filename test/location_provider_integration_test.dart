@@ -1,14 +1,15 @@
 // FlashFeed LocationProvider Integration Tests
 // Task 5b.6: Testing & Verification (Fixed Dependencies)
 
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
 
-import '../../lib/providers/location_provider.dart';
-import '../../lib/providers/offers_provider.dart';
-import '../../lib/services/mock_data_service.dart';
-import '../../lib/services/gps/test_gps_service.dart';
-import '../../lib/helpers/plz_helper.dart';
+import '../lib/providers/location_provider.dart';
+import '../lib/providers/offers_provider.dart';
+import '../lib/services/mock_data_service.dart';
+import '../lib/services/gps/test_gps_service.dart';
+import '../lib/helpers/plz_helper.dart';
 
 void main() {
   group('Task 5b.6: LocationProvider Integration Tests', () {

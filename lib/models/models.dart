@@ -11,12 +11,12 @@ class Offer {
   final String originalCategory;
   final double price;
   final double? originalPrice; // null wenn kein Rabatt
-  final String storeAddress;
-  final String storeId;
+  final String? storeAddress;   // Optional store address
+  final String? storeId;        // Optional store ID
   final double? discountPercent; // null wenn kein Rabatt
   final DateTime validUntil;
-  final double storeLat;
-  final double storeLng;
+  final double? storeLat;       // Optional store latitude
+  final double? storeLng;       // Optional store longitude
 
   Offer({
     required this.id,
@@ -25,12 +25,12 @@ class Offer {
     required this.originalCategory,
     required this.price,
     this.originalPrice,
-    required this.storeAddress,
-    required this.storeId,
+    this.storeAddress,
+    this.storeId,
     this.discountPercent,
     required this.validUntil,
-    required this.storeLat,
-    required this.storeLng,
+    this.storeLat,
+    this.storeLng,
   });
 
   /// Zugeordnete FlashFeed Kategorie (aus product_category_mapping.dart)
@@ -52,10 +52,11 @@ class Offer {
   
   /// Entfernung zu einem Punkt berechnen (grobe Näherung)
   double distanceTo(double lat, double lng) {
+    if (storeLat == null || storeLng == null) return 999999; // Unknown distance
     // Vereinfachte Entfernungsberechnung für MVP
     const double earthRadius = 6371; // km
-    double latDiff = (lat - storeLat) * (3.14159 / 180);
-    double lngDiff = (lng - storeLng) * (3.14159 / 180);
+    double latDiff = (lat - storeLat!) * (3.14159 / 180);
+    double lngDiff = (lng - storeLng!) * (3.14159 / 180);
     double a = (latDiff / 2) * (latDiff / 2) + 
                (lngDiff / 2) * (lngDiff / 2);
     return earthRadius * 2 * (a < 1 ? a : 1); // Vereinfacht
@@ -101,28 +102,28 @@ class Retailer {
   final String id;              // Backend-ID (eindeutig)
   final String name;            // Backend-Name (eindeutig)
   final String displayName;     // UI-Text (kann doppelt sein)
-  final String logoUrl;
+  final String? logoUrl;         // Optional logo URL
   final String primaryColor;    // Hex-Color für UI (war brandColor)
   final String? iconUrl;        // Zusätzliches Icon (z.B. Scottie)
-  final String description;
+  final String? description;    // Optional description
   final List<String> categories; // Verfügbare Produktkategorien
   final bool isPremiumPartner;   // Für Freemium-Features (war isActive)
-  final String website;         // Website URL (war websiteUrl)
-  final int storeCount;         // Anzahl Filialen
+  final String? website;        // Optional website URL (war websiteUrl)
+  final int? storeCount;        // Optional store count
   final List<PLZRange> availablePLZRanges; // Regionale Verfügbarkeit (Task 5a)
 
   Retailer({
     required this.id,
     required this.name,
     required this.displayName,
-    required this.logoUrl,
+    this.logoUrl,
     required this.primaryColor,
     this.iconUrl,
-    required this.description,
-    required this.categories,
+    this.description,
+    this.categories = const [],
     this.isPremiumPartner = false,
-    required this.website,
-    required this.storeCount,
+    this.website,
+    this.storeCount,
     this.availablePLZRanges = const [], // Default: keine regionalen Beschränkungen
   });
   

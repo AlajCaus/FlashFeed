@@ -291,6 +291,14 @@ class RetailersProvider extends ChangeNotifier {
   Map<String, List<Retailer>> get testCache => _plzRetailerCache;
   
   @visibleForTesting
+  void mockRepository(RetailersRepository mockRepo) {
+    // This method allows tests to inject a mock repository
+    // Note: This would require making _repository non-final
+    // For now, use the factory constructor with a test repository instead
+    debugPrint('⚠️ Use RetailersProvider.mock() factory for testing');
+  }
+  
+  @visibleForTesting
   void setTestPLZ(String plz) {
     if (_disposed) return;
     _currentPLZ = plz;
@@ -309,6 +317,138 @@ class RetailersProvider extends ChangeNotifier {
     }
     if (!_disposed) {
       notifyListeners();
+    }
+  }
+  
+  // Task 5c.4: Regional unavailability fallback methods
+  
+  /// Get suggested alternative retailers for an unavailable one
+  List<Retailer> getSuggestedRetailers(String unavailableRetailerName) {
+    if (_availableRetailers.isEmpty) return [];
+    
+    // Find the unavailable retailer to understand its type
+    final unavailableRetailer = _allRetailers
+        .firstWhere(
+          (r) => r.name == unavailableRetailerName,
+          orElse: () => _allRetailers.first,
+        );
+    
+    // Suggest similar available retailers
+    // For MVP: simple logic based on price range
+    final suggestions = _availableRetailers.where((retailer) {
+      // Don't suggest the same retailer
+      if (retailer.name == unavailableRetailerName) return false;
+      
+      // Prefer retailers with similar characteristics
+      // (In production, this would use more sophisticated matching)
+      if (unavailableRetailerName.contains('Bio') && 
+          retailer.name.contains('Bio')) {
+        return true;
+      }
+      
+      // Default: return any available retailer
+      return true;
+    }).take(3).toList();
+    
+    return suggestions;
+  }
+  
+  /// Get expanded search results with additional radius
+  Future<List<Retailer>> getExpandedSearchResults(int additionalRadiusKm) async {
+    // Simulate expanded search
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    // For MVP: Return retailers from nearby PLZ ranges
+    final expandedPLZ = _getExpandedPLZRanges(_currentPLZ, additionalRadiusKm);
+    final expandedRetailers = <Retailer>{};
+    
+    for (final plz in expandedPLZ) {
+      final retailers = await getAvailableRetailers(plz);
+      expandedRetailers.addAll(retailers);
+    }
+    
+    return expandedRetailers.toList();
+  }
+  
+  /// Helper: Get nearby PLZ ranges for expanded search
+  List<String> _getExpandedPLZRanges(String basePLZ, int radiusKm) {
+    if (basePLZ.isEmpty) return [];
+    
+    // For MVP: Simple PLZ range expansion
+    try {
+      final plzNum = int.parse(basePLZ);
+      final ranges = <String>[];
+      
+      // Add nearby PLZ codes (simplified)
+      for (int i = 1; i <= radiusKm ~/ 10; i++) {
+        final nearbyPLZ = (plzNum + i * 100).toString().padLeft(5, '0');
+        if (nearbyPLZ.length == 5) {
+          ranges.add(nearbyPLZ);
+        }
+        
+        final nearbyPLZ2 = (plzNum - i * 100).toString().padLeft(5, '0');
+        if (nearbyPLZ2.length == 5 && int.parse(nearbyPLZ2) > 0) {
+          ranges.add(nearbyPLZ2);
+        }
+      }
+      
+      return ranges;
+    } catch (e) {
+      debugPrint('⚠️ RetailersProvider: PLZ-Expansion fehlgeschlagen: $e');
+      return [];
+    }
+  }
+  
+  /// Get availability statistics
+  Map<String, dynamic> getAvailabilityStatistics() {
+    return {
+      'totalRetailers': _allRetailers.length,
+      'availableInRegion': _availableRetailers.length,
+      'unavailableInRegion': _unavailableRetailers.length,
+      'percentageAvailable': _allRetailers.isNotEmpty
+          ? (_availableRetailers.length / _allRetailers.length * 100).round()
+          : 0,
+      'currentPLZ': _currentPLZ,
+      'regionName': _getRegionName(_currentPLZ),
+    };
+  }
+  
+  /// Helper: Get region name from PLZ
+  String _getRegionName(String plz) {
+    if (plz.isEmpty) return 'Unbekannt';
+    
+    // Use PLZHelper for region mapping
+    try {
+      if (plz.startsWith('10') || plz.startsWith('11') || 
+          plz.startsWith('12') || plz.startsWith('13')) {
+        return 'Berlin/Brandenburg';
+      } else if (plz.startsWith('80') || plz.startsWith('81') || 
+                 plz.startsWith('82') || plz.startsWith('83')) {
+        return 'München/Oberbayern';
+      } else if (plz.startsWith('50') || plz.startsWith('51')) {
+        return 'Köln/Bonn';
+      } else if (plz.startsWith('60')) {
+        return 'Frankfurt/Rhein-Main';
+      } else if (plz.startsWith('20') || plz.startsWith('21') || 
+                 plz.startsWith('22')) {
+        return 'Hamburg';
+      } else if (plz.startsWith('01')) {
+        return 'Dresden/Sachsen';
+      } else if (plz.startsWith('04')) {
+        return 'Leipzig';
+      } else if (plz.startsWith('30')) {
+        return 'Hannover/Niedersachsen';
+      } else if (plz.startsWith('40')) {
+        return 'Düsseldorf/NRW';
+      } else if (plz.startsWith('70')) {
+        return 'Stuttgart/Baden-Württemberg';
+      } else if (plz.startsWith('90')) {
+        return 'Nürnberg/Franken';
+      } else {
+        return 'Deutschland';
+      }
+    } catch (e) {
+      return 'Unbekannt';
     }
   }
   

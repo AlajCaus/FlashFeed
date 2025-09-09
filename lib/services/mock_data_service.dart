@@ -389,7 +389,7 @@ class MockDataService {
     for (final retailer in _retailers) {
       final retailerLocations = realisticStoreLocations[retailer.id] ?? [];
       
-      for (int i = 0; i < retailer.storeCount; i++) {
+      for (int i = 0; i < (retailer.storeCount ?? 0); i++) {
         Map<String, dynamic> storeLocation;
         
         if (i < retailerLocations.length) {
@@ -481,32 +481,53 @@ class MockDataService {
   Future<void> _generateOffers() async {
     _offers = [];
     int offerCounter = 1;
+    const int totalOffers = 120; // Generate more offers to ensure distribution
     
-    // Generate 100 regular offers (Prospekt-Angebote)
-    for (int i = 0; i < 100; i++) {
-      final product = _products[_random.nextInt(_products.length)];
-      final store = _stores[_random.nextInt(_stores.length)];
-      final retailer = _retailers.firstWhere((r) => r.id == store.chainId);
+    // Calculate proportional offer distribution based on store count
+    final totalStores = _stores.length;
+    
+    for (final retailer in _retailers) {
+      final retailerStores = _stores.where((s) => s.chainId == retailer.id).toList();
+      if (retailerStores.isEmpty) continue;
       
-      final discountPercent = _random.nextInt(31) + 10; // 10-40% Rabatt
-      final originalPrice = product.basePriceCents;
-      final discountedPrice = (originalPrice * (1 - discountPercent / 100)).round();
+      // Calculate how many offers this retailer should get
+      // Minimum 3 offers per retailer for test reliability
+      final proportionalOffers = ((retailerStores.length / totalStores) * totalOffers).round();
+      final offersForRetailer = proportionalOffers < 3 ? 3 : proportionalOffers;
       
-      _offers.add(Offer(
-        id: 'offer_${offerCounter.toString().padLeft(3, '0')}',
-        retailer: retailer.name,
-        productName: product.name,
-        originalCategory: _getRetailerCategory(retailer.id, product.categoryName),
-        price: discountedPrice / 100.0, // Convert to Euro
-        originalPrice: originalPrice / 100.0,
-        discountPercent: discountPercent.toDouble(),
-        storeAddress: store.address,
-        storeId: store.id,
-        validUntil: DateTime.now().add(Duration(days: _random.nextInt(14) + 1)),
-        storeLat: store.latitude,
-        storeLng: store.longitude,
-      ));
-      offerCounter++;
+      // Generate offers for this retailer
+      for (int j = 0; j < offersForRetailer; j++) {
+        final product = _products[_random.nextInt(_products.length)];
+        final store = retailerStores[_random.nextInt(retailerStores.length)];
+        
+        final discountPercent = _random.nextInt(31) + 10; // 10-40% Rabatt
+        final originalPrice = product.basePriceCents;
+        final discountedPrice = (originalPrice * (100 - discountPercent) / 100).round();
+        
+        _offers.add(Offer(
+          id: 'offer_${offerCounter.toString().padLeft(3, '0')}',
+          retailer: retailer.name,
+          productName: product.name,
+          originalCategory: _getRetailerCategory(retailer.id, product.categoryName),
+          price: discountedPrice / 100.0, // Convert to Euro
+          originalPrice: originalPrice / 100.0,
+          discountPercent: discountPercent.toDouble(),
+          storeAddress: store.address,
+          storeId: store.id,
+          validUntil: DateTime.now().add(Duration(days: _random.nextInt(14) + 1)),
+          storeLat: store.latitude,
+          storeLng: store.longitude,
+        ));
+        offerCounter++;
+      }
+    }
+    
+    debugPrint('📊 Offer Distribution:');
+    for (final retailer in _retailers) {
+      final count = _offers.where((o) => o.retailer == retailer.name).length;
+      if (count > 0) {
+        debugPrint('   • ${retailer.name}: $count offers');
+      }
     }
     
     // Notify offers provider
