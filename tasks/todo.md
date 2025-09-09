@@ -1069,14 +1069,14 @@ Task 5a ready for Task 5b (GPS-to-PLZ mapping)"
 - [x] RetailersProvider Integration + GPS-Button (Bottom-Right)
 - [x] Hover-Animation: scale 1.2, bounce 0.3s ease
 
-**Task 6.4: FlashDealsScreen - Panel 3** ⏳ **BEREIT**
-- [ ] `lib/screens/flash_deals_screen.dart` erstellen
-- [ ] Flash-Cards: Weiß, 12px radius, 4px crimson left-border
-- [ ] Countdown: HH:MM:SS, Farben (>1h green, 30-60min orange, <30min red blink)
-- [ ] Professor-Demo-Button: Full-width, primary-green (#2E8B57)
-- [ ] Lageplan-Modal: 90vw width, SVG-Plan, pulsing red dot marker
-- [ ] FlashDealsProvider Integration, Auto-Refresh alle 10s
-- [ ] Regional gefilterte Deals mit Store-Info (text-sm, #666666)
+**Task 6.4: FlashDealsScreen - Panel 3** ✅ **ABGESCHLOSSEN**
+- [x] `lib/screens/flash_deals_screen.dart` erstellen
+- [x] Flash-Cards: Weiß, 12px radius, 4px crimson left-border
+- [x] Countdown: HH:MM:SS, Farben (>1h green, 30-60min orange, <30min red blink)
+- [x] Professor-Demo-Button: Full-width, primary-green (#2E8B57)
+- [x] Lageplan-Modal: 90vw width, SVG-Plan, pulsing red dot marker
+- [x] FlashDealsProvider Integration, Auto-Refresh alle 10s
+- [x] Regional gefilterte Deals mit Store-Info (text-sm, #666666)
 
 **Task 6.5: CustomAppBar Widget** ⏳ **BEREIT**
 - [ ] `lib/widgets/custom_app_bar.dart` erstellen

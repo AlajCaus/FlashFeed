@@ -3,12 +3,11 @@ import 'package:provider/provider.dart';
 
 import 'offers_screen.dart';
 import 'map_screen.dart';
+import 'flash_deals_screen.dart';
 
 import '../providers/location_provider.dart';
 import '../providers/app_provider.dart';
 import '../providers/user_provider.dart';
-
-import '../providers/flash_deals_provider.dart';
 
 
 /// MainLayoutScreen - Haupt-Navigation für FlashFeed
@@ -300,63 +299,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   }
   
   Widget _buildFlashDealsPanel() {
-    final flashDealsProvider = context.watch<FlashDealsProvider>();
-    
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.flash_on,
-            size: 64,
-            color: Color(0xFFDC143C),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Flash Deals Panel',
-            style: TextStyle(
-              fontSize: 18,
-              color: textSecondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${flashDealsProvider.flashDeals.length} aktive Deals',
-            style: TextStyle(
-              fontSize: 14,
-              color: textSecondary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Professor Demo Button (prominent!)
-          ElevatedButton(
-            onPressed: () {
-              // Generate demo deals for professor
-              flashDealsProvider.loadFlashDeals();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Flash Deals generiert!'),
-                  backgroundColor: Color(0xFF2E8B57),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryGreen,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 32,
-                vertical: 16,
-              ),
-              textStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            child: const Text('PROFESSOR DEMO'),
-          ),
-        ],
-      ),
-    );
+    return const FlashDealsScreen();
   }
   
   void _showSettingsMenu(BuildContext context) {
