@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/retailers_provider.dart';
 import '../providers/location_provider.dart';
 import '../models/models.dart';
+import '../utils/responsive_helper.dart';
 
 /// MapScreen - Panel 2: Karten-Ansicht
 /// 
@@ -292,8 +293,36 @@ class _MapScreenState extends State<MapScreen> {
   }
   
   Widget _buildStoreDetails(Store store) {
+    final isMobile = ResponsiveHelper.isMobile(context);
+    final padding = ResponsiveHelper.getCardPadding(context);
+    
+    // Mobile: Full-screen bottom sheet, Desktop: Compact modal
+    if (isMobile) {
+      // Show full-screen modal for mobile
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            minChildSize: 0.3,
+            maxChildSize: 0.9,
+            builder: (context, scrollController) => _buildStoreDetailsContent(store, padding),
+          ),
+        ).then((_) {
+          setState(() {
+            _selectedStore = null;
+          });
+        });
+      });
+      return const SizedBox.shrink();
+    }
+    
+    // Desktop: Compact bottom panel
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: ResponsiveHelper.getDialogWidth(context),
+      margin: EdgeInsets.symmetric(horizontal: ResponsiveHelper.space4),
+      padding: padding,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -362,6 +391,99 @@ class _MapScreenState extends State<MapScreen> {
             ],
           ),
           const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Navigation wird in Phase 2 implementiert'),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.navigation),
+                  label: const Text('Navigation starten'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryBlue,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildStoreDetailsContent(Store store, EdgeInsets padding) {
+    return Container(
+      padding: padding,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: retailerColors[store.retailerName] ?? primaryGreen,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    store.retailerName.substring(0, 2).toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: ResponsiveHelper.space3),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      store.retailerName,
+                      style: TextStyle(
+                        fontSize: ResponsiveHelper.getTitleSize(context),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      store.street,
+                      style: TextStyle(
+                        fontSize: ResponsiveHelper.getBodySize(context),
+                        color: textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    _selectedStore = null;
+                  });
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+            ],
+          ),
+          SizedBox(height: ResponsiveHelper.space4),
           Row(
             children: [
               Expanded(

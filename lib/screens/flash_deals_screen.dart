@@ -137,9 +137,11 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
 
   Widget _buildFlashDealCard(FlashDeal deal) {
     final Color timerColor = _getTimerColor(deal.remainingSeconds);
+    final cardPadding = ResponsiveHelper.getCardPadding(context);
+    final spacing = ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space4);
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: spacing),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -158,7 +160,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: cardPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

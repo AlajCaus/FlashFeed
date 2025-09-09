@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/location_provider.dart';
+import '../utils/responsive_helper.dart';
 
 /// CustomAppBar - Gemeinsame Top-Navigation
 /// 
@@ -42,24 +43,24 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             Row(
               children: [
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: ResponsiveHelper.isMobile(context) ? 28 : 32,
+                  height: ResponsiveHelper.isMobile(context) ? 28 : 32,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.flash_on,
-                    color: Color(0xFF2E8B57),
-                    size: 24,
+                    color: const Color(0xFF2E8B57),
+                    size: ResponsiveHelper.isMobile(context) ? 20 : 24,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Text(
+                SizedBox(width: ResponsiveHelper.space3),
+                Text(
                   'FlashFeed',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: ResponsiveHelper.getHeadlineSize(context),
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Roboto',
                   ),
