@@ -64,15 +64,48 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Register with LocationProvider for regional updates (Task 5b.5)
+  // Task 5c.5: Cross-Provider Communication Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
-    _locationProvider = locationProvider; // NEW: Store reference (Task 5c.2)
+    _locationProvider = locationProvider; // Store reference for Task 5c.2
     
-    locationProvider.registerRegionalDataCallback((plz, availableRetailers) {
-      if (plz != null && availableRetailers.isNotEmpty) {
-        loadRegionalOffers(plz, availableRetailers);
-      }
-    });
+    // Register for both location and regional data updates
+    locationProvider.registerLocationChangeCallback(_onLocationChanged);
+    locationProvider.registerRegionalDataCallback(_onRegionalDataChanged);
+    
+    // Get initial regional data if available
+    if (locationProvider.hasPostalCode && locationProvider.availableRetailersInRegion.isNotEmpty) {
+      _userPLZ = locationProvider.postalCode;
+      _availableRetailers = locationProvider.availableRetailersInRegion;
+      // Don't load offers here - let the initialization flow handle it
+    }
+    
+    debugPrint('OffersProvider: Registered with LocationProvider');
+  }
+  
+  void unregisterFromLocationProvider(LocationProvider locationProvider) {
+    locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
+    locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
+    _locationProvider = null;
+    debugPrint('OffersProvider: Unregistered from LocationProvider');
+  }
+  
+  // Task 5c.5: Callback handlers
+  void _onLocationChanged() {
+    if (_disposed) return;
+    debugPrint('OffersProvider: Location changed, reloading offers');
+    loadOffers(applyRegionalFilter: true);
+  }
+  
+  void _onRegionalDataChanged(String? plz, List<String> availableRetailers) {
+    if (_disposed) return;
+    if (plz != null && availableRetailers.isNotEmpty) {
+      // Set PLZ and retailers immediately for use by loadOffers
+      _userPLZ = plz;
+      _availableRetailers = availableRetailers;
+      debugPrint('OffersProvider: Regional data changed - PLZ: $plz, Retailers: $availableRetailers');
+      // Load offers with the new regional data
+      loadOffers(applyRegionalFilter: true);
+    }
   }
   
   // Getters
@@ -143,20 +176,44 @@ class OffersProvider extends ChangeNotifier {
       _unfilteredOffers = await _offersRepository.getAllOffers();
       _allOffers = List.from(_unfilteredOffers); // Copy for filtering
       
-      // Apply regional filtering if requested and PLZ is available
-      if (applyRegionalFilter && _userPLZ != null && _userPLZ!.isNotEmpty) {
-        // Get regionally available retailers
-        final regionalRetailers = _locationProvider?.getAvailableRetailersForPLZ(_userPLZ!) ?? [];
+      // Apply regional filtering if requested
+      if (applyRegionalFilter) {
+        // Try to get PLZ from LocationProvider if not set yet
+        if (_userPLZ == null && _locationProvider != null) {
+          _userPLZ = _locationProvider!.postalCode;
+        }
         
-        // Update available retailers list
-        _availableRetailers = regionalRetailers;
-        
-        // Filter offers to only show regionally available
-        _allOffers = _allOffers.where((offer) => 
-            regionalRetailers.contains(offer.retailer)
-        ).toList();
+        // Apply regional filtering if PLZ is available
+        if (_userPLZ != null && _userPLZ!.isNotEmpty) {
+          // Use already set _availableRetailers if available (from callback)
+          // Otherwise get them from LocationProvider
+          if (_availableRetailers.isEmpty && _locationProvider != null) {
+            _availableRetailers = _locationProvider!.getAvailableRetailersForPLZ(_userPLZ!);
+          }
+          
+          // Filter offers to only show regionally available
+          if (_availableRetailers.isNotEmpty) {
+            _allOffers = _allOffers.where((offer) => 
+                _availableRetailers.contains(offer.retailer)
+            ).toList();
+            
+            debugPrint('OffersProvider: Regional filtering applied - PLZ: $_userPLZ, Retailers: $_availableRetailers');
+            debugPrint('OffersProvider: Filtered from ${_unfilteredOffers.length} to ${_allOffers.length} offers');
+          } else {
+            debugPrint('OffersProvider: No retailers available for PLZ $_userPLZ');
+          }
+        } else {
+          // No PLZ available, can't filter regionally
+          debugPrint('OffersProvider: Regional filtering requested but no PLZ available');
+          // Extract all retailers if no regional filtering
+          _availableRetailers = _allOffers
+              .map((offer) => offer.retailer)
+              .toSet()
+              .toList();
+        }
       } else {
-        // Extract all retailers if no regional filtering
+        // No regional filtering requested
+        // Extract all retailers
         _availableRetailers = _allOffers
             .map((offer) => offer.retailer)
             .toSet()
@@ -172,30 +229,13 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Regional Loading (ready for Task 5c integration)
+  // DEPRECATED: Use loadOffers(applyRegionalFilter: true) instead
+  // This method is kept for backwards compatibility but should not be used
+  @Deprecated('Use loadOffers(applyRegionalFilter: true) instead')
   Future<void> loadRegionalOffers(String plz, List<String> availableRegionalRetailers) async {
     _userPLZ = plz;
     _availableRetailers = availableRegionalRetailers;
-    
-    _setLoading(true);
-    _clearError();
-    
-    try {
-      // Load all offers first
-      _unfilteredOffers = await _offersRepository.getAllOffers();
-      _allOffers = List.from(_unfilteredOffers); // Keep a copy
-      
-      // Filter by regionally available retailers
-      _allOffers = _allOffers.where((offer) => 
-          availableRegionalRetailers.contains(offer.retailer)).toList();
-      
-      _applyFilters();
-      
-    } catch (e) {
-      _setError('Fehler beim Laden der regionalen Angebote: ${e.toString()}');
-    } finally {
-      _setLoading(false);
-    }
+    await loadOffers(applyRegionalFilter: true);
   }
   
   // NEW: Task 5c.2 - Public method for regional offers

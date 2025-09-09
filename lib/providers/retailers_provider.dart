@@ -231,14 +231,47 @@ class RetailersProvider extends ChangeNotifier {
         .toList();
   }
   
-  /// Registriert Provider bei LocationProvider für Updates
+  /// Task 5c.5: Cross-Provider Integration Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
-    locationProvider.registerRegionalDataCallback((String? plz, List<String> retailerNames) {
-      debugPrint('📍 RetailersProvider: Callback von LocationProvider - PLZ: $plz');
-      if (plz != null) {
-        updateUserLocation(plz);
-      }
-    });
+    // Register for location and regional data updates
+    locationProvider.registerLocationChangeCallback(_onLocationChanged);
+    locationProvider.registerRegionalDataCallback(_onRegionalDataChanged);
+    
+    // Get initial regional data if available
+    if (locationProvider.hasPostalCode) {
+      updateUserLocation(locationProvider.postalCode!);
+    }
+    
+    debugPrint('RetailersProvider: Registered with LocationProvider');
+  }
+  
+  void unregisterFromLocationProvider(LocationProvider locationProvider) {
+    locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
+    locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
+    debugPrint('RetailersProvider: Unregistered from LocationProvider');
+  }
+  
+  // Task 5c.5: Callback handlers
+  void _onLocationChanged() {
+    if (_disposed) return;
+    debugPrint('RetailersProvider: Location changed, updating retailer availability');
+  }
+  
+  void _onRegionalDataChanged(String? plz, List<String> retailerNames) {
+    if (_disposed) return;
+    debugPrint('📍 RetailersProvider: Regional data changed - PLZ: $plz');
+    if (plz != null) {
+      updateUserLocation(plz);
+    }
+  }
+  
+  // Task 5c.5: Additional convenience methods for tests
+  List<String> getAvailableRetailersForPLZ(String plz) {
+    return getAvailableRetailers(plz).map((r) => r.name).toList();
+  }
+  
+  bool isRetailerAvailable(String retailerName) {
+    return _availableRetailers.any((r) => r.name == retailerName);
   }
   
   /// Registriert Callback für Cross-Provider Communication
@@ -327,11 +360,8 @@ class RetailersProvider extends ChangeNotifier {
     if (_availableRetailers.isEmpty) return [];
     
     // Find the unavailable retailer to understand its type
-    final unavailableRetailer = _allRetailers
-        .firstWhere(
-          (r) => r.name == unavailableRetailerName,
-          orElse: () => _allRetailers.first,
-        );
+    // Note: In production, this would be used to match similar retailers
+    // For MVP, we use simple logic
     
     // Suggest similar available retailers
     // For MVP: simple logic based on price range
@@ -363,7 +393,7 @@ class RetailersProvider extends ChangeNotifier {
     final expandedRetailers = <Retailer>{};
     
     for (final plz in expandedPLZ) {
-      final retailers = await getAvailableRetailers(plz);
+      final retailers = getAvailableRetailers(plz); // No await needed - returns List directly
       expandedRetailers.addAll(retailers);
     }
     

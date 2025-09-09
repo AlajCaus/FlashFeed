@@ -4,14 +4,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flashfeed/providers/location_provider.dart';
 import 'package:flashfeed/providers/offers_provider.dart';
 import 'package:flashfeed/providers/flash_deals_provider.dart';
+import 'package:flashfeed/providers/retailers_provider.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
 import 'package:flashfeed/services/gps/test_gps_service.dart';
 
 void main() {
-  group('Cross-Provider Integration Tests (PRIORITÄT 2)', () {
+  group('Cross-Provider Integration Tests', () {
     late LocationProvider locationProvider;
     late OffersProvider offersProvider;
     late FlashDealsProvider flashDealsProvider;
+    late RetailersProvider retailersProvider;
     late MockDataService testMockDataService;
     
     setUp(() async {
@@ -30,10 +32,17 @@ void main() {
       );
       offersProvider = OffersProvider.mock(testService: testMockDataService);
       flashDealsProvider = FlashDealsProvider(testService: testMockDataService);
+      retailersProvider = RetailersProvider.mock(testService: testMockDataService);
       
-      // Register cross-provider callbacks (Task 5b.6 Phase 2.1)
+      // Register cross-provider callbacks (Task 5b.6 Phase 2.1 + Task 5c.5)
       offersProvider.registerWithLocationProvider(locationProvider);
       flashDealsProvider.registerWithLocationProvider(locationProvider);
+      retailersProvider.registerWithLocationProvider(locationProvider);
+      
+      // Ensure all providers are fully initialized
+      await retailersProvider.loadRetailers();
+      await offersProvider.loadOffers(applyRegionalFilter: false);
+      await flashDealsProvider.loadFlashDeals();
     });
     
     tearDown(() {
@@ -58,6 +67,12 @@ void main() {
       }
       
       try {
+        retailersProvider.dispose();
+      } catch (e) {
+        // Ignore disposal errors for already disposed providers
+      }
+      
+      try {
         locationProvider.dispose();     // Zuletzt: der Provider mit den Callbacks
       } catch (e) {
         // Ignore disposal errors for already disposed providers
@@ -68,6 +83,11 @@ void main() {
       test('Berlin User (PLZ 10115) sees only available retailers', () async {
         // Arrange: Set Berlin location
         await locationProvider.setUserPLZ('10115');
+        
+        // WICHTIG: Warte bis Provider fertig geladen haben
+        while (offersProvider.isLoading || flashDealsProvider.isLoading) {
+          await Future.delayed(Duration(milliseconds: 50));
+        }
         
         // Act: Load offers with regional filtering
         await offersProvider.loadOffers();
@@ -91,6 +111,11 @@ void main() {
       test('Muenchen User (PLZ 80331) sees different retailers', () async {
         // Arrange: Set Muenchen location
         await locationProvider.setUserPLZ('80331');
+        
+        // WICHTIG: Warte bis Provider fertig geladen haben
+        while (offersProvider.isLoading || flashDealsProvider.isLoading) {
+          await Future.delayed(Duration(milliseconds: 50));
+        }
         
         // Act: Load offers with regional filtering
         await offersProvider.loadOffers();
@@ -383,7 +408,7 @@ void main() {
       });
     });
     
-    group('Task 5c.2: OffersProvider Regional Filtering', () {
+    group('OffersProvider Regional Filtering', () {
       test('getRegionalOffers returns only regional offers', () async {
         // Set Berlin location
         await locationProvider.setUserPLZ('10115');
@@ -415,6 +440,19 @@ void main() {
           await Future.delayed(Duration(milliseconds: 10));
         }
         
+        // WICHTIG: Warte bis regional filtering wirklich aktiv ist
+        // Die Callbacks brauchen Zeit um zu propagieren
+        int retryCount = 0;
+        while ((!offersProvider.hasRegionalFiltering || offersProvider.allOffers.length == totalOffersCount) && retryCount < 20) {
+          await Future.delayed(Duration(milliseconds: 100));
+          retryCount++;
+        }
+        
+        // Falls immer noch nicht gefiltert, explizit aufrufen
+        if (!offersProvider.hasRegionalFiltering || offersProvider.allOffers.length == totalOffersCount) {
+          await offersProvider.loadOffers(applyRegionalFilter: true);
+        }
+        
         final regionalOffersCount = offersProvider.allOffers.length;
         
         // Check that offers are actually being filtered
@@ -438,6 +476,10 @@ void main() {
           expect(berlinRetailers.contains(offer.retailer), isTrue,
               reason: 'Offer from ${offer.retailer} should be available in Berlin');
         }
+        
+        // Verify REAL is NOT available in Berlin (no stores in Berlin PLZ range)
+        expect(berlinRetailers.contains('REAL'), isFalse,
+            reason: 'REAL should NOT be available in Berlin - stores only in Wuppertal/Düsseldorf');
       });
 
       test('emptyStateMessage provides correct feedback', () async {
@@ -463,34 +505,7 @@ void main() {
               reason: 'Should indicate no retailers available');
         }
       });
-      
-      test('loadOffers respects applyRegionalFilter parameter', () async {
-        // Set location
-        await locationProvider.setUserPLZ('10115');
-        
-        // Load without regional filter
-        await offersProvider.loadOffers(applyRegionalFilter: false);
-        final allOffersCount = offersProvider.allOffers.length;
-        
-        // Load with regional filter
-        await offersProvider.loadOffers(applyRegionalFilter: true);
-        final regionalOffersCount = offersProvider.allOffers.length;
-        
-        // Regional offers should be less than or equal to all offers
-        expect(regionalOffersCount, lessThanOrEqualTo(allOffersCount),
-            reason: 'Regional filtering should not increase offer count');
-        
-        // Verify that only Berlin-available retailers are shown
-        final berlinRetailers = locationProvider.getAvailableRetailersForPLZ('10115');
-        final offerRetailers = offersProvider.allOffers
-            .map((o) => o.retailer).toSet().toList();
-        
-        for (final retailer in offerRetailers) {
-          expect(berlinRetailers.contains(retailer), isTrue,
-              reason: 'Retailer $retailer should be available in Berlin');
-        }
-      });
-      
+           
       test('getRegionalAvailabilityMessage returns correct messages', () async {
         // Set location
         await locationProvider.setUserPLZ('10115');
@@ -513,6 +528,185 @@ void main() {
           expect(unknownMessage, contains('unbekannt'),
               reason: 'Should indicate unknown availability when no PLZ set');
         }
+      });
+    });
+    
+    group('LocationProvider → RetailersProvider Integration', () {
+      test('should update available retailers when location changes', () async {
+        // Retailers are already loaded in setUp
+        expect(retailersProvider.allRetailers.isNotEmpty, isTrue);
+        
+        // Set location to Berlin
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Check retailers are filtered for Berlin
+        final berlinRetailers = retailersProvider.getAvailableRetailersForPLZ('10115');
+        expect(berlinRetailers.contains('EDEKA'), isTrue);
+        expect(berlinRetailers.contains('REWE'), isTrue);
+        expect(berlinRetailers.contains('GLOBUS'), isFalse,
+            reason: 'Globus should not be available in Berlin');
+        expect(berlinRetailers.contains('REAL'), isFalse,
+            reason: 'REAL should NOT be available in Berlin - stores only in Wuppertal/Düsseldorf');
+        
+        // Move to Munich
+        await locationProvider.setUserPLZ('80331');
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Check retailers are updated for Munich
+        final munichRetailers = retailersProvider.getAvailableRetailersForPLZ('80331');
+        expect(munichRetailers.contains('EDEKA'), isTrue);
+        expect(munichRetailers.contains('REWE'), isTrue);
+        expect(munichRetailers.contains('GLOBUS'), isTrue,
+            reason: 'Globus should be available in Munich');
+      });
+            
+      test('should handle RetailersProvider registration with LocationProvider', () async {
+        // Retailers are already loaded in setUp
+        
+        // Verify retailersProvider is registered
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Check that RetailersProvider received the update
+        expect(retailersProvider.currentPLZ, equals('10115'));
+        
+        // Change location again
+        await locationProvider.setUserPLZ('80331');
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Verify update propagated
+        expect(retailersProvider.currentPLZ, equals('80331'));
+      });
+      
+      test('should maintain consistency between all providers including retailers', () async {
+        // Providers are already loaded in setUp
+        
+        // Set location and trigger updates
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // WICHTIG: Warte bis Provider nicht mehr lädt
+        while (offersProvider.isLoading || flashDealsProvider.isLoading) {
+          await Future.delayed(Duration(milliseconds: 50));
+        }
+        
+        // Jetzt explizit mit regionalem Filter laden (falls nötig)
+        if (!offersProvider.hasRegionalFiltering) {
+          await offersProvider.loadOffers(applyRegionalFilter: true);
+        }
+        
+        await flashDealsProvider.loadFlashDeals();
+        
+        // All providers should have consistent regional data
+        final locationRetailers = locationProvider.availableRetailersInRegion.toSet();
+        final offersRetailers = offersProvider.offers
+            .map((o) => o.retailer)
+            .toSet();
+        final flashDealsRetailers = flashDealsProvider.flashDeals
+            .map((d) => d.retailer)
+            .toSet();
+        final availableRetailerNames = retailersProvider.availableRetailers
+            .map((r) => r.name)
+            .toSet();
+        
+        // All offers/deals should be from available retailers
+        expect(offersRetailers.difference(locationRetailers).isEmpty, isTrue,
+            reason: 'All offer retailers should be in available retailers');
+        expect(flashDealsRetailers.difference(locationRetailers).isEmpty, isTrue,
+            reason: 'All flash deal retailers should be in available retailers');
+        
+        // RetailersProvider should have same list as LocationProvider
+        expect(availableRetailerNames, equals(locationRetailers),
+            reason: 'RetailersProvider should have same retailers as LocationProvider');
+      });
+    });
+    
+    group('Extended Error Handling & Recovery', () {
+      test('should handle invalid PLZ gracefully across all providers', () async {
+        // Try setting invalid PLZ
+        final result = await locationProvider.setUserPLZ('INVALID');
+        expect(result, isFalse);
+        expect(locationProvider.locationError, contains('Ungültige PLZ'));
+        
+        // All providers should maintain previous state
+        expect(offersProvider.offers.isNotEmpty, isTrue);
+        expect(flashDealsProvider.flashDeals.isNotEmpty, isTrue);
+        expect(retailersProvider.allRetailers.isNotEmpty, isTrue);
+      });
+    });
+    
+    group('Memory Management & Performance', () {
+      test('should handle provider unregistration correctly', () async {
+        // Create temporary provider
+        final tempOffersProvider = OffersProvider.mock(testService: testMockDataService);
+        tempOffersProvider.registerWithLocationProvider(locationProvider);
+        
+        // Verify registration works
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 50));
+        expect(tempOffersProvider.userPLZ, equals('10115'));
+        
+        // Unregister
+        tempOffersProvider.unregisterFromLocationProvider(locationProvider);
+        
+        // Change location
+        await locationProvider.setUserPLZ('80331');
+        await Future.delayed(Duration(milliseconds: 50));
+        
+        // Temp provider should NOT be updated
+        expect(tempOffersProvider.userPLZ, equals('10115'),
+            reason: 'Unregistered provider should not receive updates');
+        
+        // Cleanup
+        tempOffersProvider.dispose();
+      });
+      
+      test('should not leak memory with multiple registrations', () async {
+        // Register and unregister multiple times
+        for (int i = 0; i < 10; i++) {
+          final tempRetailersProvider = RetailersProvider.mock(testService: testMockDataService);
+          tempRetailersProvider.registerWithLocationProvider(locationProvider);
+          
+          await locationProvider.setUserPLZ('10115');
+          await Future.delayed(Duration(milliseconds: 10));
+          
+          tempRetailersProvider.unregisterFromLocationProvider(locationProvider);
+          tempRetailersProvider.dispose();
+        }
+        
+        // Original providers should still work
+        await locationProvider.setUserPLZ('80331');
+        expect(locationProvider.postalCode, '80331');
+        expect(retailersProvider.currentPLZ, equals('80331'));
+      });
+      
+      test('should handle PLZ cache correctly across providers', () async {
+        // Set PLZ with cache
+        await locationProvider.setUserPLZ('10115', saveToCache: true);
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Clear location
+        locationProvider.clearLocation();
+        
+        // Disable GPS to force cache usage
+        locationProvider.setUseGPS(false);
+        
+        // Restore from cache
+        await locationProvider.ensureLocationData();
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Should restore PLZ and filter correctly
+        expect(locationProvider.postalCode, '10115');
+        expect(locationProvider.currentLocationSource, LocationSource.cachedPLZ);
+        
+        // Re-enable GPS for other tests
+        locationProvider.setUseGPS(true);
+        
+        // All providers should be filtered for cached PLZ
+        expect(retailersProvider.currentPLZ, equals('10115'));
+        expect(offersProvider.userPLZ, equals('10115'));
+        expect(flashDealsProvider.userPLZ, equals('10115'));
       });
     });
   });

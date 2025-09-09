@@ -54,20 +54,51 @@ class FlashDealsProvider extends ChangeNotifier {
       .map((deal) => deal.savings)
       .fold(0.0, (sum, savings) => sum + savings);
   
-  // Register with LocationProvider for regional updates (Task 5b.6: Phase 2.1)
+  // Task 5c.5: Cross-Provider Communication Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
-    locationProvider.registerRegionalDataCallback((plz, availableRetailers) {
-      if (plz != null && availableRetailers.isNotEmpty) {
-        _userPLZ = plz;
-        _availableRetailers = List.from(availableRetailers);
-        
-        // FIX: Reset timer state when location changes
-        _resetTimerState();
-        
-        _applyRegionalFiltering();
-        if (!_disposed) notifyListeners();
-      }
-    });
+    // Register for both location and regional data updates
+    locationProvider.registerLocationChangeCallback(_onLocationChanged);
+    locationProvider.registerRegionalDataCallback(_onRegionalDataChanged);
+    
+    // Get initial regional data if available
+    if (locationProvider.hasPostalCode && locationProvider.availableRetailersInRegion.isNotEmpty) {
+      _userPLZ = locationProvider.postalCode;
+      _availableRetailers = List.from(locationProvider.availableRetailersInRegion);
+      _applyRegionalFiltering();
+    }
+    
+    debugPrint('FlashDealsProvider: Registered with LocationProvider');
+  }
+  
+  void unregisterFromLocationProvider(LocationProvider locationProvider) {
+    locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
+    locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
+    debugPrint('FlashDealsProvider: Unregistered from LocationProvider');
+  }
+  
+  // Task 5c.5: Callback handlers
+  void _onLocationChanged() {
+    if (_disposed) return;
+    debugPrint('FlashDealsProvider: Location changed, resetting flash deals timer');
+    
+    // Reset timer state when location changes
+    _resetTimerState();
+    _applyRegionalFiltering();
+  }
+  
+  void _onRegionalDataChanged(String? plz, List<String> availableRetailers) {
+    if (_disposed) return;
+    if (plz != null && availableRetailers.isNotEmpty) {
+      debugPrint('FlashDealsProvider: Regional data changed - PLZ: $plz');
+      _userPLZ = plz;
+      _availableRetailers = List.from(availableRetailers);
+      
+      // Reset timer state when location changes
+      _resetTimerState();
+      
+      _applyRegionalFiltering();
+      if (!_disposed) notifyListeners();
+    }
   }
   
   // FIX: Reset timer state when location changes

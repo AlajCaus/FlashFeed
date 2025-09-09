@@ -30,12 +30,12 @@ class LocationProvider extends ChangeNotifier {
   final GPSService _gpsService;
   
   // MockDataService (injected for Task 5c.1)
-  MockDataService? _mockDataServiceInstance;
+  final MockDataService? _mockDataServiceInstance;
   
   // Lazy getter for MockDataService
   MockDataService get _mockDataService {
     if (_mockDataServiceInstance != null) {
-      return _mockDataServiceInstance!;
+      return _mockDataServiceInstance;
     }
     // Try global mockDataService from main.dart
     try {

@@ -18,6 +18,9 @@ import 'repositories/mock_retailers_repository.dart';
 // FlashFeed Screens
 import 'screens/main_layout_screen.dart';
 
+// FlashFeed Widgets
+import 'widgets/provider_initializer.dart';
+
 /*
  * FlashFeed Main App Entry Point
  * 
@@ -87,7 +90,8 @@ class FlashFeedApp extends StatelessWidget {
           ),
         ),
       ],
-      child: Consumer<AppProvider>(
+      child: ProviderInitializer(
+        child: Consumer<AppProvider>(
         builder: (context, appProvider, child) {
           return MaterialApp(
             title: 'FlashFeed Prototype',
@@ -135,6 +139,7 @@ class FlashFeedApp extends StatelessWidget {
             },
           );
         },
+        ),
       ),
     );
   }

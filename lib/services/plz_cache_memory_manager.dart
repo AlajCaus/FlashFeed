@@ -20,7 +20,6 @@ class PLZCacheMemoryManager {
   
   // Memory-Monitoring State
   Timer? _memoryMonitorTimer;
-  final int _lastMemoryUsageBytes = 0;
   DateTime? _lastMemoryCheck;
   bool _memoryPressureDetected = false;
   
