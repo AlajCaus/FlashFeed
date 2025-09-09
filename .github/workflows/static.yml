@@ -37,8 +37,6 @@ jobs:
     - name: Run Unit Tests
       run: |
         flutter test --reporter=expanded
-        flutter test test/integration --reporter=expanded
-        flutter test test/performance --reporter=expanded
       working-directory: ./
 
     - name: Test Summary
