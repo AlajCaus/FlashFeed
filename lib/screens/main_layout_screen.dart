@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../theme/app_theme.dart';
 import '../widgets/custom_app_bar.dart';
 import '../utils/responsive_helper.dart';
 
@@ -30,13 +31,6 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isInitialized = false;
-  
-  // Design System Colors
-  static const Color primaryGreen = Color(0xFF2E8B57);
-  static const Color primaryRed = Color(0xFFDC143C);
-
-  static const Color textSecondary = Color(0xFF666666);
-  static const Color backgroundLight = Color(0xFFFAFAFA);
   
   @override
   void initState() {
@@ -109,7 +103,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
               _tabController.index = 1;
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryGreen,
+              backgroundColor: AppTheme.primaryGreen,
             ),
             child: const Text('Professor Demo'),
           ),
@@ -138,7 +132,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
         }
         
         return Scaffold(
-          backgroundColor: backgroundLight,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: const CustomAppBar(),
           body: isDesktop 
               ? _buildDesktopLayout()
@@ -159,17 +153,17 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
             color: Colors.white,
             border: Border(
               top: BorderSide(
-                color: textSecondary.withValues(alpha: 0.2),
+                color: Colors.grey[600]!.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
           ),
           child: TabBar(
             controller: _tabController,
-            indicatorColor: primaryRed,
+            indicatorColor: AppTheme.primaryRed,
             indicatorWeight: 3,
-            labelColor: primaryGreen,
-            unselectedLabelColor: textSecondary,
+            labelColor: AppTheme.primaryGreen,
+            unselectedLabelColor: Colors.grey[600],
             tabs: [
               _buildTab(Icons.shopping_cart, 'Angebote'),
               _buildTab(Icons.map, 'Karte'),
@@ -239,7 +233,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
             height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: primaryGreen.withAlpha(25),
+              color: AppTheme.primaryGreen.withAlpha(25),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(12),
               ),

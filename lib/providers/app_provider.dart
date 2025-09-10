@@ -13,7 +13,7 @@ class AppProvider extends ChangeNotifier {
   // Navigation State
   AppPanel _currentPanel = AppPanel.offers;
   int _selectedPanelIndex = 0;  // Task 7: For TabController integration
-  List<int> _navigationHistory = [];  // Task 7: For back navigation
+  final List<int> _navigationHistory = [];  // Task 7: For back navigation
   bool _isLoading = false;
   String? _errorMessage;
   

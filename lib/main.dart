@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// FlashFeed Theme
+import 'theme/app_theme.dart';
+
 // FlashFeed Providers
 import 'providers/app_provider.dart';
 import 'providers/offers_provider.dart';
@@ -97,9 +100,9 @@ class FlashFeedApp extends StatelessWidget {
             title: 'FlashFeed Prototype',
             debugShowCheckedModeBanner: false,
             
-            // Theme based on app provider dark mode setting
-            theme: _buildLightTheme(),
-            darkTheme: _buildDarkTheme(),
+            // Use FlashFeed custom themes
+            theme: AppTheme.lightTheme(),
+            darkTheme: AppTheme.darkTheme(),
             themeMode: appProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             
             // Main app screen
@@ -144,34 +147,4 @@ class FlashFeedApp extends StatelessWidget {
     );
   }
 
-  ThemeData _buildLightTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF2E8B57), // FlashFeed Primary Green
-        brightness: Brightness.light,
-      ),
-      appBarTheme: const AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Color(0xFF333333),
-      ),
-    );
-  }
-
-  ThemeData _buildDarkTheme() {
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF2E8B57), // FlashFeed Primary Green
-        brightness: Brightness.dark,
-      ),
-      appBarTheme: const AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
-    );
-  }
 }

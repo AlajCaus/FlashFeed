@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/flash_deals_provider.dart';
-import '../providers/location_provider.dart';
 import '../models/models.dart';
 import '../utils/responsive_helper.dart';
 
@@ -35,7 +34,8 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
   @override
   Widget build(BuildContext context) {
     final flashDealsProvider = context.watch<FlashDealsProvider>();
-    final locationProvider = context.watch<LocationProvider>();
+    // Location provider is available if needed
+    // final locationProvider = context.watch<LocationProvider>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
