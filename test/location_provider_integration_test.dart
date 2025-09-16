@@ -5,11 +5,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
 
-import '../lib/providers/location_provider.dart';
-import '../lib/providers/offers_provider.dart';
-import '../lib/services/mock_data_service.dart';
-import '../lib/services/gps/test_gps_service.dart';
-import '../lib/helpers/plz_helper.dart';
+import 'package:flashfeed/providers/location_provider.dart';
+import 'package:flashfeed/providers/offers_provider.dart';
+import 'package:flashfeed/services/mock_data_service.dart';
+import 'package:flashfeed/services/gps/test_gps_service.dart';
+import 'package:flashfeed/helpers/plz_helper.dart';
 
 void main() {
   group('Task 5b.6: LocationProvider Integration Tests', () {
@@ -213,7 +213,7 @@ void main() {
 
       test('should cleanup callbacks on dispose', () {
         // Arrange: Register callbacks
-        final callback = () {};
+        void callback() {}
         
         locationProvider.registerLocationChangeCallback(callback);
 

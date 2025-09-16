@@ -88,7 +88,17 @@ class FlashDealsProvider extends ChangeNotifier {
   
   void _onRegionalDataChanged(String? plz, List<String> availableRetailers) {
     if (_disposed) return;
-    if (plz != null && availableRetailers.isNotEmpty) {
+    
+    // Handle location cleared case
+    if (plz == null) {
+      debugPrint('FlashDealsProvider: Location cleared');
+      _userPLZ = null;
+      _availableRetailers = [];
+      if (!_disposed) notifyListeners();
+      return;
+    }
+    
+    if (availableRetailers.isNotEmpty) {
       debugPrint('FlashDealsProvider: Regional data changed - PLZ: $plz');
       _userPLZ = plz;
       _availableRetailers = List.from(availableRetailers);

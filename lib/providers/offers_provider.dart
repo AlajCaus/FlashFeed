@@ -92,6 +92,17 @@ class OffersProvider extends ChangeNotifier {
   // Task 5c.5: Callback handlers
   void _onLocationChanged() {
     if (_disposed) return;
+    
+    // Check if location was cleared (no PLZ)
+    if (_locationProvider != null && _locationProvider!.postalCode == null) {
+      // Location was cleared - reset our state
+      _userPLZ = null;
+      _availableRetailers = [];
+      debugPrint('OffersProvider: Location cleared, resetting state');
+      notifyListeners();
+      return;
+    }
+    
     debugPrint('OffersProvider: Location changed, reloading offers');
     loadOffers(applyRegionalFilter: true);
   }
@@ -441,14 +452,12 @@ class OffersProvider extends ChangeNotifier {
   
   // Get offers that are not available in user's region
   List<Offer> get unavailableOffers {
-    if (_userPLZ == null) return [];
-    // Use _unfilteredOffers to find offers from unavailable retailers
-    return _unfilteredOffers
-        .where((offer) => !_availableRetailers.contains(offer.retailer))
-        .toList();
+    if (_userPLZ == null || _userPLZ!.isEmpty) return [];
+    return _unfilteredOffers.where((offer) => 
+      !_availableRetailers.contains(offer.retailer)
+    ).toList();
   }
   
-  // Check if there are unavailable offers
   bool get hasUnavailableOffers => unavailableOffers.isNotEmpty;
   
   // Get alternative retailers for an unavailable retailer
@@ -567,6 +576,52 @@ class OffersProvider extends ChangeNotifier {
   
   void _clearError() {
     _errorMessage = null;
+  }
+  
+  // Task 5c.4: UI-Logic for Regional Availability
+  // (Moved to line 440 to avoid duplication)
+  
+  List<String> get regionalWarnings {
+    final warnings = <String>[];
+    
+    if (_userPLZ == null || _userPLZ!.isEmpty) {
+      warnings.add('Bitte geben Sie Ihre PLZ ein für regionale Angebote');
+    } else if (_availableRetailers.isEmpty) {
+      warnings.add('Keine Händler in Ihrer Region (PLZ: $_userPLZ) verfügbar');
+    } else if (hasUnavailableOffers) {
+      final unavailableCount = unavailableOffers.length;
+      warnings.add('$unavailableCount Angebote sind in Ihrer Region nicht verfügbar');
+    }
+    
+    return warnings;
+  }
+  
+  List<String> findNearbyRetailers(String plz, {int radiusKm = 50}) {
+    // This would normally query nearby PLZ ranges
+    // For MVP, return some suggested alternatives
+    final suggestions = <String>[];
+    
+    // If no retailers available, suggest nationwide ones
+    if (_availableRetailers.isEmpty) {
+      suggestions.addAll(['EDEKA', 'REWE', 'ALDI', 'Lidl']);
+    } else if (_availableRetailers.length < 5) {
+      // Suggest additional nationwide retailers
+      final nationwide = ['EDEKA', 'REWE', 'ALDI', 'Lidl', 'Penny', 'Kaufland'];
+      for (final retailer in nationwide) {
+        if (!_availableRetailers.contains(retailer)) {
+          suggestions.add(retailer);
+        }
+      }
+    }
+    
+    return suggestions.take(3).toList(); // Max 3 suggestions
+  }
+  
+  // Freemium Logic
+  bool isOfferLocked(int index) {
+    // Import UserProvider if needed
+    // For now, first 3 offers are free, rest locked
+    return index >= 3;
   }
   
   @override

@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import '../lib/providers/location_provider.dart';
-import '../lib/services/plz_lookup_service.dart';
+import 'package:flashfeed/providers/location_provider.dart';
+import 'package:flashfeed/services/plz_lookup_service.dart';
 
 void main() {
   group('Task 5b.6: PLZ Cache Performance Benchmarks', () {
@@ -106,7 +106,7 @@ void main() {
         // Register 100 callbacks
         final callbacks = <VoidCallback>[];
         for (int i = 0; i < 100; i++) {
-          final callback = () => debugPrint('Callback $i triggered');
+          void callback() => debugPrint('Callback $i triggered');
           callbacks.add(callback);
           locationProvider.registerLocationChangeCallback(callback);
         }

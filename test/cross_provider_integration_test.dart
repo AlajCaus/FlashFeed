@@ -709,5 +709,152 @@ void main() {
         expect(flashDealsProvider.userPLZ, equals('10115'));
       });
     });
+    
+    // Task 5c.5: Additional Cross-Provider Integration Tests
+    group('Task 5c.5 - Regional State Synchronization', () {
+      test('should detect and report unavailable offers', () async {
+        // Set location to Berlin (BioCompany available)
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Load offers
+        await offersProvider.loadOffers(applyRegionalFilter: true);
+        
+        // Check unavailable offers (should have some from non-Berlin retailers)
+        expect(offersProvider.hasUnavailableOffers, isTrue);
+        expect(offersProvider.unavailableOffers.isNotEmpty, isTrue);
+        
+        // Check that unavailable offers are from retailers not in Berlin
+        final unavailable = offersProvider.unavailableOffers;
+        for (final offer in unavailable) {
+          expect(offersProvider.availableRetailers.contains(offer.retailer), isFalse);
+        }
+      });
+      
+      test('should generate appropriate regional warnings', () async {
+        // Test without PLZ
+        locationProvider.clearLocation();
+        await offersProvider.loadOffers(applyRegionalFilter: false);
+        
+        var warnings = offersProvider.regionalWarnings;
+        expect(warnings.any((w) => w.contains('PLZ ein')), isTrue);
+        
+        // Test with PLZ but no retailers (use invalid PLZ)
+        await locationProvider.setUserPLZ('99999');
+        await Future.delayed(Duration(milliseconds: 100));
+        await offersProvider.loadOffers(applyRegionalFilter: true);
+        
+        warnings = offersProvider.regionalWarnings;
+        // Since 99999 may have some retailers, check if warning is appropriate
+        expect(warnings.isNotEmpty, isTrue);
+        
+        // Test with valid PLZ
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 100));
+        await offersProvider.loadOffers(applyRegionalFilter: true);
+        
+        warnings = offersProvider.regionalWarnings;
+        // Should either have no warnings or warning about some unavailable offers
+        if (warnings.isNotEmpty) {
+          expect(warnings.any((w) => w.contains('nicht verfügbar')), isTrue);
+        }
+      });
+      
+      test('should suggest nearby retailers when few available', () async {
+        // Set location with limited retailers
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Get suggestions
+        final suggestions = offersProvider.findNearbyRetailers('10115');
+        
+        // Should suggest up to 3 retailers
+        expect(suggestions.length, lessThanOrEqualTo(3));
+        
+        // Suggestions should be nationwide retailers not already available
+        for (final suggestion in suggestions) {
+          expect(['EDEKA', 'REWE', 'ALDI', 'Lidl', 'Penny', 'Kaufland'].contains(suggestion), isTrue);
+        }
+      });
+      
+      test('should maintain consistency across all providers after rapid PLZ changes', () async {
+        // Rapid PLZ changes
+        final plzList = ['10115', '80331', '40213', '01067', '10115'];
+        
+        for (final plz in plzList) {
+          await locationProvider.setUserPLZ(plz);
+          await Future.delayed(Duration(milliseconds: 50));
+        }
+        
+        // Final state should be consistent
+        expect(locationProvider.postalCode, '10115');
+        expect(offersProvider.userPLZ, '10115');
+        expect(retailersProvider.currentPLZ, '10115');
+        expect(flashDealsProvider.userPLZ, '10115');
+        
+        // All providers should have same available retailers
+        final locationRetailers = locationProvider.availableRetailersInRegion;
+        expect(offersProvider.availableRetailers, equals(locationRetailers));
+        expect(retailersProvider.availableRetailers.map((r) => r.name).toList(), 
+               containsAll(locationRetailers));
+      });
+      
+      test('should handle edge case with empty retailer lists', () async {
+        // Create a PLZ with no retailers (edge case)
+        await locationProvider.setUserPLZ('00000'); // Invalid PLZ
+        await Future.delayed(Duration(milliseconds: 100));
+        
+        // Should handle gracefully
+        expect(locationProvider.availableRetailersInRegion.isEmpty, isTrue);
+        expect(offersProvider.availableRetailers.isEmpty, isTrue);
+        expect(retailersProvider.availableRetailers.isEmpty, isTrue);
+        
+        // Should show appropriate warnings
+        final warnings = offersProvider.regionalWarnings;
+        expect(warnings.any((w) => w.contains('Keine Händler')), isTrue);
+      });
+      
+      test('should correctly identify offer lock status', () async {
+        // Load offers
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 100));
+        await offersProvider.loadOffers(applyRegionalFilter: true);
+        
+        // Check freemium logic
+        if (offersProvider.offers.isNotEmpty) {
+          // First 3 offers should be free
+          expect(offersProvider.isOfferLocked(0), isFalse);
+          expect(offersProvider.isOfferLocked(1), isFalse);
+          expect(offersProvider.isOfferLocked(2), isFalse);
+          
+          // 4th and beyond should be locked
+          if (offersProvider.offers.length > 3) {
+            expect(offersProvider.isOfferLocked(3), isTrue);
+          }
+        }
+      });
+      
+      test('should update all providers when location source changes', () async {
+        // Start with user PLZ
+        await locationProvider.setUserPLZ('10115');
+        await Future.delayed(Duration(milliseconds: 100));
+        expect(locationProvider.currentLocationSource, LocationSource.userPLZ);
+        
+        // All providers should be updated
+        expect(offersProvider.userPLZ, '10115');
+        expect(retailersProvider.currentPLZ, '10115');
+        expect(flashDealsProvider.userPLZ, '10115');
+        
+        // Clear and ensure no location
+        locationProvider.clearLocation();
+        await Future.delayed(Duration(milliseconds: 100));
+        expect(locationProvider.currentLocationSource, LocationSource.none);
+        
+        // Providers should handle no location gracefully
+        expect(offersProvider.userPLZ, isNull);
+        expect(retailersProvider.currentPLZ, isNull);
+        expect(flashDealsProvider.userPLZ, isNull);
+      });
+    });
   });
 }

@@ -66,7 +66,6 @@ class PLZCacheMemoryManager {
       _lastMemoryCheck = DateTime.now();
       
       final availableMemoryMB = memoryInfo['availableMB'] ?? 0;
-      final usedMemoryMB = memoryInfo['usedMB'] ?? 0;
       
       // Memory-Pressure-Detection
       final previousPressure = _memoryPressureDetected;

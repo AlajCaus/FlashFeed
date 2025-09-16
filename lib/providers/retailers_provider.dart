@@ -57,7 +57,7 @@ class RetailersProvider extends ChangeNotifier {
   List<Retailer> get allRetailers => List.unmodifiable(_allRetailers);
   List<Retailer> get availableRetailers => List.unmodifiable(_availableRetailers);
   List<Retailer> get unavailableRetailers => List.unmodifiable(_unavailableRetailers);
-  String get currentPLZ => _currentPLZ;
+  String? get currentPLZ => _currentPLZ;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasError => _errorMessage != null;

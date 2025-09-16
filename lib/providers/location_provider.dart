@@ -174,6 +174,12 @@ class LocationProvider extends ChangeNotifier {
   /// Returns list of retailer names available in the given PLZ
   List<String> getAvailableRetailersForPLZ(String plz) {
     _checkDisposed();
+    
+    // Return empty list for invalid PLZ
+    if (!PLZHelper.isValidPLZ(plz)) {
+      return [];
+    }
+    
     return _mockDataService.retailers
         .where((retailer) => retailer.isAvailableInPLZ(plz))
         .map((r) => r.name)
@@ -472,6 +478,10 @@ class LocationProvider extends ChangeNotifier {
     _isLoadingLocation = false;
     
     debugPrint('🧹 LocationProvider: Alle Location-Daten gelöscht');
+    
+    // Notify callbacks so dependent providers can clear their state
+    _notifyLocationCallbacks();
+    
     notifyListeners();
   }
   
