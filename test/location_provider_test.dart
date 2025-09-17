@@ -1229,22 +1229,22 @@ void main() {
         
         // Act: Error sequence followed by recovery
         
-        // 1. Invalid PLZ (should not trigger callbacks)
+        // 1. Invalid PLZ (triggers graceful cleanup callbacks for cross-provider communication)
         await locationProvider.setUserPLZ('INVALID');
-        expect(successfulCallbacks, equals(0));
+        expect(successfulCallbacks, equals(1));
         
         // 2. Valid PLZ (should trigger callbacks)
         await locationProvider.setUserPLZ('10115');
-        expect(successfulCallbacks, equals(1));
+        expect(successfulCallbacks, equals(2));
         expect(lastValidPLZ, equals('10115'));
         
-        // 3. Another invalid PLZ (should not trigger callbacks)
+        // 3. Another invalid PLZ (triggers graceful cleanup callbacks)
         await locationProvider.setUserPLZ('12345A');
-        expect(successfulCallbacks, equals(1)); // No change
+        expect(successfulCallbacks, equals(3)); // Graceful cleanup callback
         
         // 4. Another valid PLZ (should trigger callbacks again)
         await locationProvider.setUserPLZ('80331');
-        expect(successfulCallbacks, equals(2));
+        expect(successfulCallbacks, equals(4));
         expect(lastValidPLZ, equals('80331'));
         
         // Assert: System recovered completely after errors
