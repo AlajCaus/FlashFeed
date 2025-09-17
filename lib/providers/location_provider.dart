@@ -423,7 +423,24 @@ class LocationProvider extends ChangeNotifier {
       // Validierung der PLZ
       if (!PLZHelper.isValidPLZ(plz)) {
         _setLocationError('Ungültige PLZ: $plz');
-        return false;
+        
+        // GRACEFUL HANDLING: Clear location data and notify providers
+        _latitude = null;
+        _longitude = null;
+        _address = null;
+        _city = null;
+        _postalCode = null;
+        _userPLZ = null;
+        _currentLocationSource = LocationSource.none;
+        _availableRetailersInRegion.clear(); // Empty retailer list
+        
+        // Trigger callbacks with empty data so providers can generate warnings
+        debugPrint('🔔 DEBUG: Triggering callbacks for invalid PLZ with empty retailer list...');
+        _notifyLocationCallbacks();
+        notifyListeners();
+        
+        debugPrint('✅ DEBUG: Graceful handling completed for invalid PLZ');
+        return false; // Still return false (PLZ was invalid), but handled gracefully
       }
       
       // FIX: Set LocationSource BEFORE _setPLZAsLocation to ensure callbacks get correct source
@@ -704,10 +721,10 @@ class LocationProvider extends ChangeNotifier {
         }
       }
       
-      debugPrint('LocationProvider: Alle Callbacks erfolgreich benachrichtigt');
+      debugPrint('✅ LocationProvider: Alle Callbacks erfolgreich benachrichtigt');
       
     } catch (e) {
-      debugPrint('LocationProvider: Fehler bei Callback-Benachrichtigung: $e');
+      debugPrint('❌ LocationProvider: Fehler bei Callback-Benachrichtigung: $e');
     }
   }
   

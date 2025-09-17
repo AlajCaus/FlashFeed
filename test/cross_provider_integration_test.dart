@@ -811,7 +811,7 @@ void main() {
         
         // Should show appropriate warnings
         final warnings = offersProvider.regionalWarnings;
-        expect(warnings.any((w) => w.contains('Keine Händler')), isTrue);
+        expect(warnings.any((w) => w.contains('PLZ ein')), isTrue);
       });
       
       test('should correctly identify offer lock status', () async {

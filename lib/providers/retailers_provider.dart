@@ -260,8 +260,17 @@ class RetailersProvider extends ChangeNotifier {
   void _onRegionalDataChanged(String? plz, List<String> retailerNames) {
     if (_disposed) return;
     debugPrint('📍 RetailersProvider: Regional data changed - PLZ: $plz');
+    
     if (plz != null) {
       updateUserLocation(plz);
+    } else {
+      // PLZ is null/invalid - clear all retailers for edge case handling
+      _currentPLZ = '';
+      _availableRetailers = []; // Empty for invalid PLZ edge case
+      _unavailableRetailers = _allRetailers; // All retailers become unavailable
+      
+      debugPrint('✅ RetailersProvider: PLZ invalid/null, clearing all available retailers');
+      _notifyRetailerUpdate();
     }
   }
   
