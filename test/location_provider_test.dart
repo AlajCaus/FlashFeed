@@ -1195,13 +1195,24 @@ void main() {
         // Act: Trigger callback with valid data
         await locationProvider.setUserPLZ('10115');
         
-        // Clear location (simulates null scenario)
+        // Assert: Callback received valid data from setUserPLZ()
+        expect(callbackExecuted, isTrue);
+        expect(receivedPLZ, equals('10115')); // Should receive '10115' from setUserPLZ()
+        expect(receivedRetailers, isNotNull); // Should have received retailers
+        
+        // Reset for null scenario test
+        callbackExecuted = false;
+        receivedPLZ = null;
+        receivedRetailers = null;
+        
+        // Clear location (simulates null scenario) - triggers callback with null
         locationProvider.clearLocation();
         
-        // Assert: Callback handled data correctly
-        expect(callbackExecuted, isTrue);
-        expect(receivedPLZ, equals('10115')); // Last valid PLZ received
-        expect(receivedRetailers, isNotNull); // Should have received retailers
+        // Assert: Callback handled null scenario gracefully
+        expect(callbackExecuted, isTrue); // clearLocation() triggers callbacks
+        expect(receivedPLZ, isNull); // Should be null after clearLocation()
+        expect(receivedRetailers, isNotNull); // Should still receive empty retailers list
+        expect(receivedRetailers, isEmpty); // Should be empty list, not null
       });
       
       test('Callback system recovery after error conditions', () async {
@@ -1703,7 +1714,7 @@ void main() {
         
         // Assert: Provider state is consistent when callback executes
         expect(sourceAtCallback, equals(LocationSource.userPLZ));
-        expect(plzAtCallback, equals('10115'));
+        expect(plzAtCallback, equals('10115')); // Use callback variable instead of direct check after clearLocation
       });
     });
   });

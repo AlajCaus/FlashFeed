@@ -241,7 +241,7 @@ class LocationProvider extends ChangeNotifier {
     _checkDisposed();
     debugPrint('🗺️ LocationProvider: Starte intelligente Location-Bestimmung...');
     
-    _setLocationError(null);
+      _setLocationError(null);
     
     // Fallback 1: GPS-Lokalisierung (wenn aktiviert und nicht force-refresh bei Cache)
     if (_useGPS && (forceRefresh || _currentLocationSource == LocationSource.none)) {
@@ -279,7 +279,7 @@ class LocationProvider extends ChangeNotifier {
     // Fallback 3: User-Dialog würde hier kommen (benötigt BuildContext)
     // Für Tests ohne Context: Fehler setzen und false zurückgeben
     debugPrint('❌ Alle Location-Fallbacks fehlgeschlagen');
-    _setLocationError('Standort-Bestimmung fehlgeschlagen. GPS nicht verfügbar und kein Cache vorhanden.');
+      _setLocationError('Standort-Bestimmung fehlgeschlagen. GPS nicht verfügbar und kein Cache vorhanden.');
     return false;
   }
   
