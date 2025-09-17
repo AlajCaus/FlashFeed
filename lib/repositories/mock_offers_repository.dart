@@ -197,7 +197,7 @@ class MockOffersRepository implements OffersRepository {
   }
 
   @override
-  Future<List<Offer>> getSortedOffers(List<Offer> offers, OfferSortType sortType) async {
+  Future<List<Offer>> getSortedOffers(List<Offer> offers, OfferSortType sortType, {double? userLat, double? userLng}) async {
     await Future.delayed(Duration(milliseconds: 50));
     
     List<Offer> sortedOffers = List.from(offers);
@@ -214,9 +214,11 @@ class MockOffersRepository implements OffersRepository {
           (b.discountPercent ?? 0).compareTo(a.discountPercent ?? 0));
         break;
       case OfferSortType.distanceAsc:
-        // Sortierung nach Berlin Mitte als Standard
+        // Task 9.1: Use provided coordinates or Berlin Mitte as fallback
+        final lat = userLat ?? 52.5200;
+        final lng = userLng ?? 13.4050;
         sortedOffers.sort((a, b) => 
-          a.distanceTo(52.5200, 13.4050).compareTo(b.distanceTo(52.5200, 13.4050)));
+          a.distanceTo(lat, lng).compareTo(b.distanceTo(lat, lng)));
         break;
       case OfferSortType.validityDesc:
         sortedOffers.sort((a, b) => b.validUntil.compareTo(a.validUntil));

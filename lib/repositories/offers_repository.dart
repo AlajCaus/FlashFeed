@@ -27,5 +27,5 @@ abstract class OffersRepository {
   Future<List<Offer>> searchOffers(String searchTerm);
   
   /// Angebote sortieren
-  Future<List<Offer>> getSortedOffers(List<Offer> offers, OfferSortType sortType);
+  Future<List<Offer>> getSortedOffers(List<Offer> offers, OfferSortType sortType, {double? userLat, double? userLng});
 }

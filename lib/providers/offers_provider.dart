@@ -39,6 +39,10 @@ class OffersProvider extends ChangeNotifier {
   String? _userPLZ;
   List<String> _availableRetailers = [];
   
+  // Task 9.1: Dynamic coordinates for distance sorting
+  double? _userLatitude;
+  double? _userLongitude;
+  
   OffersProvider(this._offersRepository) {
     _initializeCallbacks();
   }
@@ -79,6 +83,9 @@ class OffersProvider extends ChangeNotifier {
       // Don't load offers here - let the initialization flow handle it
     }
     
+    // Task 9.1: Get initial coordinates
+    _updateUserCoordinates();
+    
     debugPrint('OffersProvider: Registered with LocationProvider');
   }
   
@@ -98,10 +105,16 @@ class OffersProvider extends ChangeNotifier {
       // Location was cleared - reset our state
       _userPLZ = null;
       _availableRetailers = [];
+      // Task 9.1: Clear coordinates too
+      _userLatitude = null;
+      _userLongitude = null;
       debugPrint('OffersProvider: Location cleared, resetting state');
       notifyListeners();
       return;
     }
+    
+    // Task 9.1: Update coordinates when location changes
+    _updateUserCoordinates();
     
     debugPrint('OffersProvider: Location changed, reloading offers');
     loadOffers(applyRegionalFilter: true);
@@ -116,6 +129,64 @@ class OffersProvider extends ChangeNotifier {
       debugPrint('OffersProvider: Regional data changed - PLZ: $plz, Retailers: $availableRetailers');
       // Load offers with the new regional data
       loadOffers(applyRegionalFilter: true);
+    }
+  }
+  
+  // Task 9.1: Update user coordinates from LocationProvider
+  void _updateUserCoordinates() {
+    if (_locationProvider != null) {
+      // GPS coordinates if available
+      if (_locationProvider!.latitude != null && _locationProvider!.longitude != null) {
+        _userLatitude = _locationProvider!.latitude;
+        _userLongitude = _locationProvider!.longitude;
+        debugPrint('OffersProvider: Updated coordinates from GPS: $_userLatitude, $_userLongitude');
+      } 
+      // Fallback: PLZ to coordinates
+      else if (_locationProvider!.postalCode != null && _locationProvider!.postalCode!.isNotEmpty) {
+        final coords = _convertPLZToCoordinates(_locationProvider!.postalCode!);
+        _userLatitude = coords['lat'];
+        _userLongitude = coords['lng'];
+        debugPrint('OffersProvider: Updated coordinates from PLZ ${_locationProvider!.postalCode}: $_userLatitude, $_userLongitude');
+      }
+      // Default: Berlin Mitte (will use fallback in getter)
+      else {
+        _userLatitude = null;
+        _userLongitude = null;
+        debugPrint('OffersProvider: No location data available, using default coordinates');
+      }
+      
+      // Re-sort if distance sorting is active
+      if (_sortType == OfferSortType.distanceAsc && !_disposed) {
+        _applySorting();
+      }
+    }
+  }
+  
+  // Task 9.1: Convert PLZ to approximate coordinates for major German cities
+  Map<String, double> _convertPLZToCoordinates(String plz) {
+    // Major German cities mapping
+    if (plz.startsWith('10') || plz.startsWith('12') || plz.startsWith('13') || plz.startsWith('14')) {
+      return {'lat': 52.5200, 'lng': 13.4050}; // Berlin
+    } else if (plz.startsWith('80') || plz.startsWith('81') || plz.startsWith('82') || plz.startsWith('85')) {
+      return {'lat': 48.1351, 'lng': 11.5820}; // München
+    } else if (plz.startsWith('40') || plz.startsWith('41') || plz.startsWith('42') || plz.startsWith('47')) {
+      return {'lat': 51.2277, 'lng': 6.7735}; // Düsseldorf
+    } else if (plz.startsWith('50') || plz.startsWith('51') || plz.startsWith('52') || plz.startsWith('53')) {
+      return {'lat': 50.9375, 'lng': 6.9603}; // Köln
+    } else if (plz.startsWith('60') || plz.startsWith('61') || plz.startsWith('63') || plz.startsWith('65')) {
+      return {'lat': 50.1109, 'lng': 8.6821}; // Frankfurt
+    } else if (plz.startsWith('70') || plz.startsWith('71') || plz.startsWith('72') || plz.startsWith('73')) {
+      return {'lat': 48.7758, 'lng': 9.1829}; // Stuttgart
+    } else if (plz.startsWith('01') || plz.startsWith('02') || plz.startsWith('03')) {
+      return {'lat': 51.0504, 'lng': 13.7373}; // Dresden
+    } else if (plz.startsWith('20') || plz.startsWith('21') || plz.startsWith('22') || plz.startsWith('25')) {
+      return {'lat': 53.5511, 'lng': 9.9937}; // Hamburg
+    } else if (plz.startsWith('30') || plz.startsWith('31') || plz.startsWith('37') || plz.startsWith('38')) {
+      return {'lat': 52.3759, 'lng': 9.7320}; // Hannover
+    } else if (plz.startsWith('90') || plz.startsWith('91') || plz.startsWith('95')) {
+      return {'lat': 49.4521, 'lng': 11.0767}; // Nürnberg
+    } else {
+      return {'lat': 52.5200, 'lng': 13.4050}; // Default: Berlin
     }
   }
   
@@ -137,6 +208,20 @@ class OffersProvider extends ChangeNotifier {
   // Regional Getters
   String? get userPLZ => _userPLZ;
   bool get hasRegionalFiltering => _userPLZ != null && _availableRetailers.isNotEmpty;
+  
+  // Task 9.1: Location Getters for distance sorting
+  double get currentLatitude => _userLatitude ?? 52.5200; // Berlin Mitte fallback
+  double get currentLongitude => _userLongitude ?? 13.4050;
+  bool get hasUserLocation => _userLatitude != null && _userLongitude != null;
+  String get locationSource {
+    if (hasUserLocation) {
+      return _userPLZ != null ? 'GPS + PLZ' : 'GPS';
+    } else if (_userPLZ != null) {
+      return 'PLZ';
+    } else {
+      return 'Default (Berlin)';
+    }
+  }
   
   // NEW: Task 5c.2 - Get regional availability message
   String getRegionalAvailabilityMessage(String retailerName) {
@@ -330,7 +415,18 @@ class OffersProvider extends ChangeNotifier {
       
       _setLoading(true);
       try {
-        _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, sortType);
+        // Task 9.1: Pass user coordinates for distance sorting
+        if (sortType == OfferSortType.distanceAsc) {
+          _filteredOffers = await _offersRepository.getSortedOffers(
+            _filteredOffers, 
+            sortType,
+            userLat: currentLatitude,  // Uses getter with fallback
+            userLng: currentLongitude
+          );
+          debugPrint('OffersProvider: Distance sorting applied with coordinates: $currentLatitude, $currentLongitude ($locationSource)');
+        } else {
+          _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, sortType);
+        }
       } catch (e) {
         _setError('Fehler beim Sortieren: ${e.toString()}');
       } finally {
@@ -401,7 +497,17 @@ class OffersProvider extends ChangeNotifier {
   
   Future<void> _applySorting() async {
     try {
-      _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, _sortType);
+      // Task 9.1: Pass user coordinates for distance sorting
+      if (_sortType == OfferSortType.distanceAsc) {
+        _filteredOffers = await _offersRepository.getSortedOffers(
+          _filteredOffers, 
+          _sortType,
+          userLat: currentLatitude,  // Uses getter with fallback
+          userLng: currentLongitude
+        );
+      } else {
+        _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, _sortType);
+      }
       if (_disposed) return; // Defensive check against disposed provider
       notifyListeners();
     } catch (e) {
