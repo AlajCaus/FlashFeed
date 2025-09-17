@@ -798,8 +798,9 @@ class OffersProvider extends ChangeNotifier {
     };
     
     for (final price in prices) {
-      if (price < 2) distribution['0-2€'] = distribution['0-2€']! + 1;
-      else if (price < 5) distribution['2-5€'] = distribution['2-5€']! + 1;
+      if (price < 2) {
+        distribution['0-2€'] = distribution['0-2€']! + 1;
+      } else if (price < 5) distribution['2-5€'] = distribution['2-5€']! + 1;
       else if (price < 10) distribution['5-10€'] = distribution['5-10€']! + 1;
       else if (price < 20) distribution['10-20€'] = distribution['10-20€']! + 1;
       else distribution['20€+'] = distribution['20€+']! + 1;
