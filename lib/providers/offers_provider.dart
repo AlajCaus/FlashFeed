@@ -260,6 +260,42 @@ class OffersProvider extends ChangeNotifier {
       .map((o) => o.savings)
       .fold(0.0, (sum, savings) => sum + savings);
   
+  // Task 9.2: Enhanced UI State Management
+  bool get hasActiveFilters => 
+    _selectedCategory != null || 
+    _selectedRetailer != null || 
+    _maxPrice != null || 
+    _showOnlyWithDiscount || 
+    _searchQuery.isNotEmpty;
+    
+  String getFilterStatistics() {
+    if (hasRegionalFiltering) {
+      return '$filteredOffersCount von $totalOffersCount Angeboten in PLZ $_userPLZ';
+    } else {
+      return '$filteredOffersCount von $totalOffersCount Angeboten';
+    }
+  }
+  
+  Map<String, dynamic> getFilterSummary() {
+    final activeFilters = <String>[];
+    
+    if (_selectedCategory != null) activeFilters.add('Kategorie: $_selectedCategory');
+    if (_selectedRetailer != null) activeFilters.add('Händler: $_selectedRetailer');
+    if (_maxPrice != null) activeFilters.add('Max. Preis: ${_maxPrice!.toStringAsFixed(2)}€');
+    if (_showOnlyWithDiscount) activeFilters.add('Nur Rabatte');
+    if (_searchQuery.isNotEmpty) activeFilters.add('Suche: "$_searchQuery"');
+    if (hasRegionalFiltering) activeFilters.add('Region: PLZ $_userPLZ');
+    
+    return {
+      'count': filteredOffersCount,
+      'total': totalOffersCount,
+      'percentage': totalOffersCount > 0 ? (filteredOffersCount / totalOffersCount * 100).round() : 0,
+      'activeFilters': activeFilters,
+      'hasFilters': hasActiveFilters,
+      'hasRegionalFilter': hasRegionalFiltering,
+    };
+  }
+  
   // Load Offers with regional filtering support (Task 5c.2)
   Future<void> loadOffers({bool applyRegionalFilter = true}) async {
     if (_isLoading) return;
@@ -526,6 +562,129 @@ class OffersProvider extends ChangeNotifier {
     _applyFilters();
   }
   
+  // Task 9.2: Smart Filter Management
+  
+  /// Clear only active user filters, keep regional filtering
+  void clearActiveFilters() {
+    final hadFilters = hasActiveFilters;
+    
+    _selectedCategory = null;
+    _selectedRetailer = null;
+    _maxPrice = null;
+    _showOnlyWithDiscount = false;
+    _searchQuery = '';
+    
+    if (hadFilters) {
+      _applyFilters();
+      debugPrint('OffersProvider: Cleared active filters, keeping regional filtering');
+    }
+  }
+  
+  /// Reset specific filter type
+  void clearFilter(String filterType) {
+    switch (filterType) {
+      case 'category':
+        clearCategoryFilter();
+        break;
+      case 'retailer':
+        clearRetailerFilter();
+        break;
+      case 'price':
+        clearMaxPrice();
+        break;
+      case 'discount':
+        setShowOnlyWithDiscount(false);
+        break;
+      case 'search':
+        clearSearch();
+        break;
+      case 'all':
+        clearActiveFilters();
+        break;
+      default:
+        debugPrint('Unknown filter type: $filterType');
+    }
+  }
+  
+  /// Get recommended filters based on current data
+  List<Map<String, dynamic>> getRecommendedFilters() {
+    final recommendations = <Map<String, dynamic>>[];
+    
+    // Recommend discount filter if many offers have discounts
+    final discountOffers = _allOffers.where((o) => o.hasDiscount).length;
+    if (discountOffers > _allOffers.length * 0.3) {
+      recommendations.add({
+        'type': 'discount',
+        'label': 'Nur Rabatte ($discountOffers Angebote)',
+        'reason': 'Viele Angebote mit Rabatt verfügbar',
+        'count': discountOffers,
+      });
+    }
+    
+    // Recommend price filter based on price distribution
+    final priceRanges = getAvailablePriceRanges();
+    final averagePrice = priceRanges['average']!;
+    final cheapOffers = _allOffers.where((o) => o.price <= averagePrice).length;
+    if (cheapOffers > 0) {
+      recommendations.add({
+        'type': 'price',
+        'label': 'Bis ${averagePrice.toStringAsFixed(2)}€ ($cheapOffers Angebote)',
+        'reason': 'Günstige Angebote verfügbar',
+        'value': averagePrice,
+        'count': cheapOffers,
+      });
+    }
+    
+    // Recommend category filter for largest category
+    final categoryCounts = getCategoryOfferCounts();
+    if (categoryCounts.isNotEmpty) {
+      final largestCategory = categoryCounts.entries
+          .reduce((a, b) => a.value > b.value ? a : b);
+      if (largestCategory.value > 5) {
+        recommendations.add({
+          'type': 'category',
+          'label': '${largestCategory.key} (${largestCategory.value} Angebote)',
+          'reason': 'Größte Kategorie',
+          'value': largestCategory.key,
+          'count': largestCategory.value,
+        });
+      }
+    }
+    
+    return recommendations;
+  }
+  
+  /// Get filter quick actions for UI
+  List<Map<String, dynamic>> getFilterQuickActions() {
+    return [
+      {
+        'label': 'Günstigste',
+        'icon': 'arrow-up',
+        'action': () => setSortType(OfferSortType.priceAsc),
+        'active': _sortType == OfferSortType.priceAsc,
+      },
+      {
+        'label': 'Rabatte',
+        'icon': 'percent',
+        'action': () => setShowOnlyWithDiscount(true),
+        'active': _showOnlyWithDiscount,
+      },
+      {
+        'label': 'In der Nähe',
+        'icon': 'map-pin',
+        'action': () => setSortType(OfferSortType.distanceAsc),
+        'active': _sortType == OfferSortType.distanceAsc,
+        'enabled': hasUserLocation,
+      },
+      {
+        'label': 'Läuft ab',
+        'icon': 'clock',
+        'action': () => setSortType(OfferSortType.validityDesc),
+        'active': _sortType == OfferSortType.validityDesc,
+      },
+    ];
+  }
+  
   // Refresh
   Future<void> refresh() async {
     await loadOffers();
@@ -544,6 +703,177 @@ class OffersProvider extends ChangeNotifier {
     return _filteredOffers.where((offer) => offer.hasDiscount).toList();
   }
   
+  // Task 9.2: UI-Ready Data Methods for Offers Panel
+  
+  /// Group offers by retailer for UI sections
+  Map<String, List<Offer>> getOffersGroupedByRetailer() {
+    final grouped = <String, List<Offer>>{};
+    
+    for (final offer in _filteredOffers) {
+      grouped.putIfAbsent(offer.retailer, () => []).add(offer);
+    }
+    
+    // Sort retailers by number of offers (descending)
+    final sortedEntries = grouped.entries.toList()
+      ..sort((a, b) => b.value.length.compareTo(a.value.length));
+    
+    return Map.fromEntries(sortedEntries);
+  }
+  
+  /// Get featured offers for "Top Deals" showcase
+  List<Offer> getFeaturedOffers({int limit = 5}) {
+    final featured = _filteredOffers.where((offer) => 
+        // Feature criteria: has discount and still valid
+        offer.hasDiscount && offer.isValid
+    ).toList();
+    
+    // Sort by discount percentage descending
+    featured.sort((a, b) => 
+        (b.discountPercent ?? 0).compareTo(a.discountPercent ?? 0));
+    
+    return featured.take(limit).toList();
+  }
+  
+  /// Get nearby offers based on user location
+  List<Offer> getNearbyOffers({double limitKm = 5.0, int maxOffers = 10}) {
+    if (!hasUserLocation) {
+      // Fallback: return offers from Berlin area
+      return _filteredOffers
+          .where((offer) => offer.storeAddress?.contains('Berlin') == true)
+          .take(maxOffers)
+          .toList();
+    }
+    
+    final nearbyOffers = _filteredOffers.where((offer) {
+      final distance = offer.distanceTo(currentLatitude, currentLongitude);
+      return distance <= limitKm;
+    }).toList();
+    
+    // Sort by distance
+    nearbyOffers.sort((a, b) => 
+        a.distanceTo(currentLatitude, currentLongitude)
+            .compareTo(b.distanceTo(currentLatitude, currentLongitude)));
+    
+    return nearbyOffers.take(maxOffers).toList();
+  }
+  
+  /// Get offers expiring soon for warning sections
+  List<Offer> getExpiringOffers({Duration? within}) {
+    final threshold = within ?? Duration(hours: 24);
+    final cutoff = DateTime.now().add(threshold);
+    
+    final expiring = _filteredOffers
+        .where((offer) => offer.validUntil.isBefore(cutoff) && offer.isValid)
+        .toList();
+    
+    // Sort by validity (soonest first)
+    expiring.sort((a, b) => a.validUntil.compareTo(b.validUntil));
+    
+    return expiring;
+  }
+  
+  /// Get price comparison data for charts/stats
+  Map<String, dynamic> getPriceAnalysis() {
+    if (_filteredOffers.isEmpty) {
+      return {
+        'min': 0.0,
+        'max': 0.0,
+        'average': 0.0,
+        'median': 0.0,
+        'savings': 0.0,
+        'distribution': <String, int>{},
+      };
+    }
+    
+    final prices = _filteredOffers.map((o) => o.price).toList()..sort();
+    final savings = _filteredOffers.where((o) => o.hasDiscount).map((o) => o.savings).fold(0.0, (a, b) => a + b);
+    
+    // Price distribution in ranges
+    final distribution = <String, int>{
+      '0-2€': 0,
+      '2-5€': 0,
+      '5-10€': 0,
+      '10-20€': 0,
+      '20€+': 0,
+    };
+    
+    for (final price in prices) {
+      if (price < 2) distribution['0-2€'] = distribution['0-2€']! + 1;
+      else if (price < 5) distribution['2-5€'] = distribution['2-5€']! + 1;
+      else if (price < 10) distribution['5-10€'] = distribution['5-10€']! + 1;
+      else if (price < 20) distribution['10-20€'] = distribution['10-20€']! + 1;
+      else distribution['20€+'] = distribution['20€+']! + 1;
+    }
+    
+    return {
+      'min': prices.first,
+      'max': prices.last,
+      'average': prices.reduce((a, b) => a + b) / prices.length,
+      'median': prices[prices.length ~/ 2],
+      'savings': savings,
+      'distribution': distribution,
+      'sampleSize': prices.length,
+    };
+  }
+  
+  /// Get search suggestions based on current offers
+  List<String> getSearchSuggestions(String query, {int limit = 5}) {
+    if (query.length < 2) return [];
+    
+    final suggestions = <String>{};
+    final lowerQuery = query.toLowerCase();
+    
+    for (final offer in _allOffers) {
+      // Product name suggestions
+      if (offer.productName.toLowerCase().contains(lowerQuery)) {
+        suggestions.add(offer.productName);
+      }
+      
+      // Retailer suggestions
+      if (offer.retailer.toLowerCase().contains(lowerQuery)) {
+        suggestions.add(offer.retailer);
+      }
+      
+      // Category suggestions
+      final category = ProductCategoryMapping.mapToFlashFeedCategory(
+          offer.retailer, offer.originalCategory);
+      if (category.toLowerCase().contains(lowerQuery)) {
+        suggestions.add(category);
+      }
+    }
+    
+    return suggestions.take(limit).toList();
+  }
+  
+  /// Get offer recommendations based on user behavior
+  List<Offer> getRecommendedOffers({int limit = 3}) {
+    // Simple recommendation: best discounts + nearby + expiring soon
+    final recommendations = <Offer>[];
+    
+    // Add best discounts
+    final bestDeals = getFeaturedOffers(limit: 2);
+    recommendations.addAll(bestDeals);
+    
+    // Add nearby offers if location available
+    if (hasUserLocation && recommendations.length < limit) {
+      final nearby = getNearbyOffers(limitKm: 10.0, maxOffers: 2)
+          .where((offer) => !recommendations.contains(offer))
+          .toList();
+      recommendations.addAll(nearby);
+    }
+    
+    // Fill remaining with recently added or expiring
+    if (recommendations.length < limit) {
+      final expiring = getExpiringOffers(within: Duration(hours: 48))
+          .where((offer) => !recommendations.contains(offer))
+          .take(limit - recommendations.length)
+          .toList();
+      recommendations.addAll(expiring);
+    }
+    
+    return recommendations.take(limit).toList();
+  }
+  
   // Available categories from current offers
   List<String> get availableCategories {
     return _filteredOffers
@@ -552,6 +882,120 @@ class OffersProvider extends ChangeNotifier {
         .toSet()
         .toList()
       ..sort();
+  }
+  
+  // Task 9.2: Enhanced UI Filter Methods
+  
+  /// Get available categories from all offers (before filtering) for dropdown
+  List<String> getFilteredCategories({bool includeAll = false}) {
+    final categories = _allOffers
+        .map((offer) => ProductCategoryMapping.mapToFlashFeedCategory(
+            offer.retailer, offer.originalCategory))
+        .toSet()
+        .toList()
+      ..sort();
+    
+    if (includeAll) {
+      categories.insert(0, 'Alle Kategorien');
+    }
+    
+    return categories;
+  }
+  
+  /// Get available retailers from current offers for filter dropdown
+  List<String> getFilteredRetailers({bool includeAll = false}) {
+    final retailers = List<String>.from(_availableRetailers)
+      ..sort();
+    
+    if (includeAll) {
+      retailers.insert(0, 'Alle Händler');
+    }
+    
+    return retailers;
+  }
+  
+  /// Get price range from current offers for slider
+  Map<String, double> getAvailablePriceRanges() {
+    if (_allOffers.isEmpty) {
+      return {'min': 0.0, 'max': 100.0};
+    }
+    
+    final prices = _allOffers.map((offer) => offer.price).toList()
+      ..sort();
+    
+    return {
+      'min': prices.first,
+      'max': prices.last,
+      'average': prices[prices.length ~/ 2], // Median
+    };
+  }
+  
+  /// Get offer count per category for UI badges
+  Map<String, int> getCategoryOfferCounts() {
+    final counts = <String, int>{};
+    
+    for (final offer in _allOffers) {
+      final category = ProductCategoryMapping.mapToFlashFeedCategory(
+          offer.retailer, offer.originalCategory);
+      counts[category] = (counts[category] ?? 0) + 1;
+    }
+    
+    return counts;
+  }
+  
+  /// Get offer count per retailer for UI badges
+  Map<String, int> getRetailerOfferCounts() {
+    final counts = <String, int>{};
+    
+    for (final offer in _allOffers) {
+      counts[offer.retailer] = (counts[offer.retailer] ?? 0) + 1;
+    }
+    
+    return counts;
+  }
+  
+  /// Get sort options with current counts
+  Map<String, dynamic> getSortOptions() {
+    return {
+      'priceAsc': {
+        'label': 'Preis aufsteigend',
+        'icon': 'arrow-up',
+        'description': 'Günstigste zuerst',
+        'active': _sortType == OfferSortType.priceAsc,
+      },
+      'priceDesc': {
+        'label': 'Preis absteigend',
+        'icon': 'arrow-down', 
+        'description': 'Teuerste zuerst',
+        'active': _sortType == OfferSortType.priceDesc,
+      },
+      'discountDesc': {
+        'label': 'Höchste Rabatte',
+        'icon': 'percent',
+        'description': 'Beste Deals zuerst',
+        'active': _sortType == OfferSortType.discountDesc,
+      },
+      'distanceAsc': {
+        'label': 'Entfernung',
+        'icon': 'map-pin',
+        'description': hasUserLocation ? 'Nächste zuerst' : 'Nach Berlin sortiert',
+        'active': _sortType == OfferSortType.distanceAsc,
+        'hasLocation': hasUserLocation,
+        'locationSource': locationSource,
+      },
+      'validityDesc': {
+        'label': 'Läuft bald ab',
+        'icon': 'clock',
+        'description': 'Nach Gültigkeit sortiert',
+        'active': _sortType == OfferSortType.validityDesc,
+      },
+      'nameAsc': {
+        'label': 'Produktname A-Z',
+        'icon': 'type',
+        'description': 'Alphabetisch sortiert',
+        'active': _sortType == OfferSortType.nameAsc,
+      },
+    };
   }
   
   // Task 5c.4: Regional unavailability fallback methods
@@ -652,12 +1096,12 @@ class OffersProvider extends ChangeNotifier {
     double? maxPrice,
     bool? showOnlyWithDiscount,
   }) {
-    if (category != null) _selectedCategory = category;
-    if (retailer != null) _selectedRetailer = retailer;
-    if (sortType != null) _sortType = sortType;
-    if (searchQuery != null) _searchQuery = searchQuery;
-    if (maxPrice != null) _maxPrice = maxPrice;
-    if (showOnlyWithDiscount != null) _showOnlyWithDiscount = showOnlyWithDiscount;
+    if (category != null) { _selectedCategory = category; }
+    if (retailer != null) { _selectedRetailer = retailer; }
+    if (sortType != null) { _sortType = sortType; }
+    if (searchQuery != null) { _searchQuery = searchQuery; }
+    if (maxPrice != null) { _maxPrice = maxPrice; }
+    if (showOnlyWithDiscount != null) { _showOnlyWithDiscount = showOnlyWithDiscount; }
     _applyFilters();
   }
   

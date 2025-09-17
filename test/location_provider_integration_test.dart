@@ -21,9 +21,11 @@ void main() {
       // Initialize Flutter test bindings for LocalStorage
       TestWidgetsFlutterBinding.ensureInitialized();
       
-      // Setup SharedPreferences mock for LocalStorage
-      const MethodChannel('plugins.flutter.io/shared_preferences')
-          .setMockMethodCallHandler((methodCall) async {
+      // Setup SharedPreferences mock for LocalStorage  
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            const MethodChannel('plugins.flutter.io/shared_preferences'),
+            (methodCall) async {
         if (methodCall.method == 'getAll') {
           return <String, dynamic>{};
         }

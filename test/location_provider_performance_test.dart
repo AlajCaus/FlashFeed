@@ -20,8 +20,10 @@ void main() {
       TestWidgetsFlutterBinding.ensureInitialized();
       
       // Setup SharedPreferences mock for LocalStorage
-      const MethodChannel('plugins.flutter.io/shared_preferences')
-          .setMockMethodCallHandler((methodCall) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            const MethodChannel('plugins.flutter.io/shared_preferences'),
+            (methodCall) async {
         if (methodCall.method == 'getAll') {
           return <String, dynamic>{};
         }
