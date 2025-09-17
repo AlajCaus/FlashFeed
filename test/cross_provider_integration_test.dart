@@ -852,7 +852,7 @@ void main() {
         
         // Providers should handle no location gracefully
         expect(offersProvider.userPLZ, isNull);
-        expect(retailersProvider.currentPLZ, isNull);
+        expect(retailersProvider.currentPLZ, equals(''));  // String field, cannot be null
         expect(flashDealsProvider.userPLZ, isNull);
       });
     });

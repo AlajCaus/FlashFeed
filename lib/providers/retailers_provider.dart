@@ -265,7 +265,7 @@ class RetailersProvider extends ChangeNotifier {
       updateUserLocation(plz);
     } else {
       // PLZ is null/invalid - clear all retailers for edge case handling
-      _currentPLZ = '';
+      _currentPLZ = ''; // Reset to empty string (cannot be null due to type)
       _availableRetailers = []; // Empty for invalid PLZ edge case
       _unavailableRetailers = _allRetailers; // All retailers become unavailable
       
