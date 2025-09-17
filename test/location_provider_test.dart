@@ -693,7 +693,7 @@ void main() {
         expect(locationProvider.postalCode, equals('20095'));
       });
       
-      test('Location clear does not trigger callbacks', () async {
+      test('Location clear triggers callbacks for dependent providers', () async {
         // Arrange: Set location and register callback
         await locationProvider.setUserPLZ('10115');
         
@@ -704,11 +704,11 @@ void main() {
         
         locationProvider.registerLocationChangeCallback(clearCallback);
         
-        // Act: Clear location (should not trigger callbacks)
+        // Act: Clear location (should trigger callbacks for dependent provider cleanup)
         locationProvider.clearLocation();
         
-        // Assert: No callback triggered by clear
-        expect(callbackCount, equals(0));
+        // Assert: One callback triggered by clear (for dependent provider notification)
+        expect(callbackCount, equals(1));
         expect(locationProvider.currentLocationSource, LocationSource.none);
       });
       
