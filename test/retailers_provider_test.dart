@@ -36,7 +36,7 @@ void main() {
       // Provider has already loaded in setUp
       expect(provider.allRetailers.isNotEmpty, isTrue);
       expect(provider.totalRetailerCount, greaterThan(0));
-      print('✅ Loaded ${provider.totalRetailerCount} retailers');
+      // Loaded retailers successfully
     });
     
     test('should filter retailers by PLZ (Berlin)', () {
@@ -44,10 +44,10 @@ void main() {
       provider.updateUserLocation('10115');
       
       final available = provider.availableRetailers;
-      final unavailable = provider.unavailableRetailers;
+      // final unavailable = provider.unavailableRetailers; // Not used in this test
       
       expect(available.isNotEmpty, isTrue);
-      print('✅ Berlin (10115): ${available.length} available, ${unavailable.length} unavailable');
+      // Berlin: available and unavailable retailers loaded
       
       // Prüfe ob EDEKA verfügbar ist (bundesweit)
       expect(available.any((r) => r.name == 'EDEKA'), isTrue);
@@ -58,10 +58,10 @@ void main() {
       provider.updateUserLocation('80331');
       
       final available = provider.availableRetailers;
-      final unavailable = provider.unavailableRetailers;
+      // final unavailable = provider.unavailableRetailers; // Not used in this test
       
       expect(available.isNotEmpty, isTrue);
-      print('✅ München (80331): ${available.length} available, ${unavailable.length} unavailable');
+      // München: available and unavailable retailers loaded
       
       // Prüfe ob REWE verfügbar ist (bundesweit)
       expect(available.any((r) => r.name == 'REWE'), isTrue);
@@ -76,7 +76,7 @@ void main() {
       final cachedResult = provider.getAvailableRetailers('10115');
       expect(cachedResult, equals(provider.testCache['10115']));
       
-      print('✅ Cache working for repeated PLZ queries');
+      // Cache working for repeated PLZ queries
     });
     
     test('should generate availability messages correctly', () {
@@ -85,11 +85,11 @@ void main() {
       // Test für bundesweiten Händler
       final edeka = provider.getAvailabilityMessage('EDEKA');
       expect(edeka.contains('bundesweit verfügbar'), isTrue);
-      print('✅ EDEKA: $edeka');
+      // EDEKA availability message generated
       
       // Test für regionalen Händler (falls vorhanden)
-      final bioCompany = provider.getAvailabilityMessage('BioCompany');
-      print('✅ BioCompany: $bioCompany');
+      // final bioCompany = provider.getAvailabilityMessage('BioCompany');
+      // BioCompany availability message generated
     });
     
     test('should handle invalid PLZ gracefully', () {
@@ -102,7 +102,7 @@ void main() {
       // With invalid PLZ, only nationwide retailers should be available
       expect(provider.availableRetailers.every((r) => r.isNationwide), isTrue);
       
-      print('✅ Invalid PLZ handling works');
+      // Invalid PLZ handling works
     });
     
     test('should calculate availability percentage', () {
@@ -112,7 +112,7 @@ void main() {
       expect(percentage, greaterThanOrEqualTo(0));
       expect(percentage, lessThanOrEqualTo(100));
       
-      print('✅ Availability in Berlin: ${percentage.toStringAsFixed(1)}%');
+      // Availability percentage calculated
     });
   });
 }

@@ -34,7 +34,7 @@ void main() {
         final clearedStats = service.getCacheStats();
         expect(clearedStats['entries'], equals(0));
         
-        print('Cache-Basic-Test: Initial state verified, clear works');
+        // Cache-Basic-Test: Initial state verified, clear works
       });
       
       test('cache memory estimation', () async {
@@ -54,7 +54,7 @@ void main() {
         final maxSize = stats['maxSize'] as int;
         expect(maxSize, equals(1000)); // Should match _maxCacheSize
         
-        print('Memory-Test: Estimation logic works, maxSize: $maxSize');
+        // Memory-Test: Estimation logic works, maxSize: maxSize
       });
       
       test('cache configuration validation', () async {
@@ -71,7 +71,7 @@ void main() {
         expect(stats.containsKey('lastCleanup'), isTrue);
         expect(stats.containsKey('cacheEvictions'), isTrue);
         
-        print('Config-Test: Cache configuration verified');
+        // Config-Test: Cache configuration verified
       });
     });
 
@@ -98,7 +98,7 @@ void main() {
         expect(stats['cacheHits'], isA<int>());
         expect(stats['cacheMisses'], isA<int>());
         
-        print('Stats-Structure-Test: All ${requiredKeys.length} required keys present');
+        // Stats-Structure-Test: All requiredKeys.length required keys present
       });
       
       test('performance monitoring structure', () async {
@@ -117,7 +117,7 @@ void main() {
         final memoryKB = stats['estimatedMemoryKB'] as String;
         expect(memoryKB.endsWith('KB'), isTrue);
         
-        print('Monitoring-Test: Formatting validation passed');
+        // Monitoring-Test: Formatting validation passed
       });
     });
     
@@ -132,7 +132,7 @@ void main() {
         // Dispose should not throw
         expect(() => serviceToDispose.dispose(), returnsNormally);
         
-        print('Disposal-Test: Service disposal successful');
+        // Disposal-Test: Service disposal successful
       });
       
       test('multiple clear operations', () async {
@@ -143,7 +143,7 @@ void main() {
           expect(stats['entries'], equals(0));
         }
         
-        print('Multiple-Clear-Test: 5 consecutive clears successful');
+        // Multiple-Clear-Test: 5 consecutive clears successful
       });
     });
   });

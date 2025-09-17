@@ -34,7 +34,7 @@ class MockDataService {
   // Provider Callbacks (statt BLoC Events)
   VoidCallback? _onFlashDealsUpdated;
   VoidCallback? _onOffersUpdated;
-  VoidCallback? _onStoresUpdated; // TODO: Used for future store updates
+  VoidCallback? _onStoresUpdated;
   
   // Generated Mock Data (basierend auf Datenbank-Schema)
   List<Retailer> _retailers = [];

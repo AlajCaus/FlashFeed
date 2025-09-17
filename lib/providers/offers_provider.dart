@@ -9,9 +9,11 @@ import '../models/models.dart';
 import '../main.dart'; // Access to global mockDataService
 import '../services/mock_data_service.dart'; // For test service parameter
 import '../providers/location_provider.dart'; // Task 5b.5: Provider-Callbacks
+import '../services/search_service.dart'; // Task 9.3: Advanced Search
 
 class OffersProvider extends ChangeNotifier {
   final OffersRepository _offersRepository;
+  final SearchService _searchService = SearchService(); // Task 9.3
   
   // NEW: Reference to LocationProvider for regional data (Task 5c.2)
   LocationProvider? _locationProvider;
@@ -432,13 +434,39 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Search
+  // Task 9.3: Enhanced Search with advanced features
   void searchOffers(String query) {
     if (_searchQuery != query) {
       _searchQuery = query;
       _applyFilters();
     }
   }
+  
+  // Task 9.3.1: Multi-Term Search
+  void searchWithMultipleTerms(String query) {
+    _searchQuery = query;
+    _applyFilters();
+  }
+  
+  // Task 9.3.2: Fuzzy Search
+  void searchWithFuzzyMatching(String query, {int tolerance = 2}) {
+    _searchQuery = query;
+    _fuzzySearchTolerance = tolerance;
+    _useFuzzySearch = true;
+    _applyFilters();
+  }
+  
+  // Task 9.3.3: Category-Aware Search
+  void searchWithCategoryAwareness(String query) {
+    _searchQuery = query;
+    _useCategoryAwareSearch = true;
+    _applyFilters();
+  }
+  
+  // Task 9.3: Search mode flags
+  bool _useFuzzySearch = false;
+  bool _useCategoryAwareSearch = false;
+  int _fuzzySearchTolerance = 2;
   
   void clearSearch() {
     searchOffers('');
@@ -504,14 +532,30 @@ class OffersProvider extends ChangeNotifier {
       filtered = filtered.where((offer) => offer.hasDiscount).toList();
     }
     
-    // Search filter
+    // Task 9.3: Advanced Search Implementation
     if (_searchQuery.isNotEmpty) {
-      String query = _searchQuery.toLowerCase();
-      filtered = filtered.where((offer) =>
-          offer.productName.toLowerCase().contains(query) ||
-          offer.retailer.toLowerCase().contains(query) ||
-          (offer.storeAddress?.toLowerCase().contains(query) ?? false)
-      ).toList();
+      if (_useCategoryAwareSearch) {
+        // Category-aware search (e.g., "Obst Banane")
+        filtered = _searchService.categoryAwareSearch(filtered, _searchQuery);
+      } else if (_useFuzzySearch) {
+        // Fuzzy search (e.g., "Joghrt" finds "Joghurt")
+        filtered = _searchService.fuzzySearch(
+          filtered, 
+          _searchQuery, 
+          maxDistance: _fuzzySearchTolerance
+        );
+      } else if (_searchQuery.contains(' ')) {
+        // Multi-term search if query contains spaces
+        filtered = _searchService.multiTermSearch(filtered, _searchQuery);
+      } else {
+        // Fall back to simple search for single terms
+        String query = _searchQuery.toLowerCase();
+        filtered = filtered.where((offer) =>
+            offer.productName.toLowerCase().contains(query) ||
+            offer.retailer.toLowerCase().contains(query) ||
+            (offer.storeAddress?.toLowerCase().contains(query) ?? false)
+        ).toList();
+      }
     }
     
     _filteredOffers = filtered;
@@ -800,10 +844,15 @@ class OffersProvider extends ChangeNotifier {
     for (final price in prices) {
       if (price < 2) {
         distribution['0-2€'] = distribution['0-2€']! + 1;
-      } else if (price < 5) distribution['2-5€'] = distribution['2-5€']! + 1;
-      else if (price < 10) distribution['5-10€'] = distribution['5-10€']! + 1;
-      else if (price < 20) distribution['10-20€'] = distribution['10-20€']! + 1;
-      else distribution['20€+'] = distribution['20€+']! + 1;
+      } else if (price < 5) {
+        distribution['2-5€'] = distribution['2-5€']! + 1;
+      } else if (price < 10) {
+        distribution['5-10€'] = distribution['5-10€']! + 1;
+      } else if (price < 20) {
+        distribution['10-20€'] = distribution['10-20€']! + 1;
+      } else {
+        distribution['20€+'] = distribution['20€+']! + 1;
+      }
     }
     
     return {
@@ -817,33 +866,27 @@ class OffersProvider extends ChangeNotifier {
     };
   }
   
-  /// Get search suggestions based on current offers
+  /// Task 9.3.4: Enhanced search suggestions with categories
+  List<SearchSuggestion> getEnhancedSearchSuggestions(String query, {int limit = 8}) {
+    return _searchService.getEnhancedSuggestions(_allOffers, query, maxSuggestions: limit);
+  }
+  
+  /// Legacy method for backwards compatibility
   List<String> getSearchSuggestions(String query, {int limit = 5}) {
-    if (query.length < 2) return [];
-    
-    final suggestions = <String>{};
-    final lowerQuery = query.toLowerCase();
-    
-    for (final offer in _allOffers) {
-      // Product name suggestions
-      if (offer.productName.toLowerCase().contains(lowerQuery)) {
-        suggestions.add(offer.productName);
-      }
-      
-      // Retailer suggestions
-      if (offer.retailer.toLowerCase().contains(lowerQuery)) {
-        suggestions.add(offer.retailer);
-      }
-      
-      // Category suggestions
-      final category = ProductCategoryMapping.mapToFlashFeedCategory(
-          offer.retailer, offer.originalCategory);
-      if (category.toLowerCase().contains(lowerQuery)) {
-        suggestions.add(category);
-      }
-    }
-    
-    return suggestions.take(limit).toList();
+    final enhanced = getEnhancedSearchSuggestions(query, limit: limit);
+    return enhanced.map((s) => s.text).toList();
+  }
+  
+  // Task 9.3: Advanced search using all features
+  List<Offer> performAdvancedSearch(String query) {
+    return _searchService.advancedSearch(_allOffers, query);
+  }
+  
+  // Task 9.3: Reset search mode flags
+  void resetSearchMode() {
+    _useFuzzySearch = false;
+    _useCategoryAwareSearch = false;
+    _fuzzySearchTolerance = 2;
   }
   
   /// Get offer recommendations based on user behavior

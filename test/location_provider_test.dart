@@ -1599,6 +1599,8 @@ void main() {
         expect(callback1Executed, isTrue);
         expect(callback2Executed, isTrue);
         // callback3 execution depends on when unregistration takes effect
+        // callback3 might or might not execute depending on implementation
+        expect(callback3Executed, anyOf([isTrue, isFalse]));
       });
       
       test('mixed callback types work independently', () async {

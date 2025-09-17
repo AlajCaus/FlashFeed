@@ -245,9 +245,9 @@ void main() {
 }
 
 // Extension für private Methoden-Tests
-extension PLZLookupServiceTest on PLZLookupService {
-  bool _isValidCoordinate(double latitude, double longitude) {
-    return latitude >= 47.0 && latitude <= 56.0 && 
-           longitude >= 5.0 && longitude <= 16.0;
-  }
-}
+// extension PLZLookupServiceTest on PLZLookupService {
+//   bool _isValidCoordinate(double latitude, double longitude) {
+//     return latitude >= 47.0 && latitude <= 56.0 && 
+//            longitude >= 5.0 && longitude <= 16.0;
+//   }
+// }
