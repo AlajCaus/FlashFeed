@@ -722,11 +722,11 @@ void main() {
         locationProvider.registerLocationChangeCallback(errorCallback);
         
         // Act: Cause error with invalid PLZ, then valid PLZ
-        await locationProvider.setUserPLZ('INVALID'); // Should fail
-        await locationProvider.setUserPLZ('10115'); // Should succeed
+        await locationProvider.setUserPLZ('INVALID'); // Should fail but trigger cleanup callback
+        await locationProvider.setUserPLZ('10115'); // Should succeed and trigger update callback
         
-        // Assert: Valid PLZ still triggers callback after error
-        expect(callbackCount, equals(1)); // Only valid PLZ triggers callback
+        // Assert: Both invalid PLZ (cleanup) and valid PLZ (update) trigger callbacks
+        expect(callbackCount, equals(2)); // Invalid PLZ cleanup + Valid PLZ update
         expect(locationProvider.postalCode, equals('10115'));
       });
     });
