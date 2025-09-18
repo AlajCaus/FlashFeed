@@ -1,6 +1,8 @@
 // FlashFeed Offers Provider - Angebote & Preisvergleich
 // Mit regionaler Filterung (Integration für Task 5c vorbereitet)
 
+import 'dart:async'; // Task 9.4: Timer for debouncing
+
 import 'package:flutter/material.dart';
 import '../repositories/offers_repository.dart';
 import '../repositories/mock_offers_repository.dart';
@@ -10,6 +12,22 @@ import '../main.dart'; // Access to global mockDataService
 import '../services/mock_data_service.dart'; // For test service parameter
 import '../providers/location_provider.dart'; // Task 5b.5: Provider-Callbacks
 import '../services/search_service.dart'; // Task 9.3: Advanced Search
+
+// Task 9.4.1: Cache Entry for filter results
+class FilterCacheEntry {
+  final List<Offer> offers;
+  final DateTime timestamp;
+  final String cacheKey;
+  
+  FilterCacheEntry({
+    required this.offers,
+    required this.timestamp,
+    required this.cacheKey,
+  });
+  
+  bool get isExpired => 
+    DateTime.now().difference(timestamp) > Duration(minutes: 5);
+}
 
 class OffersProvider extends ChangeNotifier {
   final OffersRepository _offersRepository;
@@ -28,6 +46,26 @@ class OffersProvider extends ChangeNotifier {
   
   // Service reference for proper callback cleanup (FIX)
   MockDataService? _registeredService;
+  
+  // Task 9.4.1: Cache Management
+  final Map<String, FilterCacheEntry> _filterCache = {};
+  static const Duration _cacheTimeToLive = Duration(minutes: 5);
+  static const int _maxCacheEntries = 50;
+  int _cacheHits = 0;
+  int _cacheMisses = 0;
+  
+  // Task 9.4.2: Pagination State
+  static const int _pageSize = 20;
+  int _currentPage = 0;
+  bool _hasMoreOffers = true;
+  bool _isLoadingMore = false;
+  List<Offer> _displayedOffers = []; // Paginated subset
+  
+  // Task 9.4.3: Debounced Search
+  Timer? _searchDebounceTimer;
+  Duration _searchDebounceDelay = const Duration(milliseconds: 300);
+  bool _isSearchPending = false;
+  String _pendingSearchQuery = '';
   
   // Filter State
   String? _selectedCategory;
@@ -195,7 +233,7 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Getters
-  List<Offer> get offers => _filteredOffers;
+  List<Offer> get offers => _displayedOffers.isNotEmpty ? _displayedOffers : _filteredOffers;
   List<Offer> get allOffers => _allOffers;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -212,6 +250,23 @@ class OffersProvider extends ChangeNotifier {
   // Regional Getters
   String? get userPLZ => _userPLZ;
   bool get hasRegionalFiltering => _userPLZ != null && _availableRetailers.isNotEmpty;
+  
+  // Task 9.4: Performance Getters
+  bool get isLoadingMore => _isLoadingMore;
+  bool get isSearchPending => _isSearchPending;
+  int get currentPage => _currentPage;
+  int get totalPages => (_filteredOffers.length / _pageSize).ceil();
+  bool get hasMorePages => _currentPage < totalPages - 1;
+  double get cacheHitRate => _cacheHits + _cacheMisses == 0 ? 0 : 
+    _cacheHits / (_cacheHits + _cacheMisses).toDouble();
+  Map<String, dynamic> get cacheStatistics => {
+    'hits': _cacheHits,
+    'misses': _cacheMisses,
+    'hitRate': '${(cacheHitRate * 100).toStringAsFixed(1)}%',
+    'entries': _filterCache.length,
+    'maxEntries': _maxCacheEntries,
+    'memoryUsage': _estimateCacheMemoryUsage(),
+  };
   
   // Task 9.1: Location Getters for distance sorting
   double get currentLatitude => _userLatitude ?? 52.5200; // Berlin Mitte fallback
@@ -436,12 +491,36 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Task 9.3: Enhanced Search with advanced features
-  void searchOffers(String query) {
-    if (_searchQuery != query) {
-      _searchQuery = query;
-      _applyFilters();
+  // Task 9.3 & 9.4.3: Enhanced Search with debouncing
+  void searchOffers(String query, {bool immediate = false}) {
+    if (_searchQuery == query) return;
+    
+    _pendingSearchQuery = query;
+    
+    // Cancel previous timer
+    _searchDebounceTimer?.cancel();
+    
+    if (immediate || query.isEmpty) {
+      // Immediate search or clearing search
+      _performSearch(query);
+    } else {
+      // Debounced search
+      _isSearchPending = true;
+      notifyListeners();
+      
+      _searchDebounceTimer = Timer(_searchDebounceDelay, () {
+        if (!_disposed) {
+          _performSearch(_pendingSearchQuery);
+        }
+      });
     }
+  }
+  
+  void _performSearch(String query) {
+    _searchQuery = query;
+    _isSearchPending = false;
+    _pendingSearchQuery = '';
+    _applyFilters();
   }
   
   // Task 9.3.1: Multi-Term Search
@@ -502,8 +581,32 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Apply All Filters with regional awareness (Task 5c.2)
+  // Apply All Filters with caching and regional awareness (Task 5c.2 & 9.4.1)
   void _applyFilters() {
+    // Generate cache key
+    final cacheKey = _generateCacheKey(
+      _selectedCategory,
+      _selectedRetailer,
+      _maxPrice,
+      _sortType,
+      _searchQuery,
+      _showOnlyWithDiscount,
+    );
+    
+    // Check cache first
+    final cachedEntry = _checkCache(cacheKey);
+    if (cachedEntry != null) {
+      _filteredOffers = List.from(cachedEntry.offers);
+      _cacheHits++;
+      debugPrint('OffersProvider: Cache hit! Key: $cacheKey (Hit rate: ${(cacheHitRate * 100).toStringAsFixed(1)}%)');
+      _resetPagination();
+      _updateDisplayedOffers();
+      notifyListeners();
+      return;
+    }
+    
+    _cacheMisses++;
+    
     List<Offer> filtered = List.from(_allOffers);
     
     // Regional filtering is already applied in _allOffers
@@ -533,6 +636,12 @@ class OffersProvider extends ChangeNotifier {
     // Discount filter
     if (_showOnlyWithDiscount) {
       filtered = filtered.where((offer) => offer.hasDiscount).toList();
+    }
+    
+    // Task 9.4.3: Check for pending search
+    if (_isSearchPending) {
+      // Skip applying filters while search is pending
+      return;
     }
     
     // Task 9.3: Advanced Search Implementation
@@ -565,11 +674,18 @@ class OffersProvider extends ChangeNotifier {
     
     _filteredOffers = filtered;
     
+    // Task 9.4.1: Add to cache
+    _addToCache(cacheKey, filtered);
+    
     // NEW: Track empty results for UI feedback (Task 5c.2)
     if (hasRegionalFiltering && filtered.isEmpty && _allOffers.isNotEmpty) {
       debugPrint('⚠️ Regional filtering active: No offers available in PLZ $_userPLZ');
       debugPrint('Available retailers: $_availableRetailers');
     }
+    
+    // Task 9.4.2: Reset pagination when filters change
+    _resetPagination();
+    _updateDisplayedOffers();
     
     if (_disposed) return; // Defensive check against disposed provider
     notifyListeners();
@@ -609,6 +725,164 @@ class OffersProvider extends ChangeNotifier {
     _showOnlyWithDiscount = false;
     _searchQuery = '';
     _applyFilters();
+  }
+  
+  // Task 9.4.1: Cache Management Methods
+  String _generateCacheKey(
+    String? category,
+    String? retailer,
+    double? maxPrice,
+    OfferSortType sortType,
+    String searchQuery,
+    bool showOnlyWithDiscount,
+  ) {
+    final parts = [
+      category ?? 'null',
+      retailer ?? 'null',
+      maxPrice?.toString() ?? 'null',
+      sortType.toString(),
+      searchQuery.isEmpty ? 'null' : searchQuery,
+      showOnlyWithDiscount.toString(),
+      _userPLZ ?? 'null', // Include regional context
+    ];
+    return parts.join('|');
+  }
+  
+  FilterCacheEntry? _checkCache(String key) {
+    final entry = _filterCache[key];
+    if (entry == null) return null;
+    
+    // Check if expired
+    if (entry.isExpired) {
+      _filterCache.remove(key);
+      return null;
+    }
+    
+    return entry;
+  }
+  
+  void _addToCache(String key, List<Offer> offers) {
+    // Task 9.4.4: LRU eviction if cache is full
+    if (_filterCache.length >= _maxCacheEntries) {
+      _evictOldestCacheEntry();
+    }
+    
+    _filterCache[key] = FilterCacheEntry(
+      offers: List.from(offers), // Create a copy
+      timestamp: DateTime.now(),
+      cacheKey: key,
+    );
+  }
+  
+  void _evictOldestCacheEntry() {
+    if (_filterCache.isEmpty) return;
+    
+    // Find oldest entry
+    String? oldestKey;
+    DateTime? oldestTime;
+    
+    for (final entry in _filterCache.entries) {
+      if (oldestTime == null || entry.value.timestamp.isBefore(oldestTime)) {
+        oldestTime = entry.value.timestamp;
+        oldestKey = entry.key;
+      }
+    }
+    
+    if (oldestKey != null) {
+      _filterCache.remove(oldestKey);
+      debugPrint('OffersProvider: Evicted oldest cache entry (LRU)');
+    }
+  }
+  
+  void clearCache() {
+    _filterCache.clear();
+    _cacheHits = 0;
+    _cacheMisses = 0;
+    debugPrint('OffersProvider: Cache cleared');
+    notifyListeners();
+  }
+  
+  // Task 9.4.2: Pagination Methods
+  void _resetPagination() {
+    _currentPage = 0;
+    _hasMoreOffers = _filteredOffers.length > _pageSize;
+    _displayedOffers.clear();
+  }
+  
+  void _updateDisplayedOffers() {
+    final startIndex = _currentPage * _pageSize;
+    final endIndex = (startIndex + _pageSize).clamp(0, _filteredOffers.length);
+    
+    if (_currentPage == 0) {
+      // First page - replace all
+      _displayedOffers = _filteredOffers.sublist(0, endIndex);
+    } else {
+      // Additional pages - append
+      _displayedOffers.addAll(_filteredOffers.sublist(startIndex, endIndex));
+    }
+    
+    _hasMoreOffers = endIndex < _filteredOffers.length;
+  }
+  
+  Future<void> loadMoreOffers() async {
+    if (_isLoadingMore || !_hasMoreOffers) return;
+    
+    _isLoadingMore = true;
+    notifyListeners();
+    
+    // Simulate network delay for realistic feel
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    if (!_disposed) {
+      _currentPage++;
+      _updateDisplayedOffers();
+      _isLoadingMore = false;
+      notifyListeners();
+    }
+  }
+  
+  void resetToFirstPage() {
+    _currentPage = 0;
+    _updateDisplayedOffers();
+    notifyListeners();
+  }
+  
+  // Task 9.4.4: Memory Management
+  String _estimateCacheMemoryUsage() {
+    // Rough estimation: each offer ~500 bytes
+    int totalOffers = 0;
+    for (final entry in _filterCache.values) {
+      totalOffers += entry.offers.length;
+    }
+    final bytesUsed = totalOffers * 500;
+    
+    if (bytesUsed < 1024) {
+      return '${bytesUsed}B';
+    } else if (bytesUsed < 1024 * 1024) {
+      return '${(bytesUsed / 1024).toStringAsFixed(1)}KB';
+    } else {
+      return '${(bytesUsed / (1024 * 1024)).toStringAsFixed(1)}MB';
+    }
+  }
+  
+  void onMemoryPressure() {
+    // Clear half of cache when memory pressure detected
+    final entriesToRemove = _filterCache.length ~/ 2;
+    final keysToRemove = <String>[];
+    
+    // Get oldest entries
+    final sortedEntries = _filterCache.entries.toList()
+      ..sort((a, b) => a.value.timestamp.compareTo(b.value.timestamp));
+    
+    for (int i = 0; i < entriesToRemove && i < sortedEntries.length; i++) {
+      keysToRemove.add(sortedEntries[i].key);
+    }
+    
+    for (final key in keysToRemove) {
+      _filterCache.remove(key);
+    }
+    
+    debugPrint('OffersProvider: Memory pressure - cleared ${keysToRemove.length} cache entries');
   }
   
   // Task 9.2: Smart Filter Management
@@ -1227,6 +1501,13 @@ class OffersProvider extends ChangeNotifier {
   void dispose() {
     // Prevent double disposal
     if (_disposed) return;
+    
+    // Task 9.4.3: Cancel debounce timer
+    _searchDebounceTimer?.cancel();
+    _searchDebounceTimer = null;
+    
+    // Task 9.4.1: Clear cache
+    _filterCache.clear();
     
     // CRITICAL FIX: Unregister callback BEFORE marking as disposed
     if (_registeredService != null) {

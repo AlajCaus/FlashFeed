@@ -77,7 +77,7 @@ class MockDataService {
   }
   
   void setStoresCallback(VoidCallback callback) {
-    _onStoresUpdated = callback;
+    _onStoresUpdated = callback;  // Not currently used
   }
 
   // Provider-Callback Unregistration (FIX: für proper disposal)
