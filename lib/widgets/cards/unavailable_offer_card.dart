@@ -1,5 +1,6 @@
 // FlashFeed Unavailable Offer Card Widget
 // Task 5c.4: Regional unavailability UI fallback logic
+// Updated: Added retailerDisplayName for better UI (shows "Netto" instead of "NETTO")
 
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
@@ -9,6 +10,7 @@ class UnavailableOfferCard extends StatelessWidget {
   final String userPLZ;
   final List<Offer> alternativeOffers;
   final VoidCallback? onFindAlternatives;
+  final String? retailerDisplayName; // Optional display name for better UI
   
   const UnavailableOfferCard({
     super.key,
@@ -16,6 +18,7 @@ class UnavailableOfferCard extends StatelessWidget {
     required this.userPLZ,
     this.alternativeOffers = const [],
     this.onFindAlternatives,
+    this.retailerDisplayName, // New optional parameter
   });
   
   @override
@@ -116,7 +119,7 @@ class UnavailableOfferCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    offer.retailer,
+                    retailerDisplayName ?? offer.retailer, // Use displayName if provided
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade500,
@@ -203,7 +206,7 @@ class UnavailableOfferCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${offer.retailer} bietet dieses Angebot nicht in Ihrer Region an',
+                        '${retailerDisplayName ?? offer.retailer} bietet dieses Angebot nicht in Ihrer Region an',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.orange.shade700,
