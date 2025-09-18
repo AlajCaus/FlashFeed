@@ -43,7 +43,7 @@ class MockDataService {
   // Provider Callbacks (statt BLoC Events)
   VoidCallback? _onFlashDealsUpdated;
   VoidCallback? _onOffersUpdated;
-  VoidCallback? _onStoresUpdated;
+  VoidCallback? _onStoresUpdated; // Callback for store updates
   
   // Generated Mock Data (basierend auf Datenbank-Schema)
   List<Retailer> _retailers = [];
@@ -354,85 +354,7 @@ class MockDataService {
     ];
   }
 
-  // Task 11.3: Helper-Methode für realistische Öffnungszeiten
-  Map<String, OpeningHours> _generateOpeningHours(String retailerType) {
-    // Realistische Öffnungszeiten für deutschen LEH
-    final Map<String, OpeningHours> hours = {};
-    
-    // Standard-Öffnungszeiten nach Händler-Typ
-    if (retailerType == 'discounter') {
-      // Discounter (ALDI, LIDL, NETTO, PENNY)
-      hours['Montag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
-      hours['Dienstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
-      hours['Mittwoch'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
-      hours['Donnerstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
-      hours['Freitag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
-      hours['Samstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
-      hours['Sonntag'] = OpeningHours.closed(note: 'Sonntags geschlossen');
-    } else if (retailerType == 'supermarkt') {
-      // Supermärkte (EDEKA, REWE)
-      hours['Montag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Dienstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Mittwoch'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Donnerstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Freitag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Samstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Sonntag'] = OpeningHours.closed(note: 'Sonntags geschlossen');
-    } else if (retailerType == 'hypermarkt') {
-      // Hypermärkte (KAUFLAND, REAL, GLOBUS)
-      hours['Montag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Dienstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Mittwoch'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Donnerstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Freitag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 23 * 60);
-      hours['Samstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
-      hours['Sonntag'] = OpeningHours.closed(note: 'Sonntags geschlossen');
-    } else if (retailerType == 'bio') {
-      // Bio-Märkte (BioCompany)
-      hours['Montag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
-      hours['Dienstag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
-      hours['Mittwoch'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
-      hours['Donnerstag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
-      hours['Freitag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
-      hours['Samstag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 18 * 60);
-      hours['Sonntag'] = OpeningHours.closed(note: 'Sonntags geschlossen');
-    } else {
-      // Standard-Fallback
-      hours['Montag'] = OpeningHours.standard();
-      hours['Dienstag'] = OpeningHours.standard();
-      hours['Mittwoch'] = OpeningHours.standard();
-      hours['Donnerstag'] = OpeningHours.standard();
-      hours['Freitag'] = OpeningHours.standard();
-      hours['Samstag'] = OpeningHours.standard();
-      hours['Sonntag'] = OpeningHours.closed();
-    }
-    
-    return hours;
-  }
-  
-  // Task 11.3: Helper-Methode um Händler-Typ zu bestimmen
-  String _getRetailerType(String retailerId) {
-    switch (retailerId) {
-      case 'aldi':
-      case 'lidl':
-      case 'netto_schwarz':
-      case 'penny':
-        return 'discounter';
-      case 'edeka':
-      case 'rewe':
-      case 'marktkauf':
-        return 'supermarkt';
-      case 'kaufland':
-      case 'real':
-      case 'globus':
-        return 'hypermarkt';
-      case 'biocompany':
-        return 'bio';
-      default:
-        return 'standard';
-    }
-  }
-  
+
   Future<void> _generateStores() async {
     // Task 5.6: Realistische Berliner Standorte für alle 10 deutschen LEH-Händler
     // 35+ Filialen mit präzisen GPS-Koordinaten für Professor-Demo

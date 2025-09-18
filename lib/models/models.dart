@@ -1,6 +1,7 @@
 // FlashFeed Data Models
 // Zentrale Model-Klassen für Provider und Repository Pattern
 
+import 'dart:math' as math;
 import '../data/product_category_mapping.dart';
 
 /// Angebot Model-Klasse
@@ -252,14 +253,24 @@ class Store {
   /// Vollständige Adresse generieren
   String get address => '$street, $zipCode $city';
   
-  /// Entfernung zu einem Punkt berechnen
+  /// Entfernung zu einem Punkt berechnen (Haversine-Formel)
   double distanceTo(double lat, double lng) {
-    const double earthRadius = 6371;
-    double latDiff = (lat - latitude) * (3.14159 / 180);
-    double lngDiff = (lng - longitude) * (3.14159 / 180);
-    double a = (latDiff / 2) * (latDiff / 2) + 
-               (lngDiff / 2) * (lngDiff / 2);
-    return earthRadius * 2 * (a < 1 ? a : 1);
+    const double earthRadius = 6371; // km
+    
+    // Convert to radians
+    double lat1Rad = latitude * (math.pi / 180);
+    double lat2Rad = lat * (math.pi / 180);
+    double deltaLatRad = (lat - latitude) * (math.pi / 180);
+    double deltaLngRad = (lng - longitude) * (math.pi / 180);
+    
+    // Haversine formula
+    double a = math.sin(deltaLatRad / 2) * math.sin(deltaLatRad / 2) +
+               math.cos(lat1Rad) * math.cos(lat2Rad) *
+               math.sin(deltaLngRad / 2) * math.sin(deltaLngRad / 2);
+    
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    
+    return earthRadius * c;
   }
   
   /// Ist die Filiale zu einem bestimmten Zeitpunkt geöffnet?

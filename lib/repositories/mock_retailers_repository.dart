@@ -321,6 +321,21 @@ class MockRetailersRepository implements RetailersRepository {
     return stores.where((store) => store.isOpenAt(dateTime)).toList();
   }
   
+  @override
+  Future<List<Store>> getAllStores() async {
+    await Future.delayed(Duration(milliseconds: 200));
+    
+    // Use data from MockDataService if available (with 35+ Berlin stores),
+    // fallback to static list for tests
+    if (_hasDataService) {
+      // MockDataService has 35+ realistic Berlin stores
+      return List.from(_testService!.stores);
+    }
+    
+    // For tests: Combine all mock stores
+    return List.from(_mockStores);
+  }
+  
   /// Zusätzliche Mock-Methoden für Demo
   static void addMockRetailer(Retailer retailer) {
     _mockRetailers.add(retailer);

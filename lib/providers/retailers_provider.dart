@@ -5,12 +5,29 @@
 // INTEGRATION: LocationProvider Callbacks für PLZ-Updates
 // DATENQUELLE: MockDataService (global von main.dart)
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../repositories/retailers_repository.dart';
 import '../repositories/mock_retailers_repository.dart';
 import '../models/models.dart';
 import '../services/mock_data_service.dart';
 import 'location_provider.dart';
+
+/// Enum für Store-Search Sortierung
+enum StoreSearchSort {
+  distance,  // Nach Entfernung (Standard)
+  relevance, // Nach Such-Relevanz
+  name,      // Alphabetisch
+  openStatus,// Öffnungszeiten (offen zuerst)
+}
+
+/// Cache Entry für Store-Suche
+class StoreSearchCacheEntry {
+  final List<Store> results;
+  final DateTime timestamp;
+  
+  StoreSearchCacheEntry(this.results, this.timestamp);
+}
 
 class RetailersProvider extends ChangeNotifier {
   // Repository & Service Dependencies
@@ -30,6 +47,18 @@ class RetailersProvider extends ChangeNotifier {
   // Performance Cache
   final Map<String, List<Retailer>> _plzRetailerCache = {};
   final Map<String, Retailer> _retailerDetailsCache = {}; // Task 11.1: Cache für Details
+  final Map<String, StoreSearchCacheEntry> _storeSearchCache = {}; // Task 11.4: Store-Search Cache
+  
+  // Task 11.4: Store-Search State
+  List<Store> _allStores = [];
+  List<Store> _searchResults = [];
+  bool _isSearching = false;
+  String _lastSearchQuery = '';
+  
+  // User Location for distance calculations
+  double? _userLat;
+  double? _userLng;
+  LocationProvider? _locationProvider;
   
   // Cross-Provider Callbacks
   Function(List<Retailer>)? _onRetailersChanged;
@@ -56,6 +85,10 @@ class RetailersProvider extends ChangeNotifier {
   
   // Getters
   List<Retailer> get allRetailers => List.unmodifiable(_allRetailers);
+  List<Store> get allStores => List.unmodifiable(_allStores);
+  List<Store> get searchResults => List.unmodifiable(_searchResults);
+  bool get isSearching => _isSearching;
+  String get lastSearchQuery => _lastSearchQuery;
   List<Retailer> get availableRetailers => List.unmodifiable(_availableRetailers);
   List<Retailer> get unavailableRetailers => List.unmodifiable(_unavailableRetailers);
   String? get currentPLZ => _currentPLZ;
@@ -436,6 +469,7 @@ class RetailersProvider extends ChangeNotifier {
   void clearCache() {
     _plzRetailerCache.clear();
     _retailerDetailsCache.clear(); // Task 11.1: Details-Cache auch leeren
+    _storeSearchCache.clear(); // Task 11.4: Store-Search Cache leeren
     debugPrint('🧹 RetailersProvider: Cache geleert');
   }
   
@@ -608,11 +642,429 @@ class RetailersProvider extends ChangeNotifier {
     }
   }
   
+  // ============ TASK 11.4: Store Search Funktionalität ============
+  
+  /// Haupt-Suchmethode für Filialen
+  Future<List<Store>> searchStores(
+    String query, {
+    String? plz,
+    double? radiusKm,
+    List<String>? requiredServices,
+    bool openOnly = false,
+    StoreSearchSort sortBy = StoreSearchSort.distance,
+  }) async {
+    if (_disposed) return [];
+    
+    // Update search state
+    _isSearching = true;
+    _lastSearchQuery = query;
+    notifyListeners();
+    
+    try {
+      // 1. Cache-Check
+      final cacheKey = _generateSearchCacheKey(
+        query, plz, radiusKm, requiredServices, openOnly
+      );
+      
+      if (_storeSearchCache.containsKey(cacheKey)) {
+        final cached = _storeSearchCache[cacheKey]!;
+        if (DateTime.now().difference(cached.timestamp).inMinutes < 5) {
+          _searchResults = cached.results;
+          _isSearching = false;
+          notifyListeners();
+          return cached.results;
+        }
+      }
+      
+      // 2. Load all stores if not loaded
+      if (_allStores.isEmpty) {
+        await _loadAllStores();
+      }
+      
+      // 3. Text-Search with fuzzy matching
+      List<Store> filtered = query.isEmpty 
+          ? List.from(_allStores)
+          : _performTextSearch(_allStores, query);
+      
+      // 4. Apply Filters
+      if (plz != null && plz.isNotEmpty) {
+        filtered = _filterByPLZ(filtered, plz);
+      }
+      
+      if (radiusKm != null && radiusKm > 0) {
+        filtered = await _filterByRadius(filtered, radiusKm);
+      }
+      
+      if (requiredServices?.isNotEmpty ?? false) {
+        filtered = _filterByServices(filtered, requiredServices!);
+      }
+      
+      if (openOnly) {
+        filtered = _filterOpenStores(filtered);
+      }
+      
+      // 5. Sort Results
+      filtered = await _sortStores(filtered, sortBy);
+      
+      // 6. Cache & Update State
+      _storeSearchCache[cacheKey] = StoreSearchCacheEntry(
+        filtered, 
+        DateTime.now()
+      );
+      
+      _searchResults = filtered;
+      _isSearching = false;
+      notifyListeners();
+      
+      return filtered;
+      
+    } catch (e) {
+      debugPrint('❌ Store search failed: $e');
+      _isSearching = false;
+      _errorMessage = 'Fehler bei der Filial-Suche: $e';
+      notifyListeners();
+      return [];
+    }
+  }
+  
+  /// Lädt alle Stores von allen Händlern
+  Future<void> _loadAllStores() async {
+    try {
+      // Task 11.4: Verwende neue getAllStores() Repository-Methode
+      // Dies lädt effizient alle 35+ Berlin-Stores aus MockDataService
+      _allStores = await _repository.getAllStores();
+      debugPrint('✅ Loaded ${_allStores.length} stores total');
+    } catch (e) {
+      debugPrint('❌ Failed to load all stores: $e');
+      // Fallback: Lade Stores per Händler
+      final stores = <Store>[];
+      for (final retailer in _allRetailers) {
+        try {
+          final retailerStores = await _repository.getStoresByRetailer(retailer.name);
+          stores.addAll(retailerStores);
+        } catch (e) {
+          debugPrint('⚠️ Failed to load stores for ${retailer.name}: $e');
+        }
+      }
+      _allStores = stores;
+    }
+  }
+  
+  /// Text-Suche mit Fuzzy-Matching (Levenshtein Distance)
+  List<Store> _performTextSearch(List<Store> stores, String query) {
+    final queryLower = query.toLowerCase();
+    final searchResults = <SearchResult>[];
+    
+    for (final store in stores) {
+      int score = 0;
+      
+      // Exact match in name
+      if (store.name.toLowerCase() == queryLower) {
+        score += 100;
+      } else if (store.name.toLowerCase().contains(queryLower)) {
+        score += 50;
+      }
+      
+      // Match in address
+      if (store.address.toLowerCase().contains(queryLower)) {
+        score += 30;
+      }
+      
+      // Match in city
+      if (store.city.toLowerCase().contains(queryLower)) {
+        score += 20;
+      }
+      
+      // Match in PLZ
+      if (store.zipCode.contains(query)) {
+        score += 40;
+      }
+      
+      // Match in retailer name
+      if (store.retailerName.toLowerCase().contains(queryLower)) {
+        score += 25;
+      }
+      
+      // Fuzzy match for typos (Levenshtein distance)
+      if (score == 0) {
+        // Check fuzzy match against store name
+        final storeNameDistance = _levenshteinDistance(
+          store.name.toLowerCase(), 
+          queryLower
+        );
+        
+        // Check fuzzy match against retailer name too
+        final retailerDistance = _levenshteinDistance(
+          store.retailerName.toLowerCase(),
+          queryLower
+        );
+        
+        // Use the better match (lower distance)
+        final distance = math.min(storeNameDistance, retailerDistance);
+        
+        // Allow up to 2 character differences for short queries
+        // or up to 30% difference for longer queries
+        final maxDistance = query.length <= 5 ? 2 : (query.length * 0.3).round();
+        
+        if (distance <= maxDistance) {
+          score = 10 + (maxDistance - distance) * 5;
+        }
+      }
+      
+      // Match in services
+      for (final service in store.services) {
+        if (service.toLowerCase().contains(queryLower)) {
+          score += 15;
+          break;
+        }
+      }
+      
+      if (score > 0) {
+        searchResults.add(SearchResult(store, score));
+      }
+    }
+    
+    // Sort by relevance score and return stores
+    searchResults.sort((a, b) => b.score.compareTo(a.score));
+    return searchResults.map((r) => r.store).toList();
+  }
+  
+  /// Berechnet Levenshtein-Distance für Fuzzy-Search
+  int _levenshteinDistance(String s1, String s2) {
+    if (s1 == s2) return 0;
+    if (s1.isEmpty) return s2.length;
+    if (s2.isEmpty) return s1.length;
+    
+    List<List<int>> matrix = List.generate(
+      s1.length + 1,
+      (i) => List.generate(s2.length + 1, (j) => 0),
+    );
+    
+    for (int i = 0; i <= s1.length; i++) {
+      matrix[i][0] = i;
+    }
+    
+    for (int j = 0; j <= s2.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (int i = 1; i <= s1.length; i++) {
+      for (int j = 1; j <= s2.length; j++) {
+        int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+        matrix[i][j] = [
+          matrix[i - 1][j] + 1,       // deletion
+          matrix[i][j - 1] + 1,       // insertion
+          matrix[i - 1][j - 1] + cost // substitution
+        ].reduce(math.min);
+      }
+    }
+    
+    return matrix[s1.length][s2.length];
+  }
+  
+  /// Filter nach PLZ
+  List<Store> _filterByPLZ(List<Store> stores, String plz) {
+    return stores.where((store) => store.zipCode == plz).toList();
+  }
+  
+  /// Filter nach Radius (benötigt User-Location)
+  Future<List<Store>> _filterByRadius(List<Store> stores, double radiusKm) async {
+    // Get user location from LocationProvider if set
+    if (_locationProvider != null && _locationProvider!.hasLocation) {
+      _userLat = _locationProvider!.latitude;
+      _userLng = _locationProvider!.longitude;
+    }
+    
+    // Fallback to Berlin center if no user location
+    final lat = _userLat ?? 52.520008;
+    final lng = _userLng ?? 13.404954;
+    
+    return stores.where((store) {
+      final distance = _calculateDistance(
+        lat, lng,
+        store.latitude, store.longitude
+      );
+      return distance <= radiusKm;
+    }).toList();
+  }
+  
+  /// Filter nach Services
+  List<Store> _filterByServices(List<Store> stores, List<String> requiredServices) {
+    return stores.where((store) {
+      // Store must have ALL required services
+      for (final service in requiredServices) {
+        final serviceLower = service.toLowerCase();
+        bool hasService = store.services.any(
+          (s) => s.toLowerCase().contains(serviceLower)
+        );
+        
+        // Check special boolean fields too
+        if (!hasService) {
+          if (serviceLower.contains('wifi') && store.hasWifi) {
+            hasService = true;
+          } else if (serviceLower.contains('apotheke') && store.hasPharmacy) {
+            hasService = true;
+          } else if (serviceLower.contains('beacon') && store.hasBeacon) {
+            hasService = true;
+          }
+        }
+        
+        if (!hasService) return false;
+      }
+      return true;
+    }).toList();
+  }
+  
+  /// Filter nur offene Filialen
+  List<Store> _filterOpenStores(List<Store> stores) {
+    final now = DateTime.now();
+    return stores.where((store) => store.isOpenAt(now)).toList();
+  }
+  
+  /// Sortierung der Suchergebnisse
+  Future<List<Store>> _sortStores(List<Store> stores, StoreSearchSort sortBy) async {
+    final sorted = List<Store>.from(stores);
+    
+    switch (sortBy) {
+      case StoreSearchSort.distance:
+        // Get user location
+        if (_locationProvider != null && _locationProvider!.hasLocation) {
+          _userLat = _locationProvider!.latitude;
+          _userLng = _locationProvider!.longitude;
+        }
+        
+        final lat = _userLat ?? 52.520008;
+        final lng = _userLng ?? 13.404954;
+        
+        sorted.sort((a, b) {
+          final distA = _calculateDistance(lat, lng, a.latitude, a.longitude);
+          final distB = _calculateDistance(lat, lng, b.latitude, b.longitude);
+          return distA.compareTo(distB);
+        });
+        break;
+        
+      case StoreSearchSort.name:
+        sorted.sort((a, b) => a.name.compareTo(b.name));
+        break;
+        
+      case StoreSearchSort.openStatus:
+        final now = DateTime.now();
+        sorted.sort((a, b) {
+          final aOpen = a.isOpenAt(now);
+          final bOpen = b.isOpenAt(now);
+          if (aOpen && !bOpen) return -1;
+          if (!aOpen && bOpen) return 1;
+          return 0;
+        });
+        break;
+        
+      case StoreSearchSort.relevance:
+        // Already sorted by relevance in _performTextSearch
+        break;
+    }
+    
+    return sorted;
+  }
+  
+  /// Berechnet Entfernung zwischen zwei Koordinaten (Haversine)
+  double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+    const double earthRadius = 6371; // km
+    
+    double dLat = _toRadians(lat2 - lat1);
+    double dLng = _toRadians(lng2 - lng1);
+    
+    double a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+               math.cos(_toRadians(lat1)) * math.cos(_toRadians(lat2)) *
+               math.sin(dLng / 2) * math.sin(dLng / 2);
+    
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    
+    return earthRadius * c;
+  }
+  
+  double _toRadians(double degree) {
+    return degree * (math.pi / 180);
+  }
+  
+  /// Generiert Cache-Key für Suche
+  String _generateSearchCacheKey(
+    String query,
+    String? plz,
+    double? radius,
+    List<String>? services,
+    bool openOnly,
+  ) {
+    final parts = [
+      query,
+      plz ?? '',
+      radius?.toString() ?? '',
+      services?.join(',') ?? '',
+      openOnly.toString(),
+    ];
+    return parts.join('|');
+  }
+  
+  /// Integration mit LocationProvider
+  void setLocationProvider(LocationProvider provider) {
+    _locationProvider = provider;
+    
+    // Update user coordinates when location changes
+    provider.registerLocationChangeCallback(() {
+      if (provider.hasLocation) {
+        _userLat = provider.latitude;
+        _userLng = provider.longitude;
+        
+        // Clear search cache as distances have changed
+        _storeSearchCache.clear();
+        
+        debugPrint('📍 Store search: User location updated');
+      }
+    });
+  }
+  
+  /// Quick-Filter Presets
+  Future<List<Store>> getOpenStoresNearby({double radiusKm = 5}) async {
+    return searchStores(
+      '',
+      radiusKm: radiusKm,
+      openOnly: true,
+      sortBy: StoreSearchSort.distance,
+    );
+  }
+  
+  Future<List<Store>> getStoresWithService(String service, {double? radiusKm}) async {
+    return searchStores(
+      '',
+      radiusKm: radiusKm,
+      requiredServices: [service],
+      sortBy: StoreSearchSort.distance,
+    );
+  }
+  
+  Future<List<Store>> getNearestStores({int limit = 5}) async {
+    final stores = await searchStores(
+      '',
+      sortBy: StoreSearchSort.distance,
+    );
+    return stores.take(limit).toList();
+  }
+  
+  // ============ Ende TASK 11.4 ============
+  
   @override
   void dispose() {
     _disposed = true;
     clearCache();
     _onRetailersChanged = null;
+    _locationProvider = null;
     super.dispose();
   }
+}
+
+/// Helper class for search results with score
+class SearchResult {
+  final Store store;
+  final int score;
+  
+  SearchResult(this.store, this.score);
 }

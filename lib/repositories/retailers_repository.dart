@@ -21,4 +21,7 @@ abstract class RetailersRepository {
   
   /// Geöffnete Filialen zum aktuellen Zeitpunkt
   Future<List<Store>> getOpenStores(DateTime dateTime);
+  
+  /// Task 11.4: Alle Stores laden für Store-Search
+  Future<List<Store>> getAllStores();
 }

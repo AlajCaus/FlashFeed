@@ -27,7 +27,6 @@ class OfferSearchBar extends StatefulWidget {
 class _OfferSearchBarState extends State<OfferSearchBar> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  late Future<LocalStorageService> _storageFuture;
   LocalStorageService? _storage;
   
   List<String> _searchHistory = [];

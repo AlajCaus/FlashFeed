@@ -51,6 +51,8 @@ class LocationProvider extends ChangeNotifier {
   String? _address;
   String? _city;
   String? _postalCode;
+  bool _hasLocationPermission = false;  // Task 11.4: Restored for setMockLocation
+  bool _isLocationServiceEnabled = false;  // Task 11.4: Restored for setMockLocation
   bool _isLoadingLocation = false;
   String? _locationError;
   
@@ -726,6 +728,43 @@ class LocationProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ LocationProvider: Fehler bei Callback-Benachrichtigung: $e');
     }
+  }
+  
+  // NOTE: _updateAvailableRetailersForPLZ is already defined above at line 360
+  
+  // ============ Test Helpers ============
+  
+  /// Task 11.4: Set mock location for testing
+  @visibleForTesting
+  Future<void> setMockLocation(double lat, double lng, {String? plz}) async {
+    if (_disposed) return;
+    
+    _latitude = lat;
+    _longitude = lng;
+    _currentLocationSource = LocationSource.gps;
+    _hasLocationPermission = true;
+    _isLocationServiceEnabled = true;
+    
+    // If PLZ provided, use it; otherwise simulate lookup
+    if (plz != null) {
+      _postalCode = plz;
+    } else {
+      // Simulate PLZ for common test coordinates
+      if (lat > 52.5 && lat < 52.55 && lng > 13.3 && lng < 13.45) {
+        _postalCode = '10115'; // Berlin Mitte
+      } else if (lat > 52.48 && lat < 52.51 && lng > 13.3 && lng < 13.4) {
+        _postalCode = '10827'; // Berlin Schöneberg
+      } else {
+        _postalCode = '10115'; // Default Berlin
+      }
+    }
+    
+    // Update available retailers
+    _updateAvailableRetailersForPLZ(_postalCode!);
+    
+    // Notify listeners
+    notifyListeners();
+    _notifyLocationCallbacks();
   }
   
   @override
