@@ -104,7 +104,9 @@ class Retailer {
   final String displayName;     // UI-Text (kann doppelt sein)
   final String? logoUrl;         // Optional logo URL
   final String primaryColor;    // Hex-Color für UI (war brandColor)
+  final String? secondaryColor;  // Task 11.2: Sekundäre Farbe für Branding
   final String? iconUrl;        // Zusätzliches Icon (z.B. Scottie)
+  final String? slogan;         // Task 11.2: Händler-Slogan (z.B. "ALDI. Einfach ist mehr.")
   final String? description;    // Optional description
   final List<String> categories; // Verfügbare Produktkategorien
   final bool isPremiumPartner;   // Für Freemium-Features (war isActive)
@@ -118,7 +120,9 @@ class Retailer {
     required this.displayName,
     this.logoUrl,
     required this.primaryColor,
+    this.secondaryColor,      // Task 11.2
     this.iconUrl,
+    this.slogan,              // Task 11.2
     this.description,
     this.categories = const [],
     this.isPremiumPartner = false,
@@ -208,6 +212,7 @@ class PLZHelper {
 class Store {
   final String id;
   final String chainId;         // Retailer ID (von Chain-Version)
+  final String retailerId;      // Task 11.2: Retailer ID für getRetailerByStore
   final String retailerName;    // Retailer Name (von Store-Version)
   final String name;
   final String street;          // Straße (separiert von address)
@@ -227,6 +232,7 @@ class Store {
   Store({
     required this.id,
     required this.chainId,
+    String? retailerId,        // Task 11.2: Optional, falls to chainId
     required this.retailerName,
     required this.name,
     required this.street,
@@ -241,7 +247,7 @@ class Store {
     this.hasPharmacy = false,
     this.hasBeacon = false,
     this.isActive = true,
-  });
+  }) : retailerId = retailerId ?? chainId;  // Task 11.2: Fallback auf chainId
   
   /// Vollständige Adresse generieren
   String get address => '$street, $zipCode $city';
@@ -284,29 +290,204 @@ class Store {
   }
 }
 
-/// Öffnungszeiten Model-Klasse
+/// Task 11.3: Wochentag Enum
+enum Weekday {
+  monday,
+  tuesday,
+  wednesday,
+  thursday,
+  friday,
+  saturday,
+  sunday;
+  
+  String toGerman() {
+    switch (this) {
+      case Weekday.monday: return 'Montag';
+      case Weekday.tuesday: return 'Dienstag';
+      case Weekday.wednesday: return 'Mittwoch';
+      case Weekday.thursday: return 'Donnerstag';
+      case Weekday.friday: return 'Freitag';
+      case Weekday.saturday: return 'Samstag';
+      case Weekday.sunday: return 'Sonntag';
+    }
+  }
+  
+  static Weekday fromDateTime(DateTime date) {
+    // DateTime.weekday: 1=Monday, 7=Sunday
+    return Weekday.values[date.weekday - 1];
+  }
+}
+
+/// Task 11.3: Sonderöffnungszeiten (Feiertage)
+class SpecialHours {
+  final DateTime date;
+  final OpeningHours hours;
+  final String description;  // z.B. "Heiligabend", "Neujahr"
+  
+  SpecialHours({
+    required this.date,
+    required this.hours,
+    required this.description,
+  });
+  
+  bool appliesTo(DateTime checkDate) {
+    return date.year == checkDate.year &&
+           date.month == checkDate.month &&
+           date.day == checkDate.day;
+  }
+}
+
+/// Öffnungszeiten Model-Klasse - Task 11.3: Erweitert
 class OpeningHours {
   final int openMinutes;   // Minuten seit Mitternacht (z.B. 8:00 = 480)
   final int closeMinutes;  // Minuten seit Mitternacht (z.B. 20:00 = 1200)
   final bool isClosed;     // Geschlossen (z.B. Sonntag)
+  final bool isSpecialHours;  // Task 11.3: Sonderöffnungszeiten
+  final String? specialNote;  // Task 11.3: Hinweis (z.B. "Feiertag")
 
   OpeningHours({
     required this.openMinutes,
     required this.closeMinutes,
     this.isClosed = false,
+    this.isSpecialHours = false,  // Task 11.3
+    this.specialNote,              // Task 11.3
   });
   
+  /// Task 11.3: Prüft ob jetzt geöffnet ist
+  bool isOpenNow() {
+    if (isClosed) return false;
+    
+    final now = DateTime.now();
+    final nowMinutes = now.hour * 60 + now.minute;
+    
+    // Handle overnight hours (z.B. 20:00 - 02:00)
+    if (closeMinutes < openMinutes) {
+      return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
+    }
+    
+    return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+  }
+  
+  /// Task 11.3: Zeit bis zur Öffnung/Schließung
+  Duration? timeUntilOpen() {
+    if (isClosed) return null;
+    if (isOpenNow()) return Duration.zero;
+    
+    final now = DateTime.now();
+    final nowMinutes = now.hour * 60 + now.minute;
+    
+    // Calculate minutes until opening
+    int minutesUntilOpen;
+    if (nowMinutes < openMinutes) {
+      minutesUntilOpen = openMinutes - nowMinutes;
+    } else {
+      // Next day opening
+      minutesUntilOpen = (24 * 60 - nowMinutes) + openMinutes;
+    }
+    
+    return Duration(minutes: minutesUntilOpen);
+  }
+  
+  /// Task 11.3: Zeit bis zur Schließung
+  Duration? timeUntilClose() {
+    if (isClosed || !isOpenNow()) return null;
+    
+    final now = DateTime.now();
+    final nowMinutes = now.hour * 60 + now.minute;
+    
+    // Handle overnight hours
+    if (closeMinutes < openMinutes && nowMinutes < closeMinutes) {
+      return Duration(minutes: closeMinutes - nowMinutes);
+    }
+    
+    if (closeMinutes >= nowMinutes) {
+      return Duration(minutes: closeMinutes - nowMinutes);
+    }
+    
+    // Closing tomorrow
+    return Duration(minutes: (24 * 60 - nowMinutes) + closeMinutes);
+  }
+  
+  /// Task 11.3: Status-Nachricht für UI
+  String getStatusMessage() {
+    if (isClosed) {
+      return specialNote ?? 'Geschlossen';
+    }
+    
+    if (isOpenNow()) {
+      final timeLeft = timeUntilClose();
+      if (timeLeft != null) {
+        if (timeLeft.inMinutes < 60) {
+          return 'Schließt in ${timeLeft.inMinutes} Min';
+        } else {
+          return 'Geöffnet bis ${_formatTime(closeMinutes)}';
+        }
+      }
+      return 'Geöffnet';
+    } else {
+      final timeUntil = timeUntilOpen();
+      if (timeUntil != null) {
+        if (timeUntil.inHours < 1) {
+          return 'Öffnet in ${timeUntil.inMinutes} Min';
+        } else if (timeUntil.inHours < 24) {
+          return 'Öffnet um ${_formatTime(openMinutes)}';
+        } else {
+          return 'Öffnet morgen um ${_formatTime(openMinutes)}';
+        }
+      }
+      return 'Geschlossen';
+    }
+  }
+  
+  /// Task 11.3: Zeit formatieren (480 -> "8:00")
+  String _formatTime(int minutes) {
+    final hours = minutes ~/ 60;
+    final mins = minutes % 60;
+    return '${hours.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}';
+  }
+  
+  /// Task 11.3: Öffnungszeiten als String ("8:00 - 20:00")
+  String toTimeString() {
+    if (isClosed) return 'Geschlossen';
+    return '${_formatTime(openMinutes)} - ${_formatTime(closeMinutes)}';
+  }
+  
   /// Factory für geschlossene Tage
-  factory OpeningHours.closed() {
+  factory OpeningHours.closed({String? note}) {
     return OpeningHours(
       openMinutes: 0,
       closeMinutes: 0,
       isClosed: true,
+      specialNote: note,
     );
   }
   
-  /// Factory für Standard-Öffnungszeiten
-  factory OpeningHours.standard(int openHour, int openMin, int closeHour, int closeMin) {
+  /// Task 11.3: Factory für Standard-Öffnungszeiten
+  factory OpeningHours.standard() {
+    return OpeningHours(
+      openMinutes: 7 * 60,   // 7:00
+      closeMinutes: 20 * 60,  // 20:00
+    );
+  }
+  
+  /// Task 11.3: Factory für erweiterte Öffnungszeiten
+  factory OpeningHours.extended() {
+    return OpeningHours(
+      openMinutes: 7 * 60,   // 7:00
+      closeMinutes: 22 * 60,  // 22:00
+    );
+  }
+  
+  /// Task 11.3: Factory für Sonntagsöffnung
+  factory OpeningHours.sunday() {
+    return OpeningHours(
+      openMinutes: 10 * 60,   // 10:00
+      closeMinutes: 18 * 60,  // 18:00
+    );
+  }
+  
+  /// Factory für Custom-Öffnungszeiten mit spezifischen Zeiten
+  factory OpeningHours.custom(int openHour, int openMin, int closeHour, int closeMin) {
     return OpeningHours(
       openMinutes: openHour * 60 + openMin,
       closeMinutes: closeHour * 60 + closeMin,

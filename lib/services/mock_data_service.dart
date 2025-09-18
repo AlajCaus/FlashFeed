@@ -155,8 +155,12 @@ class MockDataService {
         id: 'edeka',
         name: 'EDEKA',
         displayName: 'EDEKA',
-        logoUrl: 'assets/images/logos/edeka.png',
+
+        logoUrl: '/assets/logos/edeka.png',  // Task 11.2: Logo URL
         primaryColor: '#005CA9',
+        secondaryColor: '#FFE500',  // Task 11.2: EDEKA Gelb
+        iconUrl: '/assets/icons/edeka_icon.png',  // Task 11.2: Icon
+        slogan: 'Wir lieben Lebensmittel',  // Task 11.2: Slogan
         description: 'Deutschlands größte Supermarkt-Kooperation',
         categories: ['Molkereiprodukte', 'Frischfleisch', 'Obst', 'Gemüse', 'Backwaren', 'Getränke', 'Tiefkühlprodukte'],
         isPremiumPartner: true,
@@ -169,8 +173,11 @@ class MockDataService {
         id: 'rewe',
         name: 'REWE',
         displayName: 'REWE',
-        logoUrl: 'assets/images/logos/rewe.png',
+        logoUrl: '/assets/logos/rewe.png',  // Task 11.2: Logo URL
         primaryColor: '#CC071E',
+        secondaryColor: '#FFF200',  // Task 11.2: REWE Gelb
+        iconUrl: '/assets/icons/rewe_icon.png',  // Task 11.2: Icon
+        slogan: 'Dein Markt',  // Task 11.2: Slogan
         description: 'Ihr Nahversorger mit nachhaltigen Produkten',
         categories: ['Milch & Käse', 'Fleisch & Geflügel', 'Frisches Obst', 'Frisches Gemüse', 'Brot & Bäckerei', 'Getränke & Alkohol'],
         isPremiumPartner: true,
@@ -182,9 +189,12 @@ class MockDataService {
       Retailer(
         id: 'aldi',
         name: 'ALDI SÜD',
-        displayName: 'ALDI',
-        logoUrl: 'assets/images/logos/aldi.png',
+        displayName: 'ALDI SÜD',  // Task 11.2: Korrekter Display Name
+        logoUrl: '/assets/logos/aldi.png',  // Task 11.2: Logo URL
         primaryColor: '#00549F',
+        secondaryColor: '#FF6600',  // Task 11.2: ALDI Orange
+        iconUrl: '/assets/icons/aldi_icon.png',  // Task 11.2: Icon
+        slogan: 'Einfach ist mehr',  // Task 11.2: Slogan
         description: 'Einfach günstig - Qualität zum besten Preis',
         categories: ['Milcherzeugnisse', 'Frischfleisch', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Tiefkühl'],
         isPremiumPartner: false,
@@ -196,9 +206,12 @@ class MockDataService {
       Retailer(
         id: 'lidl',
         name: 'LIDL',
-        displayName: 'LIDL',
-        logoUrl: 'assets/images/logos/lidl.png',
+        displayName: 'Lidl',  // Task 11.2: Korrekter Display Name
+        logoUrl: '/assets/logos/lidl.png',  // Task 11.2: Logo URL
         primaryColor: '#0050AA',
+        secondaryColor: '#FFE500',  // Task 11.2: Lidl Gelb
+        iconUrl: '/assets/icons/lidl_icon.png',  // Task 11.2: Icon
+        slogan: 'Lidl lohnt sich',  // Task 11.2: Slogan
         description: 'Mehr frische Ideen - Qualität und Frische',
         categories: ['Backwaren', 'Milchprodukte', 'Obst & Gemüse', 'Fleisch & Geflügel', 'Getränke', 'Tiefkühl'],
         isPremiumPartner: false,
@@ -210,9 +223,12 @@ class MockDataService {
       Retailer(
         id: 'netto_schwarz',
         name: 'NETTO',
-        displayName: 'Netto',
-        logoUrl: 'assets/images/logos/netto-schwarz.png',
+        displayName: 'Netto Marken-Discount',  // Task 11.2: Vollständiger Name
+        logoUrl: '/assets/logos/netto.png',  // Task 11.2: Vereinheitlichte URL
         primaryColor: '#FFD100',
+        secondaryColor: '#000000',  // Task 11.2: Netto Schwarz
+        iconUrl: '/assets/icons/netto_icon.png',  // Task 11.2: Scottie Icon
+        slogan: 'Dann geh doch zu Netto!',  // Task 11.2: Slogan
         description: 'Jeden Tag ein bisschen besser',
         categories: ['Getränke', 'Konserven', 'Molkereiprodukte', 'Fleisch & Wurst', 'Obst & Gemüse', 'Backshop'],
         isPremiumPartner: false,
@@ -228,8 +244,11 @@ class MockDataService {
         id: 'penny',
         name: 'PENNY',
         displayName: 'Penny',
-        logoUrl: 'assets/images/logos/penny.png',
+        logoUrl: '/assets/logos/penny.png',  // Task 11.2: Vereinheitlichte URL
         primaryColor: '#D4001A',
+        secondaryColor: '#FFE500',  // Task 11.2: Penny Gelb
+        iconUrl: '/assets/icons/penny_icon.png',  // Task 11.2: Icon
+        slogan: 'Erstmal zu Penny',  // Task 11.2: Slogan
         description: 'Preise gut, alles gut',
         categories: ['Getränke', 'Süßwaren', 'Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Wurst', 'Backwaren'],
         isPremiumPartner: false,
@@ -242,8 +261,11 @@ class MockDataService {
         id: 'kaufland',
         name: 'KAUFLAND',
         displayName: 'Kaufland',
-        logoUrl: 'assets/images/logos/kaufland.png',
-        primaryColor: '#C8102E',
+        logoUrl: '/assets/logos/kaufland.png',  // Task 11.2: Vereinheitlichte URL
+        primaryColor: '#E40521',  // Task 11.2: Korrigiertes Kaufland Rot
+        secondaryColor: '#FFFFFF',  // Task 11.2: Kaufland Weiß
+        iconUrl: '/assets/icons/kaufland_icon.png',  // Task 11.2: K Icon
+        slogan: 'Das ist für alle gut',  // Task 11.2: Slogan
         description: 'Das ist gut für alle',
         categories: ['Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Geflügel', 'Backwaren', 'Getränke', 'Tiefkühl', 'Bio-Produkte'],
         isPremiumPartner: true,
@@ -255,9 +277,12 @@ class MockDataService {
       Retailer(
         id: 'real',
         name: 'REAL',
-        displayName: 'Real',
-        logoUrl: 'assets/images/logos/real.png',
-        primaryColor: '#005CA9',
+        displayName: 'real,-',  // Task 11.2: Stylisiert mit Komma
+        logoUrl: '/assets/logos/real.png',  // Task 11.2: Vereinheitlichte URL
+        primaryColor: '#003F74',  // Task 11.2: Real Dunkelblau
+        secondaryColor: '#E30613',  // Task 11.2: Real Rot
+        iconUrl: '/assets/icons/real_icon.png',  // Task 11.2: Icon
+        slogan: 'Einmal hin. Alles drin.',  // Task 11.2: Slogan
         description: 'Einmal hin. Alles drin',
         categories: ['Frische-Theke', 'Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Fisch', 'Backwaren', 'Getränke', 'Bio-Produkte'],
         isPremiumPartner: true,
@@ -272,8 +297,11 @@ class MockDataService {
         id: 'globus',
         name: 'GLOBUS',
         displayName: 'Globus',
-        logoUrl: 'assets/images/logos/globus.png',
+        logoUrl: '/assets/logos/globus.png',  // Task 11.2: Vereinheitlichte URL
         primaryColor: '#0033A0',
+        secondaryColor: '#FF6600',  // Task 11.2: Globus Orange
+        iconUrl: '/assets/icons/globus_icon.png',  // Task 11.2: Globus Icon
+        slogan: 'Jeder Mensch ist anders',  // Task 11.2: Slogan
         description: 'Meine Zeit. Mein Globus',
         categories: ['Premium-Fleisch', 'Bio-Produkte', 'Molkereiprodukte', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Feinkost'],
         isPremiumPartner: true,
@@ -288,8 +316,11 @@ class MockDataService {
         id: 'marktkauf',
         name: 'MARKTKAUF',
         displayName: 'Marktkauf',
-        logoUrl: 'assets/images/logos/marktkauf.png',
+        logoUrl: '/assets/logos/marktkauf.png',  // Task 11.2: Vereinheitlichte URL
         primaryColor: '#009639',
+        secondaryColor: '#FFE500',  // Task 11.2: Marktkauf Gelb
+        iconUrl: '/assets/icons/marktkauf_icon.png',  // Task 11.2: Icon
+        slogan: 'Hier kauf ich gern',  // Task 11.2: Slogan
         description: 'Hier kauf ich gern',
         categories: ['Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Wurst', 'Backwaren', 'Getränke', 'Tiefkühl'],
         isPremiumPartner: false,
@@ -304,9 +335,12 @@ class MockDataService {
       Retailer(
         id: 'biocompany',
         name: 'BIOCOMPANY',
-        displayName: 'BioCompany',
-        logoUrl: 'assets/images/logos/biocompany.png',
+        displayName: 'Bio Company',  // Task 11.2: Mit Space
+        logoUrl: '/assets/logos/biocompany.png',  // Task 11.2: Vereinheitlichte URL
         primaryColor: '#7CB342',
+        secondaryColor: '#8BC34A',  // Task 11.2: BioCompany Hellgrün
+        iconUrl: '/assets/icons/biocompany_icon.png',  // Task 11.2: Icon
+        slogan: 'Bio für alle',  // Task 11.2: Slogan
         description: 'Bio für die Stadt',
         categories: ['Bio-Obst', 'Bio-Gemüse', 'Bio-Milchprodukte', 'Bio-Backwaren', 'Naturkosmetik'],
         isPremiumPartner: true,
@@ -320,6 +354,85 @@ class MockDataService {
     ];
   }
 
+  // Task 11.3: Helper-Methode für realistische Öffnungszeiten
+  Map<String, OpeningHours> _generateOpeningHours(String retailerType) {
+    // Realistische Öffnungszeiten für deutschen LEH
+    final Map<String, OpeningHours> hours = {};
+    
+    // Standard-Öffnungszeiten nach Händler-Typ
+    if (retailerType == 'discounter') {
+      // Discounter (ALDI, LIDL, NETTO, PENNY)
+      hours['Montag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
+      hours['Dienstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
+      hours['Mittwoch'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
+      hours['Donnerstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
+      hours['Freitag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
+      hours['Samstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 20 * 60);
+      hours['Sonntag'] = OpeningHours.closed(note: 'Sonntags geschlossen');
+    } else if (retailerType == 'supermarkt') {
+      // Supermärkte (EDEKA, REWE)
+      hours['Montag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Dienstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Mittwoch'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Donnerstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Freitag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Samstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Sonntag'] = OpeningHours.closed(note: 'Sonntags geschlossen');
+    } else if (retailerType == 'hypermarkt') {
+      // Hypermärkte (KAUFLAND, REAL, GLOBUS)
+      hours['Montag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Dienstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Mittwoch'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Donnerstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Freitag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 23 * 60);
+      hours['Samstag'] = OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60);
+      hours['Sonntag'] = OpeningHours.closed(note: 'Sonntags geschlossen');
+    } else if (retailerType == 'bio') {
+      // Bio-Märkte (BioCompany)
+      hours['Montag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
+      hours['Dienstag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
+      hours['Mittwoch'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
+      hours['Donnerstag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
+      hours['Freitag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 20 * 60);
+      hours['Samstag'] = OpeningHours(openMinutes: 8 * 60, closeMinutes: 18 * 60);
+      hours['Sonntag'] = OpeningHours.closed(note: 'Sonntags geschlossen');
+    } else {
+      // Standard-Fallback
+      hours['Montag'] = OpeningHours.standard();
+      hours['Dienstag'] = OpeningHours.standard();
+      hours['Mittwoch'] = OpeningHours.standard();
+      hours['Donnerstag'] = OpeningHours.standard();
+      hours['Freitag'] = OpeningHours.standard();
+      hours['Samstag'] = OpeningHours.standard();
+      hours['Sonntag'] = OpeningHours.closed();
+    }
+    
+    return hours;
+  }
+  
+  // Task 11.3: Helper-Methode um Händler-Typ zu bestimmen
+  String _getRetailerType(String retailerId) {
+    switch (retailerId) {
+      case 'aldi':
+      case 'lidl':
+      case 'netto_schwarz':
+      case 'penny':
+        return 'discounter';
+      case 'edeka':
+      case 'rewe':
+      case 'marktkauf':
+        return 'supermarkt';
+      case 'kaufland':
+      case 'real':
+      case 'globus':
+        return 'hypermarkt';
+      case 'biocompany':
+        return 'bio';
+      default:
+        return 'standard';
+    }
+  }
+  
   Future<void> _generateStores() async {
     // Task 5.6: Realistische Berliner Standorte für alle 10 deutschen LEH-Händler
     // 35+ Filialen mit präzisen GPS-Koordinaten für Professor-Demo
@@ -427,7 +540,7 @@ class MockDataService {
           latitude: storeLocation['lat'] as double,
           longitude: storeLocation['lng'] as double,
           phoneNumber: isInBerlin ? '+49 30 ${_random.nextInt(90000000) + 10000000}' : '+49 89 ${_random.nextInt(90000000) + 10000000}',
-          openingHours: _generateOpeningHours(),
+          openingHours: _generateStandardOpeningHours(),
           services: _generateStoreServices(retailer.name),
           hasWifi: _random.nextBool(),
           hasPharmacy: false,
@@ -721,14 +834,14 @@ class MockDataService {
   }
 
   // Helper Methods für Store-Generierung
-  Map<String, OpeningHours> _generateOpeningHours() {
+  Map<String, OpeningHours> _generateStandardOpeningHours() {
     return {
-      'Montag': OpeningHours.standard(7, 0, 21, 0),
-      'Dienstag': OpeningHours.standard(7, 0, 21, 0),
-      'Mittwoch': OpeningHours.standard(7, 0, 21, 0),
-      'Donnerstag': OpeningHours.standard(7, 0, 21, 0),
-      'Freitag': OpeningHours.standard(7, 0, 22, 0),
-      'Samstag': OpeningHours.standard(7, 0, 21, 0),
+      'Montag': OpeningHours(openMinutes: 7 * 60, closeMinutes: 21 * 60),
+      'Dienstag': OpeningHours(openMinutes: 7 * 60, closeMinutes: 21 * 60),
+      'Mittwoch': OpeningHours(openMinutes: 7 * 60, closeMinutes: 21 * 60),
+      'Donnerstag': OpeningHours(openMinutes: 7 * 60, closeMinutes: 21 * 60),
+      'Freitag': OpeningHours(openMinutes: 7 * 60, closeMinutes: 22 * 60),
+      'Samstag': OpeningHours(openMinutes: 7 * 60, closeMinutes: 21 * 60),
       'Sonntag': OpeningHours.closed(),
     };
   }

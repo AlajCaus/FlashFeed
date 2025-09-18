@@ -29,6 +29,7 @@ class RetailersProvider extends ChangeNotifier {
   
   // Performance Cache
   final Map<String, List<Retailer>> _plzRetailerCache = {};
+  final Map<String, Retailer> _retailerDetailsCache = {}; // Task 11.1: Cache für Details
   
   // Cross-Provider Callbacks
   Function(List<Retailer>)? _onRetailersChanged;
@@ -296,6 +297,121 @@ class RetailersProvider extends ChangeNotifier {
     }
   }
   
+  // ============ TASK 11.1: Neue Retailer Detail Methoden ============
+  
+  /// Gibt detaillierte Informationen zu einem Händler zurück
+  Retailer? getRetailerDetails(String retailerName) {
+    // Check Cache zuerst
+    if (_retailerDetailsCache.containsKey(retailerName)) {
+      return _retailerDetailsCache[retailerName];
+    }
+    
+    // Suche in allen Händlern
+    try {
+      final retailer = _allRetailers.firstWhere(
+        (r) => r.name == retailerName || r.displayName == retailerName,
+      );
+      
+      // Cache für zukünftige Zugriffe
+      _retailerDetailsCache[retailerName] = retailer;
+      return retailer;
+    } catch (e) {
+      debugPrint('⚠️ RetailersProvider: Händler "$retailerName" nicht gefunden');
+      return null;
+    }
+  }
+  
+  /// Gibt die Logo-URL eines Händlers zurück (mit Fallback)
+  String getRetailerLogo(String retailerName) {
+    final retailer = getRetailerDetails(retailerName);
+    if (retailer != null && retailer.logoUrl != null && retailer.logoUrl!.isNotEmpty) {
+      return retailer.logoUrl!;
+    }
+    
+    // Fallback zu generischem Logo basierend auf Händlernamen
+    return '/assets/logos/generic_retailer.png';
+  }
+  
+  /// Gibt die Brand-Farben eines Händlers zurück
+  Map<String, Color> getRetailerBrandColors(String retailerName) {
+    final retailer = getRetailerDetails(retailerName);
+    
+    if (retailer != null) {
+      // Parse hex colors to Flutter Colors
+      try {
+        final primaryColorHex = retailer.primaryColor.replaceAll('#', '');
+        final primaryColor = Color(int.parse('0xFF$primaryColorHex'));
+        
+        // Secondary color could be derived or stored
+        final secondaryColor = primaryColor.withValues(alpha: 0.7);
+        
+        return {
+          'primary': primaryColor,
+          'secondary': secondaryColor,
+          'accent': primaryColor.withValues(alpha: 0.1), // Light background color
+        };
+      } catch (e) {
+        debugPrint('⚠️ RetailersProvider: Fehler beim Parsen der Farben für $retailerName');
+      }
+    }
+    
+    // Fallback zu Standard-Farben
+    return {
+      'primary': const Color(0xFF2E8B57), // SeaGreen
+      'secondary': const Color(0xFF228B22), // ForestGreen
+      'accent': const Color(0xFFF0FFF0), // Honeydew
+    };
+  }
+  
+  /// Findet den Händler zu einer bestimmten Filiale
+  Retailer? getRetailerByStore(Store store) {
+    // Suche anhand des retailerId in der Store
+    if (store.retailerId.isNotEmpty) {
+      try {
+        return _allRetailers.firstWhere(
+          (r) => r.id == store.retailerId,
+        );
+      } catch (e) {
+        debugPrint('⚠️ RetailersProvider: Händler für Store ${store.id} nicht gefunden');
+      }
+    }
+    
+    // Fallback: Suche anhand des Namens
+    final storeName = store.name.toLowerCase();
+    try {
+      return _allRetailers.firstWhere(
+        (r) => storeName.contains(r.name.toLowerCase()),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  /// Gibt Icon-URL für kleinere Darstellungen zurück
+  String getRetailerIcon(String retailerName) {
+    final retailer = getRetailerDetails(retailerName);
+    if (retailer != null && retailer.iconUrl != null && retailer.iconUrl!.isNotEmpty) {
+      return retailer.iconUrl!;
+    }
+    
+    // Fallback zu Logo oder generischem Icon
+    return getRetailerLogo(retailerName);
+  }
+  
+  /// Gibt den Display-Namen eines Händlers zurück (z.B. "ALDI SÜD" statt "ALDI")
+  String getRetailerDisplayName(String retailerName) {
+    final retailer = getRetailerDetails(retailerName);
+    return retailer?.displayName ?? retailerName;
+  }
+  
+  /// Gibt den Slogan eines Händlers zurück falls vorhanden
+  String? getRetailerSlogan(String retailerName) {
+    final retailer = getRetailerDetails(retailerName);
+    return retailer?.slogan;
+  }
+  
+  // ============ Ende TASK 11.1 ============
+  
   /// Sucht Händler nach Namen
   Future<Retailer?> getRetailerByName(String name) async {
     try {
@@ -319,6 +435,7 @@ class RetailersProvider extends ChangeNotifier {
   /// Cache-Management
   void clearCache() {
     _plzRetailerCache.clear();
+    _retailerDetailsCache.clear(); // Task 11.1: Details-Cache auch leeren
     debugPrint('🧹 RetailersProvider: Cache geleert');
   }
   

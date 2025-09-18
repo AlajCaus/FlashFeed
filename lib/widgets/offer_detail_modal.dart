@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../models/models.dart';
-import '../providers/offers_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/retailers_provider.dart';
 
@@ -46,12 +45,10 @@ class _OfferDetailModalState extends State<OfferDetailModal> {
   
   // Design System Colors
   static const Color primaryGreen = Color(0xFF2E8B57);
-  static const Color primaryRed = Color(0xFFDC143C);
   static const Color secondaryOrange = Color(0xFFFF6347);
   static const Color textSecondary = Color(0xFF666666);
   static const Color borderColor = Color(0xFFE0E0E0);
   static const Color savingsBg = Color(0xFFE8F5E9);
-  static const Color savingsText = Color(0xFF2E7D32);
   
   // Retailer Colors
   static const Map<String, Color> retailerColors = {
@@ -151,12 +148,12 @@ Gefunden mit FlashFeed!
       longitude: 13.4050,
       phoneNumber: '030-12345678',
       openingHours: {
-        'Montag': OpeningHours.standard(8, 0, 20, 0),
-        'Dienstag': OpeningHours.standard(8, 0, 20, 0),
-        'Mittwoch': OpeningHours.standard(8, 0, 20, 0),
-        'Donnerstag': OpeningHours.standard(8, 0, 20, 0),
-        'Freitag': OpeningHours.standard(8, 0, 20, 0),
-        'Samstag': OpeningHours.standard(8, 0, 20, 0),
+        'Montag': OpeningHours.custom(8, 0, 20, 0),
+        'Dienstag': OpeningHours.custom(8, 0, 20, 0),
+        'Mittwoch': OpeningHours.custom(8, 0, 20, 0),
+        'Donnerstag': OpeningHours.custom(8, 0, 20, 0),
+        'Freitag': OpeningHours.custom(8, 0, 20, 0),
+        'Samstag': OpeningHours.custom(8, 0, 20, 0),
         'Sonntag': OpeningHours.closed(),
       },
       services: ['Bäckerei', 'Metzgerei'],

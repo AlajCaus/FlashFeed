@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../models/models.dart';
-import '../providers/user_provider.dart';
-import '../providers/offers_provider.dart';
 import '../utils/responsive_helper.dart';
 
 /// OfferComparisonCard - Preisvergleich-Karte für Angebote

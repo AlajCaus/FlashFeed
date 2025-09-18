@@ -861,7 +861,88 @@ Task 5c bereitet State-Management für Tasks 9-10 vor:
 - Async LocalStorageService Initialisierung implementiert
 
 
-#### **Task 11: Retailer Management**
+#### **Task 11: Retailer Management** 🔄 **IN PLANUNG**
+
+**📋 DETAILLIERTER IMPLEMENTIERUNGSPLAN:**
+
+**Task 11.1: RetailerProvider Erweiterung**
+- [ ] `lib/providers/retailers_provider.dart` erweitern um Retailer-Detail-Management
+- [ ] Methode `getRetailerDetails(String retailerName)` für einzelne Händler-Infos
+- [ ] Methode `getRetailerLogo(String retailerName)` für Logo-URLs
+- [ ] Methode `getRetailerBranding()` für Farben und Styling
+- [ ] Cache für Retailer-Details implementieren
+
+**Task 11.2: Händler-Logos & Branding Integration**
+- [ ] Logo-URLs zu Retailer Model hinzufügen (`logoUrl`, `iconUrl`)
+- [ ] Branding-Farben definieren (primaryColor, secondaryColor)
+- [ ] Display-Namen vs interne Namen ("ALDI SÜD" → "ALDI")
+- [ ] MockDataService mit realistischen Logo-URLs erweitern
+- [ ] Fallback-Icons für fehlende Logos
+
+**Task 11.3: Öffnungszeiten System**
+- [ ] OpeningHours Model erweitern (Montag-Sonntag, Feiertage)
+- [ ] `isOpenNow()` Methode mit aktueller Zeit-Prüfung
+- [ ] `getNextOpeningTime()` für "Öffnet in X Stunden"
+- [ ] Sonderöffnungszeiten (Feiertage, Events)
+- [ ] Integration in Store Model
+
+**Task 11.4: Filial-Suche Funktionalität**
+- [ ] `searchStores(String query, {String? plz, double? radius})` Methode
+- [ ] Suche nach: Name, Adresse, PLZ, Services
+- [ ] Sortierung nach Entfernung vom User-Standort
+- [ ] Filter: Nur offene Filialen, mit bestimmten Services
+- [ ] Fuzzy-Search für Tippfehler-Toleranz
+
+**Task 11.5: Erweiterte regionale Verfügbarkeitsprüfung**
+- [ ] `getNearbyRetailers(String plz, double radiusKm)` implementieren
+- [ ] `getRetailerCoverage(String retailerName)` für Abdeckungs-Statistik
+- [ ] `findAlternativeRetailers(String plz, String preferredRetailer)` für Alternativen
+- [ ] Regionale Besonderheiten (z.B. EDEKA regional unterschiedlich)
+- [ ] Integration mit LocationProvider Callbacks
+
+**Task 11.6: UI Widgets für Retailer Management**
+- [ ] `lib/widgets/retailer_logo.dart` - Logo Widget mit Fallback
+- [ ] `lib/widgets/store_opening_hours.dart` - Öffnungszeiten-Anzeige
+- [ ] `lib/widgets/retailer_selector.dart` - Händler-Auswahl mit Logos
+- [ ] `lib/widgets/store_search_bar.dart` - Filial-Suchleiste
+- [ ] `lib/widgets/retailer_availability_card.dart` - Verfügbarkeits-Info
+
+**Task 11.7: Testing**
+- [ ] Unit Tests für alle neuen RetailerProvider Methoden
+- [ ] Widget Tests für neue UI-Komponenten
+- [ ] Integration Tests für Filial-Suche
+- [ ] Performance Tests für Cache-System
+
+**🔧 TECHNISCHE DETAILS:**
+- RetailerProvider ist bereits vorhanden (Task 5c.3)
+- MockRetailersRepository nutzen und erweitern
+- PLZHelper Service für regionale Logik verwenden
+- Haversine-Formel für Entfernungsberechnung
+
+**⏱️ GESCHÄTZTER AUFWAND:**
+- Task 11.1: 30 Minuten (Provider-Erweiterung)
+- Task 11.2: 45 Minuten (Logos & Branding)
+- Task 11.3: 45 Minuten (Öffnungszeiten)
+- Task 11.4: 60 Minuten (Filial-Suche)
+- Task 11.5: 30 Minuten (Regionale Checks)
+- Task 11.6: 90 Minuten (UI Widgets)
+- Task 11.7: 60 Minuten (Testing)
+- **Gesamt: ~6 Stunden**
+
+**🚨 ABHÄNGIGKEITEN:**
+- RetailersProvider (Task 5c.3) ✅ Vorhanden
+- LocationProvider (Task 5b) ✅ Vorhanden
+- MockDataService (Task 5) ✅ Vorhanden
+- ResponsiveHelper (Task 6.6) ✅ Vorhanden
+
+**📝 IMPLEMENTIERUNGSREIHENFOLGE:**
+1. Erst Retailer Model erweitern (logos, branding)
+2. RetailerProvider Methoden implementieren
+3. Öffnungszeiten-System aufbauen
+4. Filial-Suche implementieren
+5. UI Widgets erstellen
+6. Tests schreiben
+
 - [ ] RetailerProvider für Händler-Daten
 - [ ] Händler-Logos & Branding (mit displayName + iconUrl)
 - [ ] Öffnungszeiten Integration
