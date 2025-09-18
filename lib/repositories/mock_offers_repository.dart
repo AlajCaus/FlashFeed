@@ -14,6 +14,9 @@ class MockOffersRepository implements OffersRepository {
   
   // Helper to get the correct service
   MockDataService get _dataService => _testService ?? mockDataService;
+  
+  // Expose mockDataService for testing
+  MockDataService get mockDataService => _dataService;
   static final List<Offer> _mockOffers = [
     // EDEKA Angebote
     Offer(

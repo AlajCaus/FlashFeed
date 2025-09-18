@@ -50,9 +50,11 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Factory constructor with mock repository (backwards-compatible)
-  OffersProvider.mock({MockDataService? testService}) 
-      : _offersRepository = MockOffersRepository(testService: testService) {
-    _initializeCallbacks(testService);
+  OffersProvider.mock({MockDataService? testService, int? seed}) 
+      : _offersRepository = MockOffersRepository(
+          testService: testService ?? MockDataService(seed: seed)
+        ) {
+    _initializeCallbacks(testService ?? (_offersRepository as MockOffersRepository).mockDataService);
   }
   
   // Initialize Provider-Callbacks with optional test service
@@ -460,6 +462,7 @@ class OffersProvider extends ChangeNotifier {
   void searchWithCategoryAwareness(String query) {
     _searchQuery = query;
     _useCategoryAwareSearch = true;
+    _useFuzzySearch = false; // Reset other search modes
     _applyFilters();
   }
   
@@ -537,6 +540,7 @@ class OffersProvider extends ChangeNotifier {
       if (_useCategoryAwareSearch) {
         // Category-aware search (e.g., "Obst Banane")
         filtered = _searchService.categoryAwareSearch(filtered, _searchQuery);
+        _useCategoryAwareSearch = false; // Reset flag after use
       } else if (_useFuzzySearch) {
         // Fuzzy search (e.g., "Joghrt" finds "Joghurt")
         filtered = _searchService.fuzzySearch(
@@ -544,6 +548,7 @@ class OffersProvider extends ChangeNotifier {
           _searchQuery, 
           maxDistance: _fuzzySearchTolerance
         );
+        _useFuzzySearch = false; // Reset flag after use
       } else if (_searchQuery.contains(' ')) {
         // Multi-term search if query contains spaces
         filtered = _searchService.multiTermSearch(filtered, _searchQuery);

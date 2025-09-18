@@ -48,15 +48,41 @@ class SearchService {
       // Find minimum distance to any word in the offer
       int minDistance = 999;
       for (final word in words) {
+        // Check exact substring match first
+        if (word.contains(queryLower)) {
+          minDistance = 0;
+          break;
+        }
+        
+        // Check whole word distance
         final distance = _levenshteinDistance(queryLower, word);
         if (distance < minDistance) {
           minDistance = distance;
         }
         
-        // Also check if query is substring (distance 0)
-        if (word.contains(queryLower)) {
-          minDistance = 0;
-          break;
+        // NEW: Check for fuzzy substring matches within the word
+        // This handles cases like "mlch" matching "milch" in "vollmilch"
+        if (word.length > queryLower.length) {
+          // Try sliding windows of similar length to query
+          for (int i = 0; i <= word.length - queryLower.length; i++) {
+            // Check substring of exact query length
+            if (i + queryLower.length <= word.length) {
+              final substring = word.substring(i, i + queryLower.length);
+              final substringDist = _levenshteinDistance(queryLower, substring);
+              if (substringDist < minDistance) {
+                minDistance = substringDist;
+              }
+            }
+            
+            // Check substring with 1 extra character (for missing letters)
+            if (i + queryLower.length + 1 <= word.length) {
+              final substring = word.substring(i, i + queryLower.length + 1);
+              final substringDist = _levenshteinDistance(queryLower, substring);
+              if (substringDist < minDistance) {
+                minDistance = substringDist;
+              }
+            }
+          }
         }
       }
       
@@ -73,67 +99,108 @@ class SearchService {
   }
 
   // Task 9.3.3: Category-Aware Search
-  // "Obst Banane" sucht nur in Obst-Kategorie
+  // "Obst Banane" sucht nur in Obst-Kategorie  
   List<Offer> categoryAwareSearch(List<Offer> offers, String searchQuery) {
     if (searchQuery.isEmpty) return offers;
     
-    final terms = searchQuery.toLowerCase().trim().split(' ');
+    final queryLower = searchQuery.toLowerCase().trim();
+    final terms = queryLower.split(' ').where((t) => t.isNotEmpty).toList();
+    
     if (terms.isEmpty) return offers;
     
-    // Check if first term matches a category
+    // Find matching category - ONLY THE FIRST ONE
     String? detectedCategory;
-    List<String> searchTerms = List.from(terms);
+    final remainingTerms = <String>[];
     
-    // Get all FlashFeed categories
-    final categories = ProductCategoryMapping.flashFeedCategories
-        .map((c) => c.toLowerCase())
-        .toList();
-    
-    // Check if any term matches a category
     for (int i = 0; i < terms.length; i++) {
       final term = terms[i];
       
-      // Check exact match
-      if (categories.contains(term)) {
-        detectedCategory = ProductCategoryMapping.flashFeedCategories
-            .firstWhere((c) => c.toLowerCase() == term);
-        searchTerms.remove(term);
-        break;
+      // If we already found a category, treat all remaining terms as search terms
+      if (detectedCategory != null) {
+        remainingTerms.add(term);
+        continue;
       }
       
-      // Check partial match (e.g., "Milch" matches "Milchprodukte")
-      final matchingCategory = categories.firstWhere(
-        (cat) => cat.contains(term) || term.contains(cat),
-        orElse: () => '',
-      );
+      bool isCategory = false;
       
-      if (matchingCategory.isNotEmpty) {
-        detectedCategory = ProductCategoryMapping.flashFeedCategories
-            .firstWhere((c) => c.toLowerCase() == matchingCategory);
-        searchTerms.remove(term);
-        break;
+      // Check each FlashFeed category
+      for (final category in ProductCategoryMapping.flashFeedCategories) {
+        final catLower = category.toLowerCase();
+        
+        // Exact match
+        if (catLower == term) {
+          detectedCategory = category;
+          isCategory = true;
+          break;
+        }
+        
+        // Check words in category name (but NOT splitting on hyphen)
+        final catWords = catLower
+            .replaceAll('&', ' ')
+            .split(' ')
+            .where((w) => w.trim().isNotEmpty)
+            .map((w) => w.trim())
+            .toList();
+            
+        for (final catWord in catWords) {
+          // Exact word match
+          if (catWord == term) {
+            detectedCategory = category;
+            isCategory = true;
+            break;
+          }
+          // Check if category word starts with term (for partial matches like "milch" in "milchprodukte")
+          // But NOT for hyphenated words like "bio-produkte"
+          if (!catWord.contains('-') && catWord.length > 3 && catWord.startsWith(term) && term.length >= 3) {
+            detectedCategory = category;
+            isCategory = true;
+            break;
+          }
+        }
+        
+        if (isCategory) break;
+      }
+      
+      if (!isCategory) {
+        remainingTerms.add(term);
+      } else {
+        // All remaining terms after the category are search terms
+        for (int j = i + 1; j < terms.length; j++) {
+          remainingTerms.add(terms[j]);
+        }
+        break; // Stop processing terms once we found a category
       }
     }
     
-    // Filter by category first if detected
-    List<Offer> filteredOffers = offers;
+    // If a category was detected, filter by it first
+    List<Offer> result = offers;
     if (detectedCategory != null) {
-      filteredOffers = offers.where((offer) {
-        final offerCategory = ProductCategoryMapping.mapToFlashFeedCategory(
+      // Filter by category
+      result = offers.where((offer) {
+        final mapped = ProductCategoryMapping.mapToFlashFeedCategory(
           offer.retailer,
           offer.originalCategory,
         );
-        return offerCategory == detectedCategory;
+        return mapped == detectedCategory;
+      }).toList();
+      
+      // Then filter by remaining terms in product name only
+      if (remainingTerms.isNotEmpty) {
+        result = result.where((offer) {
+          final productName = offer.productName.toLowerCase();
+          return remainingTerms.every((term) => productName.contains(term));
+        }).toList();
+      }
+    } else {
+      // No category detected - search all terms in full searchable text
+      // This handles cases like "EDEKA" or other non-category searches
+      result = offers.where((offer) {
+        final searchText = _getSearchableText(offer).toLowerCase();
+        return terms.every((term) => searchText.contains(term));
       }).toList();
     }
     
-    // Then search within the filtered results
-    if (searchTerms.isNotEmpty) {
-      final remainingQuery = searchTerms.join(' ');
-      return multiTermSearch(filteredOffers, remainingQuery);
-    }
-    
-    return filteredOffers;
+    return result;
   }
 
   // Task 9.3.4: Enhanced Search Suggestions with Categories
@@ -227,20 +294,28 @@ class SearchService {
   List<Offer> advancedSearch(List<Offer> offers, String searchQuery) {
     if (searchQuery.isEmpty) return offers;
     
-    // Try category-aware search first
+    // Try category-aware search first (handles "Obst Bio" correctly)
     var results = categoryAwareSearch(offers, searchQuery);
     
-    // If no results, try fuzzy search
-    if (results.isEmpty) {
-      results = fuzzySearch(offers, searchQuery, maxDistance: 2);
+    // If category search returned results, use them
+    if (results.isNotEmpty) {
+      return results;
     }
     
-    // If still no results, try more lenient fuzzy search
-    if (results.isEmpty) {
-      results = fuzzySearch(offers, searchQuery, maxDistance: 3);
+    // If no results, try multi-term search (handles "Bio Milch")
+    results = multiTermSearch(offers, searchQuery);
+    if (results.isNotEmpty) {
+      return results;
     }
     
-    return results;
+    // If still no results, try fuzzy search
+    results = fuzzySearch(offers, searchQuery, maxDistance: 2);
+    if (results.isNotEmpty) {
+      return results;
+    }
+    
+    // Last resort: more lenient fuzzy search
+    return fuzzySearch(offers, searchQuery, maxDistance: 3);
   }
 
   // Helper: Get all searchable text from an offer
@@ -250,7 +325,16 @@ class SearchService {
       offer.originalCategory,
     );
     
-    return '${offer.productName} ${offer.retailer} $category ${offer.storeAddress ?? ''}';
+    // Include all searchable fields: product name, retailer, category, and address
+    // Make sure everything is properly spaced
+    final parts = [
+      offer.productName,
+      offer.retailer,
+      category,
+      offer.storeAddress ?? '',
+    ];
+    
+    return parts.where((p) => p.isNotEmpty).join(' ');
   }
 
   // Helper: Calculate Levenshtein distance for fuzzy matching

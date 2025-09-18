@@ -27,6 +27,7 @@ class ProductCategoryMapping {
       'Frischfleisch': 'Fleisch & Wurst',
       'Obst': 'Obst & Gemüse',
       'Gemüse': 'Obst & Gemüse',
+      'Obst & Gemüse': 'Obst & Gemüse',  // FIX: Add mapping for combined category
       'Backwaren': 'Brot & Backwaren',
       'Getränke': 'Getränke',
       'Tiefkühlprodukte': 'Tiefkühl',
@@ -38,6 +39,7 @@ class ProductCategoryMapping {
       'Fertigprodukte': 'Fertiggerichte',
       'Wurst & Aufschnitt': 'Fleisch & Wurst',
       'Käse & Feinkost': 'Milchprodukte',
+      'Milchprodukte': 'Milchprodukte',  // Für Tests: direkte Milchprodukte
     },
     
     'REWE': {
@@ -46,6 +48,7 @@ class ProductCategoryMapping {
       'Fleisch & Geflügel': 'Fleisch & Wurst',
       'Frisches Obst': 'Obst & Gemüse',
       'Frisches Gemüse': 'Obst & Gemüse',
+      'Obst & Gemüse': 'Obst & Gemüse',  // FIX: Add mapping for combined category
       'Brot & Bäckerei': 'Brot & Backwaren',
       'Getränke & Alkohol': 'Getränke',
       'Tiefgekühltes': 'Tiefkühl',
@@ -57,6 +60,7 @@ class ProductCategoryMapping {
       'Convenience': 'Fertiggerichte',
       'Wurstwaren': 'Fleisch & Wurst',
       'Molkerei & Eier': 'Milchprodukte',
+      'Milchprodukte': 'Milchprodukte',  // Für Tests: direkte Milchprodukte
     },
     
     'ALDI': {
@@ -73,6 +77,41 @@ class ProductCategoryMapping {
       'Wurst & Käse': 'Fleisch & Wurst',
       'Simply V': 'Bio-Produkte',
       'Ready Meals': 'Fertiggerichte',
+      'Obst': 'Obst & Gemüse',  // Für Tests: einzelnes 'Obst' auch unterstützen
+    },
+    
+    'ALDI SÜD': {
+      // ALDI SÜD Kategorien - Discounter-Sortiment (gleiche wie ALDI)
+      'Milcherzeugnisse': 'Milchprodukte',
+      'Frischfleisch': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Obst': 'Obst & Gemüse',  // Für Tests: einzelnes 'Obst' auch unterstützen
+      'Backwaren': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefkühl': 'Tiefkühl',
+      'Konserven': 'Konserven',
+      'Süßigkeiten': 'Süßwaren',
+      'Non-Food': 'Haushalt',
+      'Wurst & Käse': 'Fleisch & Wurst',
+      'Simply V': 'Bio-Produkte',
+      'Ready Meals': 'Fertiggerichte',
+    },
+    
+    'NETTO': {
+      // NETTO (alternative Schreibweise)
+      'Getränke': 'Getränke',
+      'Konserven': 'Konserven',
+      'Molkereiprodukte': 'Milchprodukte',
+      'Fleisch & Wurst': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Obst': 'Obst & Gemüse',  // Für Tests
+      'Backshop': 'Brot & Backwaren',
+      'Tiefkühlkost': 'Tiefkühl',
+      'Süßwaren': 'Süßwaren',
+      'Drogerieartikel': 'Drogerie',
+      'Haushaltsartikel': 'Haushalt',
+      'BioBio': 'Bio-Produkte',
+      'Fertiggerichte': 'Fertiggerichte',
     },
     
     'Netto Marken-Discount': {
@@ -89,6 +128,21 @@ class ProductCategoryMapping {
       'Haushaltsartikel': 'Haushalt',
       'BioBio': 'Bio-Produkte',
       'Fertiggerichte': 'Fertiggerichte',
+    },
+    
+    'LIDL': {
+      // LIDL Kategorien - Internationaler Discounter (Alternative Schreibweise)
+      'Backwaren': 'Brot & Backwaren',
+      'Milchprodukte': 'Milchprodukte',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Fleisch & Geflügel': 'Fleisch & Wurst',
+      'Getränke': 'Getränke',
+      'Tiefkühlprodukte': 'Tiefkühl',
+      'Konserven': 'Konserven',
+      'Süßwaren': 'Süßwaren',
+      'Haushalt': 'Haushalt',
+      'Natür': 'Bio-Produkte',
+      'Sofort genießen': 'Fertiggerichte',
     },
     
     'Lidl': {
@@ -191,7 +245,37 @@ class ProductCategoryMapping {
 
   // Hilfsfunktion: Händler-Kategorie zu FlashFeed-Kategorie
   static String mapToFlashFeedCategory(String retailer, String originalCategory) {
-    return categoryMappings[retailer]?[originalCategory] ?? 'Sonstiges';
+    // Direkte Übereinstimmung prüfen
+    final directMapping = categoryMappings[retailer]?[originalCategory];
+    if (directMapping != null) {
+      return directMapping;
+    }
+    
+    // Fallback: Normalisierte Retailer-Namen versuchen
+    // Z.B. 'ALDI SÜD' → 'ALDI', 'NETTO' statt 'Netto Marken-Discount'
+    if (retailer.contains('ALDI')) {
+      return categoryMappings['ALDI']?[originalCategory] ?? 'Sonstiges';
+    }
+    if (retailer.toUpperCase().contains('NETTO')) {
+      return categoryMappings['Netto Marken-Discount']?[originalCategory] ?? 'Sonstiges';
+    }
+    if (retailer.toUpperCase().contains('PENNY')) {
+      return categoryMappings['Penny']?[originalCategory] ?? 'Sonstiges';
+    }
+    if (retailer.toUpperCase().contains('KAUFLAND')) {
+      return categoryMappings['Kaufland']?[originalCategory] ?? 'Sonstiges';
+    }
+    if (retailer.toUpperCase().contains('REAL')) {
+      return categoryMappings['Real']?[originalCategory] ?? 'Sonstiges';
+    }
+    if (retailer.toUpperCase().contains('GLOBUS')) {
+      return categoryMappings['Globus']?[originalCategory] ?? 'Sonstiges';
+    }
+    if (retailer.toUpperCase().contains('MARKTKAUF')) {
+      return categoryMappings['Marktkauf']?[originalCategory] ?? 'Sonstiges';
+    }
+    
+    return 'Sonstiges';
   }
 
   // Alle verfügbaren Händler

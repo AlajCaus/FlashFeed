@@ -29,7 +29,16 @@ import '../models/models.dart';
 class MockDataService {
   Timer? _flashDealTimer;
   Timer? _countdownTimer;
-  final Random _random = Random();
+  final Random _random;
+  
+  // Constructor with optional seed for deterministic testing
+  MockDataService({int? seed}) 
+    : _seed = seed,
+      _random = Random(seed ?? DateTime.now().millisecondsSinceEpoch) {
+    if (seed != null) {
+      debugPrint('🎲 MockDataService: Using seed $seed for deterministic data');
+    }
+  }
   
   // Provider Callbacks (statt BLoC Events)
   VoidCallback? _onFlashDealsUpdated;
@@ -53,6 +62,10 @@ class MockDataService {
   List<FlashDeal> get flashDeals => List.unmodifiable(_flashDeals);
   
   bool get isInitialized => _isInitialized;
+  
+  // Expose random seed for testing
+  int? _seed;
+  int? get seed => _seed;
 
   // Provider-Callback Registration
   void setFlashDealsCallback(VoidCallback callback) {
@@ -431,12 +444,15 @@ class MockDataService {
       'Obst & Gemüse': [
         {'name': 'Äpfel 1kg', 'brand': 'Bio Regional', 'price': 249},
         {'name': 'Bananen 1kg', 'brand': 'Chiquita', 'price': 179},
+        {'name': 'Bio-Äpfel Braeburn 1kg', 'brand': 'Bio Regional', 'price': 249},
+        {'name': 'Bio-Bananen 1kg', 'brand': 'Chiquita', 'price': 179},
         {'name': 'Tomaten 500g', 'brand': 'Bioland', 'price': 199},
         {'name': 'Gurken 1 Stück', 'brand': 'Regional', 'price': 89},
         {'name': 'Kartoffeln 2.5kg', 'brand': 'Linda', 'price': 299},
       ],
       'Milchprodukte': [
         {'name': 'Vollmilch 1L', 'brand': 'Landliebe', 'price': 129},
+        {'name': 'Bio-Vollmilch 1L', 'brand': 'Landliebe', 'price': 129},
         {'name': 'Joghurt Natur 500g', 'brand': 'Danone', 'price': 89},
         {'name': 'Butter 250g', 'brand': 'Kerrygold', 'price': 219},
         {'name': 'Käse Gouda 200g', 'brand': 'Meine Käserei', 'price': 189},
@@ -451,6 +467,7 @@ class MockDataService {
       'Brot & Backwaren': [
         {'name': 'Vollkornbrot 500g', 'brand': 'Harry', 'price': 189},
         {'name': 'Brötchen 6 Stück', 'brand': 'Goldähren', 'price': 149},
+        {'name': 'Milchbrötchen 4 Stück', 'brand': 'Bäckerei', 'price': 179},
         {'name': 'Croissants 4 Stück', 'brand': 'Coppenrath', 'price': 199},
       ],
       'Getränke': [
