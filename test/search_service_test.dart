@@ -49,7 +49,7 @@ void main() {
     
     group('Task 9.3.1: Multi-Term Search', () {
       test('should find products containing ALL search terms', () {
-        // Use actual MockDataService offers
+        // Now offersProvider.offers returns ALL offers (pagination removed)
         final offers = offersProvider.offers;
         
         // Search for "Bio Milch" - MockDataService has Bio-Vollmilch

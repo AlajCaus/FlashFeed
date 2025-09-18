@@ -14,11 +14,17 @@ class SearchService {
 
   // Task 9.3.1: Multi-Term Search
   // "Bio Milch" findet Produkte mit BEIDEN Keywords
+  // FIX: Handle hyphens intelligently - "Bio Milch" finds "Bio-Milch" and vice versa
   List<Offer> multiTermSearch(List<Offer> offers, String searchQuery) {
     if (searchQuery.isEmpty) return offers;
     
+    // Normalize query: treat hyphens as spaces for splitting
+    final normalizedQuery = searchQuery.toLowerCase().trim()
+        .replaceAll('-', ' ')  // Bio-Milch → Bio Milch
+        .replaceAll(RegExp(r'\s+'), ' ');  // Multiple spaces → single space
+    
     // Split query into individual terms
-    final terms = searchQuery.toLowerCase().trim().split(' ')
+    final terms = normalizedQuery.split(' ')
         .where((term) => term.isNotEmpty)
         .toList();
     
@@ -26,7 +32,10 @@ class SearchService {
     
     // Filter offers that contain ALL terms
     return offers.where((offer) {
-      final searchableText = _getSearchableText(offer).toLowerCase();
+      // Normalize searchable text the same way
+      final searchableText = _getSearchableText(offer).toLowerCase()
+          .replaceAll('-', ' ')  // Bio-Äpfel → Bio Äpfel
+          .replaceAll(RegExp(r'\s+'), ' ');  // Normalize spaces
       
       // Check if ALL terms are found in the searchable text
       return terms.every((term) => searchableText.contains(term));
@@ -35,14 +44,21 @@ class SearchService {
 
   // Task 9.3.2: Fuzzy Search with Levenshtein Distance
   // "Joghrt" findet "Joghurt"
+  // FIX: Handle hyphens - normalize for better fuzzy matching
   List<Offer> fuzzySearch(List<Offer> offers, String searchQuery, {int maxDistance = 2}) {
     if (searchQuery.isEmpty) return offers;
     
-    final queryLower = searchQuery.toLowerCase().trim();
+    // Normalize query: treat hyphens as spaces
+    final queryLower = searchQuery.toLowerCase().trim()
+        .replaceAll('-', ' ')
+        .replaceAll(RegExp(r'\s+'), ' ');
     final results = <_SearchResult>[];
     
     for (final offer in offers) {
-      final searchableText = _getSearchableText(offer).toLowerCase();
+      // Normalize searchable text the same way
+      final searchableText = _getSearchableText(offer).toLowerCase()
+          .replaceAll('-', ' ')
+          .replaceAll(RegExp(r'\s+'), ' ');
       final words = searchableText.split(' ');
       
       // Find minimum distance to any word in the offer
@@ -134,13 +150,15 @@ class SearchService {
           break;
         }
         
-        // Check words in category name (but NOT splitting on hyphen)
+        // Check words in category name (including hyphenated words)
+        // FIX: Also split on hyphens for better matching
         final catWords = catLower
-            .replaceAll('&', ' ')
-            .split(' ')
-            .where((w) => w.trim().isNotEmpty)
-            .map((w) => w.trim())
-            .toList();
+        .replaceAll('&', ' ')
+        .replaceAll('-', ' ')  // Also split hyphenated words
+        .split(' ')
+        .where((w) => w.trim().isNotEmpty)
+          .map((w) => w.trim())
+          .toList();
             
         for (final catWord in catWords) {
           // Exact word match
@@ -195,9 +213,12 @@ class SearchService {
       // No category detected - search all terms in full searchable text
       // This handles cases like "EDEKA" or other non-category searches
       result = offers.where((offer) {
-        final searchText = _getSearchableText(offer).toLowerCase();
-        return terms.every((term) => searchText.contains(term));
-      }).toList();
+      // Normalize for hyphen handling
+      final searchText = _getSearchableText(offer).toLowerCase()
+            .replaceAll('-', ' ')
+          .replaceAll(RegExp(r'\s+'), ' ');
+      return terms.every((term) => searchText.contains(term));
+    }).toList();
     }
     
     return result;
@@ -334,6 +355,9 @@ class SearchService {
       offer.storeAddress ?? '',
     ];
     
+    // Join parts and normalize for better search matching
+    // NOTE: We don't replace hyphens here to preserve original text for display
+    // Hyphen normalization happens in the search methods themselves
     return parts.where((p) => p.isNotEmpty).join(' ');
   }
 
