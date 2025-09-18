@@ -55,13 +55,13 @@ class OffersProvider extends ChangeNotifier {
   int _cacheMisses = 0;
   
   // Task 9.4.2: Pagination State
-  // NOTE: Pagination temporarily disabled for MVP - users see all offers immediately
-  // Code kept for future use when dealing with 1000+ offers
-  static const int _pageSize = 1000;
+  // Default to 1000 for production (effectively no pagination for small datasets)
+  // Can be overridden to 20 for testing via setPageSizeForTesting()
+  static int _pageSize = 1000;
   int _currentPage = 0;
   bool _hasMoreOffers = true;
   bool _isLoadingMore = false;
-  List<Offer> _displayedOffers = []; // Currently unused - pagination disabled
+  List<Offer> _displayedOffers = []; // Paginated subset
   
   // Task 9.4.3: Debounced Search
   Timer? _searchDebounceTimer;
@@ -85,6 +85,19 @@ class OffersProvider extends ChangeNotifier {
   double? _userLatitude;
   double? _userLongitude;
   
+  // Task 9.4.2: Test helper to override page size
+  @visibleForTesting
+  static void setPageSizeForTesting(int size) {
+    _pageSize = size;
+  }
+  
+  // Reset page size to default after tests
+  @visibleForTesting
+  static void resetPageSize() {
+    _pageSize = 1000;
+  }
+  
+  // Constructor
   OffersProvider(this._offersRepository) {
     _initializeCallbacks();
   }
@@ -235,7 +248,7 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Getters
-  List<Offer> get offers => _filteredOffers;  // Pagination removed - show all filtered offers
+  List<Offer> get offers => _displayedOffers.isNotEmpty ? _displayedOffers : _filteredOffers;
   List<Offer> get allOffers => _allOffers;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -685,9 +698,9 @@ class OffersProvider extends ChangeNotifier {
       debugPrint('Available retailers: $_availableRetailers');
     }
     
-    // Task 9.4.2: Pagination disabled for MVP - no need to reset
-    // _resetPagination();
-    // _updateDisplayedOffers();
+    // Task 9.4.2: Reset pagination when filters change
+    _resetPagination();
+    _updateDisplayedOffers();
     
     if (_disposed) return; // Defensive check against disposed provider
     notifyListeners();

@@ -28,6 +28,13 @@ void main() {
       testMockDataService.dispose();
     });
     
+    // Verify pagination is disabled
+    test('should show all offers without pagination', () async {
+      // Pagination is disabled for MVP - all offers should be shown
+      expect(offersProvider.hasMorePages, isFalse); // No more pages to load
+      expect(offersProvider.offers.length, equals(testMockDataService.offers.length)); // All offers visible
+    });
+    
     group('9.4.1: Filter-Result Caching', () {
       test('should cache filter results and hit cache on repeated queries', () async {
         // Arrange: Apply specific filters
