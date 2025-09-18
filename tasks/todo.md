@@ -936,12 +936,13 @@ Task 5c bereitet State-Management für Tasks 9-10 vor:
 - [x] Unit Test: Entfernungs-Sortierung
 - [x] Integration Test: Mit LocationProvider
 
-**Task 11.5: Erweiterte regionale Verfügbarkeitsprüfung**
-- [ ] `getNearbyRetailers(String plz, double radiusKm)` implementieren
-- [ ] `getRetailerCoverage(String retailerName)` für Abdeckungs-Statistik
-- [ ] `findAlternativeRetailers(String plz, String preferredRetailer)` für Alternativen
-- [ ] Regionale Besonderheiten (z.B. EDEKA regional unterschiedlich)
-- [ ] Integration mit LocationProvider Callbacks
+**Task 11.5: Erweiterte regionale Verfügbarkeitsprüfung** ✅ **ABGESCHLOSSEN**
+- [x] `getNearbyRetailers(String plz, double radiusKm)` implementiert mit Cache und Sortierung
+- [x] `getRetailerCoverage(String retailerName)` für Abdeckungs-Statistik mit regionaler Verteilung
+- [x] `findAlternativeRetailers(String plz, String preferredRetailer)` mit Scoring-System
+- [x] Regionale Besonderheiten (EDEKA-Varianten, Netto-Aliase) berücksichtigt
+- [x] Integration mit LocationProvider Callbacks funktional
+- [x] Umfassende Test-Suite mit 30+ Tests erstellt
 
 **Task 11.6: UI Widgets für Retailer Management**
 - [ ] `lib/widgets/retailer_logo.dart` - Logo Widget mit Fallback

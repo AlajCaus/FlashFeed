@@ -9,7 +9,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../repositories/retailers_repository.dart';
 import '../repositories/mock_retailers_repository.dart';
-import '../models/models.dart';
+import '../models/models.dart'; // Enthält PLZHelper
 import '../services/mock_data_service.dart';
 import 'location_provider.dart';
 
@@ -250,20 +250,426 @@ class RetailersProvider extends ChangeNotifier {
            'Verfügbar in: $regions';
   }
   
-  /// Findet Händler in der Nähe (für Alternative-Vorschläge)
-  List<Retailer> findNearbyRetailers(String plz, int radiusKm) {
-    // Vereinfachte Implementation für MVP
-    // TODO: Echte Umkreissuche mit PLZ-Datenbank
-    
+  // ============ TASK 11.5: Erweiterte regionale Verfügbarkeitsprüfung ============
+  
+  /// Findet Händler in der Nähe basierend auf PLZ und Radius
+  /// Erweiterte Version mit echter Umkreissuche
+  Future<List<Retailer>> getNearbyRetailers(String plz, double radiusKm) async {
     if (!PLZHelper.isValidPLZ(plz)) {
+      debugPrint('⚠️ getNearbyRetailers: Ungültige PLZ $plz');
       return [];
     }
     
-    // Für MVP: Gib alle bundesweiten Händler zurück
-    return _allRetailers
-        .where((r) => r.isNationwide)
-        .toList();
+    // Cache-Key für Performance
+    final cacheKey = 'nearby_${plz}_${radiusKm}km';
+    if (_nearbyRetailersCache.containsKey(cacheKey)) {
+      final cached = _nearbyRetailersCache[cacheKey]!;
+      if (DateTime.now().difference(cached.timestamp).inMinutes < 10) {
+        return cached.retailers;
+      }
+    }
+    
+    try {
+      // 1. Get coordinates for the PLZ
+      final coordinates = _getPLZCoordinates(plz);
+      if (coordinates == null) {
+        debugPrint('⚠️ Keine Koordinaten für PLZ $plz gefunden');
+        return getAvailableRetailers(plz); // Fallback to PLZ-based
+      }
+      
+      // 2. Load all stores if not loaded
+      if (_allStores.isEmpty) {
+        await _loadAllStores();
+      }
+      
+      // 3. Find all stores within radius
+      final storesInRadius = _allStores.where((store) {
+        final distance = _calculateDistance(
+          coordinates['lat']!,
+          coordinates['lng']!,
+          store.latitude,
+          store.longitude
+        );
+        return distance <= radiusKm;
+      }).toList();
+      
+      // 4. Group by retailer and get unique retailers
+      final retailersInRadius = <String>{};
+      for (final store in storesInRadius) {
+        retailersInRadius.add(store.retailerName);
+      }
+      
+      // 5. Get full retailer objects
+      final nearbyRetailers = _allRetailers.where((retailer) {
+        return retailersInRadius.contains(retailer.name) ||
+               retailersInRadius.contains(retailer.displayName);
+      }).toList();
+      
+      // 6. Sort by distance to nearest store
+      nearbyRetailers.sort((a, b) {
+        final aDistance = _getMinDistanceToRetailer(a, coordinates['lat']!, coordinates['lng']!);
+        final bDistance = _getMinDistanceToRetailer(b, coordinates['lat']!, coordinates['lng']!);
+        return aDistance.compareTo(bDistance);
+      });
+      
+      // 7. Cache result
+      _nearbyRetailersCache[cacheKey] = NearbyRetailersCacheEntry(
+        nearbyRetailers,
+        DateTime.now()
+      );
+      
+      debugPrint('✅ Found ${nearbyRetailers.length} retailers within ${radiusKm}km of PLZ $plz');
+      return nearbyRetailers;
+      
+    } catch (e) {
+      debugPrint('❌ Error in getNearbyRetailers: $e');
+      return getAvailableRetailers(plz); // Fallback
+    }
   }
+  
+  /// Gibt Abdeckungsstatistiken für einen Händler zurück
+  Map<String, dynamic> getRetailerCoverage(String retailerName) {
+    final retailer = getRetailerDetails(retailerName);
+    if (retailer == null) {
+      return {
+        'error': 'Händler nicht gefunden',
+        'retailerName': retailerName,
+      };
+    }
+    
+    // Calculate coverage statistics
+    final totalPLZInGermany = 8200; // Approximate number of PLZ in Germany
+    final storeCount = _allStores.where((s) => 
+      s.retailerName == retailerName || s.retailerName == retailer.displayName
+    ).length;
+    
+    // Regional distribution
+    final regionalDistribution = <String, int>{};
+    if (retailer.isNationwide) {
+      regionalDistribution['Bundesweit'] = storeCount;
+    } else {
+      for (final region in retailer.availableRegions) {
+        // Count stores in each region
+        final regionStores = _allStores.where((store) {
+          final storePLZ = store.zipCode;
+          final storeRegion = _getRegionName(storePLZ);
+          return (store.retailerName == retailerName || 
+                  store.retailerName == retailer.displayName) &&
+                 storeRegion.contains(region);
+        }).length;
+        
+        regionalDistribution[region] = regionStores;
+      }
+    }
+    
+    // Calculate PLZ coverage percentage
+    double coveragePercentage = 0;
+    if (retailer.isNationwide) {
+      coveragePercentage = 95.0; // Nationwide retailers cover ~95% of Germany
+    } else if (retailer.availablePLZRanges != null) {
+      int coveredPLZCount = 0;
+      for (final range in retailer.availablePLZRanges!) {
+        final start = int.tryParse(range.startPLZ) ?? 0;
+        final end = int.tryParse(range.endPLZ) ?? 0;
+        coveredPLZCount += (end - start);
+      }
+      coveragePercentage = (coveredPLZCount / totalPLZInGermany) * 100;
+    }
+    
+    // Get store services statistics
+    final servicesOffered = <String>{};
+    _allStores.where((s) => 
+      s.retailerName == retailerName || s.retailerName == retailer.displayName
+    ).forEach((store) {
+      servicesOffered.addAll(store.services);
+    });
+    
+    return {
+      'retailerName': retailer.displayName,
+      'totalStores': storeCount,
+      'isNationwide': retailer.isNationwide,
+      'coveragePercentage': coveragePercentage.toStringAsFixed(1),
+      'coveredRegions': retailer.availableRegions,
+      'regionalDistribution': regionalDistribution,
+      'totalRegions': regionalDistribution.length,
+      'servicesOffered': servicesOffered.toList(),
+      'primaryColor': retailer.primaryColor,
+      'website': retailer.website,
+      'description': retailer.description,
+    };
+  }
+  
+  /// Findet alternative Händler wenn der bevorzugte nicht verfügbar ist
+  List<Retailer> findAlternativeRetailers(String plz, String preferredRetailerName) {
+    if (!PLZHelper.isValidPLZ(plz)) {
+      debugPrint('⚠️ findAlternativeRetailers: Ungültige PLZ $plz');
+      return [];
+    }
+    
+    // Get preferred retailer details
+    final preferredRetailer = getRetailerDetails(preferredRetailerName);
+    if (preferredRetailer == null) {
+      debugPrint('⚠️ Preferred retailer "$preferredRetailerName" nicht gefunden');
+      return getAvailableRetailers(plz); // Return all available as alternatives
+    }
+    
+    // Check if preferred retailer is available
+    if (preferredRetailer.isAvailableInPLZ(plz)) {
+      debugPrint('ℹ️ $preferredRetailerName ist bereits in PLZ $plz verfügbar');
+      return []; // No alternatives needed
+    }
+    
+    // Find alternatives based on similarity
+    final availableInPLZ = getAvailableRetailers(plz);
+    final preferredCategory = _getRetailerCategory(preferredRetailerName);
+    
+    // Score each available retailer
+    final scoredAlternatives = <ScoredRetailer>[];
+    
+    for (final retailer in availableInPLZ) {
+      if (retailer.name == preferredRetailerName) continue; // Skip self
+      
+      int score = 0;
+      
+      // Category match (most important)
+      if (_getRetailerCategory(retailer.name) == preferredCategory) {
+        score += 50;
+      }
+      
+      // Price range similarity
+      if (_getPriceRange(retailer.name) == _getPriceRange(preferredRetailerName)) {
+        score += 30;
+      }
+      
+      // Product category overlap
+      final categoryOverlap = _calculateCategoryOverlap(
+        preferredRetailer.categories,
+        retailer.categories
+      );
+      score += (categoryOverlap * 20).round();
+      
+      // Services similarity
+      final servicesSimilarity = _calculateServicesSimilarity(
+        preferredRetailerName,
+        retailer.name
+      );
+      score += (servicesSimilarity * 15).round();
+      
+      // Regional chain preference (local vs national)
+      if (preferredRetailer.isNationwide == retailer.isNationwide) {
+        score += 10;
+      }
+      
+      // Add scored retailer
+      scoredAlternatives.add(ScoredRetailer(retailer, score));
+    }
+    
+    // Sort by score and return top 5
+    scoredAlternatives.sort((a, b) => b.score.compareTo(a.score));
+    
+    final alternatives = scoredAlternatives
+        .take(5)
+        .map((sr) => sr.retailer)
+        .toList();
+    
+    debugPrint('✅ Found ${alternatives.length} alternatives for $preferredRetailerName in PLZ $plz');
+    for (int i = 0; i < alternatives.length; i++) {
+      debugPrint('  ${i+1}. ${alternatives[i].displayName} (Score: ${scoredAlternatives[i].score})');
+    }
+    
+    return alternatives;
+  }
+  
+  // ============ Helper Methods for Task 11.5 ============
+  
+  /// Cache for nearby retailers
+  final Map<String, NearbyRetailersCacheEntry> _nearbyRetailersCache = {};
+  
+  /// Gets coordinates for a PLZ (simplified for MVP)
+  Map<String, double>? _getPLZCoordinates(String plz) {
+    // Integration with LocationProvider's PLZ mapping
+    // For MVP: Use major city coordinates
+    if (plz.startsWith('10') || plz.startsWith('11') || 
+        plz.startsWith('12') || plz.startsWith('13')) {
+      return {'lat': 52.520008, 'lng': 13.404954}; // Berlin
+    } else if (plz.startsWith('80') || plz.startsWith('81')) {
+      return {'lat': 48.137154, 'lng': 11.576124}; // München
+    } else if (plz.startsWith('20') || plz.startsWith('21')) {
+      return {'lat': 53.551086, 'lng': 9.993682}; // Hamburg
+    } else if (plz.startsWith('50') || plz.startsWith('51')) {
+      return {'lat': 50.937531, 'lng': 6.960279}; // Köln
+    } else if (plz.startsWith('60')) {
+      return {'lat': 50.110924, 'lng': 8.682127}; // Frankfurt
+    } else if (plz.startsWith('70')) {
+      return {'lat': 48.775845, 'lng': 9.182932}; // Stuttgart
+    } else if (plz.startsWith('01')) {
+      return {'lat': 51.050407, 'lng': 13.737262}; // Dresden
+    } else if (plz.startsWith('04')) {
+      return {'lat': 51.339695, 'lng': 12.373075}; // Leipzig
+    } else if (plz.startsWith('90')) {
+      return {'lat': 49.452030, 'lng': 11.076750}; // Nürnberg
+    } else if (plz.startsWith('40')) {
+      return {'lat': 51.227741, 'lng': 6.773456}; // Düsseldorf
+    }
+    
+    // Default: Germany center
+    return {'lat': 51.165691, 'lng': 10.451526};
+  }
+  
+  /// Gets minimum distance from coordinates to any store of a retailer
+  double _getMinDistanceToRetailer(Retailer retailer, double lat, double lng) {
+    double minDistance = double.infinity;
+    
+    for (final store in _allStores) {
+      if (store.retailerName == retailer.name || 
+          store.retailerName == retailer.displayName) {
+        final distance = _calculateDistance(
+          lat, lng,
+          store.latitude, store.longitude
+        );
+        if (distance < minDistance) {
+          minDistance = distance;
+        }
+      }
+    }
+    
+    return minDistance;
+  }
+  
+  /// Categorizes retailers (Discount, Premium, Bio, Regional)
+  String _getRetailerCategory(String retailerName) {
+    final name = retailerName.toUpperCase();
+    
+    // Discount chains
+    if (name.contains('ALDI') || name.contains('LIDL') || 
+        name.contains('PENNY') || name.contains('NETTO')) {
+      return 'Discount';
+    }
+    
+    // Premium/Full-service
+    if (name.contains('EDEKA') || name.contains('REWE') || 
+        name.contains('KAUFLAND') || name.contains('GLOBUS')) {
+      return 'Premium';
+    }
+    
+    // Bio/Organic
+    if (name.contains('BIO') || name.contains('ALNATURA') || 
+        name.contains('DENN') || name.contains('BASIC')) {
+      return 'Bio';
+    }
+    
+    // Regional
+    if (name.contains('REGIONAL') || name.contains('MARKT')) {
+      return 'Regional';
+    }
+    
+    return 'Standard';
+  }
+  
+  /// Gets price range of a retailer
+  String _getPriceRange(String retailerName) {
+    final category = _getRetailerCategory(retailerName);
+    
+    switch (category) {
+      case 'Discount':
+        return 'Niedrig';
+      case 'Premium':
+        return 'Mittel-Hoch';
+      case 'Bio':
+        return 'Hoch';
+      case 'Regional':
+        return 'Mittel';
+      default:
+        return 'Mittel';
+    }
+  }
+  
+  /// Calculates category overlap between two retailers
+  double _calculateCategoryOverlap(List<String> cat1, List<String> cat2) {
+    if (cat1.isEmpty || cat2.isEmpty) return 0.0;
+    
+    final set1 = cat1.toSet();
+    final set2 = cat2.toSet();
+    final intersection = set1.intersection(set2);
+    final union = set1.union(set2);
+    
+    return intersection.length / union.length; // Jaccard similarity
+  }
+  
+  /// Calculates services similarity between retailers
+  double _calculateServicesSimilarity(String retailer1, String retailer2) {
+    // Get all stores for each retailer
+    final stores1Services = <String>{};
+    final stores2Services = <String>{};
+    
+    for (final store in _allStores) {
+      if (store.retailerName == retailer1) {
+        stores1Services.addAll(store.services);
+      } else if (store.retailerName == retailer2) {
+        stores2Services.addAll(store.services);
+      }
+    }
+    
+    if (stores1Services.isEmpty || stores2Services.isEmpty) return 0.0;
+    
+    final intersection = stores1Services.intersection(stores2Services);
+    final union = stores1Services.union(stores2Services);
+    
+    return intersection.length / union.length;
+  }
+  
+  /// Handles regional EDEKA variations
+  String _normalizeEDEKAName(String name) {
+    // EDEKA has regional cooperatives with different names
+    final upperName = name.toUpperCase();
+    
+    if (upperName.contains('EDEKA')) {
+      // Regional EDEKA variants
+      if (upperName.contains('NORD')) return 'EDEKA Nord';
+      if (upperName.contains('SÜD') || upperName.contains('SUED')) return 'EDEKA Südbayern';
+      if (upperName.contains('WEST')) return 'EDEKA Rhein-Ruhr';
+      if (upperName.contains('MINDEN')) return 'EDEKA Minden-Hannover';
+      if (upperName.contains('ZENTRALE')) return 'EDEKA Zentrale';
+      
+      // Default EDEKA
+      return 'EDEKA';
+    }
+    
+    return name;
+  }
+  
+  /// Gets retailer aliases for matching
+  List<String> _getRetailerAliases(String retailerName) {
+    final aliases = <String>[retailerName];
+    final upper = retailerName.toUpperCase();
+    
+    // EDEKA variations
+    if (upper.contains('EDEKA')) {
+      aliases.addAll([
+        'EDEKA', 'EDEKA Center', 'EDEKA aktiv markt',
+        'EDEKA Nord', 'EDEKA Südbayern', 'EDEKA Rhein-Ruhr'
+      ]);
+    }
+    
+    // Netto variations
+    if (upper.contains('NETTO')) {
+      aliases.addAll(['Netto', 'Netto Marken-Discount', 'Netto City']);
+    }
+    
+    // REWE variations
+    if (upper.contains('REWE')) {
+      aliases.addAll(['REWE', 'REWE City', 'REWE Center']);
+    }
+    
+    // Real variations
+    if (upper.contains('REAL')) {
+      aliases.addAll(['real', 'Real', 'real,-']);
+    }
+    
+    return aliases;
+  }
+  
+  // ============ Ende Task 11.5 ============
   
   /// Task 5c.5: Cross-Provider Integration Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
@@ -766,7 +1172,7 @@ class RetailersProvider extends ChangeNotifier {
       }
       
       // Match in address
-      if (store.address.toLowerCase().contains(queryLower)) {
+      if (store.street.toLowerCase().contains(queryLower)) {
         score += 30;
       }
       
@@ -1067,4 +1473,20 @@ class SearchResult {
   final int score;
   
   SearchResult(this.store, this.score);
+}
+
+/// Helper class for scored retailers (Task 11.5)
+class ScoredRetailer {
+  final Retailer retailer;
+  final int score;
+  
+  ScoredRetailer(this.retailer, this.score);
+}
+
+/// Cache entry for nearby retailers (Task 11.5)
+class NearbyRetailersCacheEntry {
+  final List<Retailer> retailers;
+  final DateTime timestamp;
+  
+  NearbyRetailersCacheEntry(this.retailers, this.timestamp);
 }
