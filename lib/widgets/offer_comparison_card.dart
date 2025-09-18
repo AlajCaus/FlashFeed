@@ -235,7 +235,7 @@ class OfferComparisonCard extends StatelessWidget {
                       ],
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),

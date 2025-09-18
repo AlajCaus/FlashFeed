@@ -367,7 +367,7 @@ Gefunden mit FlashFeed!
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
