@@ -64,7 +64,7 @@ class MockDataService {
   bool get isInitialized => _isInitialized;
   
   // Expose random seed for testing
-  int? _seed;
+  final int? _seed;
   int? get seed => _seed;
 
   // Provider-Callback Registration

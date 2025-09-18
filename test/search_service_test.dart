@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/services/search_service.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
 import 'package:flashfeed/providers/offers_provider.dart';
-import 'package:flashfeed/models/models.dart';
 import 'package:flashfeed/data/product_category_mapping.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

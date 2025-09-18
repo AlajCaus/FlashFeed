@@ -5,7 +5,7 @@ import 'offers_repository.dart';
 import '../data/product_category_mapping.dart';
 import '../models/models.dart';
 import '../services/mock_data_service.dart';
-import '../main.dart'; // Access to global mockDataService
+// Access to global mockDataService
 
 class MockOffersRepository implements OffersRepository {
   final MockDataService? _testService; // Optional test service
