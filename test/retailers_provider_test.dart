@@ -125,19 +125,18 @@ void main() {
         
         // Non-existent retailer should return fallback
         final fallbackLogo = provider.getRetailerLogo('NonExistent');
-        expect(fallbackLogo, contains('generic_retailer'));
+        expect(fallbackLogo, contains('default_retailer'));
       });
       
       test('should get retailer brand colors', () {
         final colors = provider.getRetailerBrandColors('REWE');
         
         expect(colors, contains('primary'));
-        expect(colors, contains('secondary'));
         expect(colors, contains('accent'));
         
         // Colors should be valid Color objects
         expect(colors['primary'], isNotNull);
-        expect(colors['secondary'], isNotNull);
+        expect(colors['accent'], isNotNull);
       });
       
       test('should get retailer display name', () {

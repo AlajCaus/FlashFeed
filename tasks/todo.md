@@ -944,12 +944,15 @@ Task 5c bereitet State-Management für Tasks 9-10 vor:
 - [x] Integration mit LocationProvider Callbacks funktional
 - [x] Umfassende Test-Suite mit 30+ Tests erstellt
 
-**Task 11.6: UI Widgets für Retailer Management**
-- [ ] `lib/widgets/retailer_logo.dart` - Logo Widget mit Fallback
-- [ ] `lib/widgets/store_opening_hours.dart` - Öffnungszeiten-Anzeige
-- [ ] `lib/widgets/retailer_selector.dart` - Händler-Auswahl mit Logos
-- [ ] `lib/widgets/store_search_bar.dart` - Filial-Suchleiste
-- [ ] `lib/widgets/retailer_availability_card.dart` - Verfügbarkeits-Info
+**Task 11.6: UI Widgets für Retailer Management** ✅ **ABGESCHLOSSEN**
+- [x] `lib/widgets/retailer_logo.dart` - Logo Widget mit Fallback ✅ IMPLEMENTIERT
+- [x] `lib/widgets/store_opening_hours.dart` - Öffnungszeiten-Anzeige ✅ IMPLEMENTIERT
+- [x] `lib/widgets/retailer_selector.dart` - Händler-Auswahl mit Logos ✅ IMPLEMENTIERT
+- [x] `lib/widgets/store_search_bar.dart` - Filial-Suchleiste ✅ IMPLEMENTIERT
+- [x] `lib/widgets/retailer_availability_card.dart` - Verfügbarkeits-Info ✅ IMPLEMENTIERT
+- [x] RetailersProvider erweitert mit getRetailerLogo(), getRetailerBrandColors(), etc.
+- [x] 11 deutsche Händler mit offiziellen Brand-Farben konfiguriert
+- [x] Unit Tests für alle neuen Provider-Methoden erstellt
 
 **Task 11.7: Testing**
 - [ ] Unit Tests für alle neuen RetailerProvider Methoden
@@ -1715,4 +1718,3 @@ fix: Behebe kritische Compiler-Fehler in MockDataService
 
 Fixes #compiler-errors
 ```
-

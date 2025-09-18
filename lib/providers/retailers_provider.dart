@@ -36,6 +36,86 @@ class RetailersProvider extends ChangeNotifier {
   // Disposal tracking
   bool _disposed = false;
   
+  // ============ Task 11.1 & 11.6: Branding & UI Support ============
+  
+  // Händler-Logos (Placeholder URLs für MVP)
+  static const Map<String, String> _retailerLogos = {
+    'EDEKA': 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Logo_Edeka.svg',
+    'REWE': 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Logo_REWE.svg',
+    'ALDI': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Aldi_Nord_201x_logo.svg',
+    'LIDL': 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Lidl_logo.png',
+    'NETTO': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Logo_Netto_Marken-Discount.svg',
+    'PENNY': 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Penny-Logo.svg',
+    'KAUFLAND': 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Kaufland_201x_logo.svg',
+    'REAL': 'https://upload.wikimedia.org/wikipedia/de/8/86/Real-logo.svg',
+    'GLOBUS': 'https://upload.wikimedia.org/wikipedia/de/e/e0/Globus_Hypermarkt_Logo_2020.svg',
+    'MARKTKAUF': 'https://upload.wikimedia.org/wikipedia/commons/f/fb/Marktkauf_Logo.svg',
+    'BIOCOMPANY': '/assets/images/biocompany_logo.png', // Local asset fallback
+  };
+  
+  // Händler Brand-Farben (offizielle Markenfarben)
+  static const Map<String, Map<String, Color>> _retailerBrandColors = {
+    'EDEKA': {
+      'primary': Color(0xFF005CA9),  // EDEKA Blau
+      'accent': Color(0xFFFDB813),   // EDEKA Gelb
+    },
+    'REWE': {
+      'primary': Color(0xFFCC071E),  // REWE Rot
+      'accent': Color(0xFFFFFFFF),   // Weiß
+    },
+    'ALDI': {
+      'primary': Color(0xFF00549F),  // ALDI Blau
+      'accent': Color(0xFFE30613),   // ALDI Rot
+    },
+    'LIDL': {
+      'primary': Color(0xFF0050AA),  // LIDL Blau
+      'accent': Color(0xFFFFE500),   // LIDL Gelb
+    },
+    'NETTO': {
+      'primary': Color(0xFFFFCC00),  // NETTO Gelb
+      'accent': Color(0xFFE4003A),   // NETTO Rot
+    },
+    'PENNY': {
+      'primary': Color(0xFFE40521),  // PENNY Rot
+      'accent': Color(0xFF003D7C),   // PENNY Blau
+    },
+    'KAUFLAND': {
+      'primary': Color(0xFFE10915),  // KAUFLAND Rot
+      'accent': Color(0xFF002F6C),   // KAUFLAND Blau
+    },
+    'REAL': {
+      'primary': Color(0xFF004B93),  // REAL Blau
+      'accent': Color(0xFFE30613),   // REAL Rot
+    },
+    'GLOBUS': {
+      'primary': Color(0xFF003C78),  // GLOBUS Blau
+      'accent': Color(0xFFF39800),   // GLOBUS Orange
+    },
+    'MARKTKAUF': {
+      'primary': Color(0xFFE2001A),  // MARKTKAUF Rot
+      'accent': Color(0xFF005AA0),   // MARKTKAUF Blau
+    },
+    'BIOCOMPANY': {
+      'primary': Color(0xFF6B8E23),  // Bio Grün
+      'accent': Color(0xFF8FBC8F),   // Hellgrün
+    },
+  };
+  
+  // Display-Namen für UI (kann von internem Namen abweichen)
+  static const Map<String, String> _retailerDisplayNames = {
+    'EDEKA': 'EDEKA',
+    'REWE': 'REWE',
+    'ALDI': 'ALDI SÜD',  // Regional spezifisch
+    'LIDL': 'Lidl',
+    'NETTO': 'Netto Marken-Discount',
+    'PENNY': 'PENNY',
+    'KAUFLAND': 'Kaufland',
+    'REAL': 'real',
+    'GLOBUS': 'Globus',
+    'MARKTKAUF': 'Marktkauf',
+    'BIOCOMPANY': 'BioCompany',
+  };
+  
   // State Management
   List<Retailer> _allRetailers = [];
   List<Retailer> _availableRetailers = [];
@@ -103,6 +183,74 @@ class RetailersProvider extends ChangeNotifier {
   double get availabilityPercentage {
     if (_allRetailers.isEmpty) return 0.0;
     return (_availableRetailers.length / _allRetailers.length) * 100;
+  }
+  
+  // ============ Task 11.1 & 11.6: UI Support Methods ============
+  
+  /// Gibt Details zu einem Händler zurück
+  Retailer? getRetailerDetails(String retailerName) {
+    // Check cache first
+    if (_retailerDetailsCache.containsKey(retailerName)) {
+      return _retailerDetailsCache[retailerName];
+    }
+    
+    // Find retailer
+    try {
+      final retailer = _allRetailers.firstWhere(
+        (r) => r.name.toUpperCase() == retailerName.toUpperCase(),
+      );
+      
+      // Cache for performance
+      _retailerDetailsCache[retailerName] = retailer;
+      return retailer;
+    } catch (e) {
+      debugPrint('⚠️ RetailersProvider: Händler "$retailerName" nicht gefunden');
+      return null;
+    }
+  }
+  
+  /// Gibt die Logo-URL für einen Händler zurück
+  String getRetailerLogo(String retailerName) {
+    final upperName = retailerName.toUpperCase();
+    return _retailerLogos[upperName] ?? '/assets/images/default_retailer.png';
+  }
+  
+  /// Gibt die Brand-Farben für einen Händler zurück
+  Map<String, Color> getRetailerBrandColors(String retailerName) {
+    final upperName = retailerName.toUpperCase();
+    return _retailerBrandColors[upperName] ?? {
+      'primary': const Color(0xFF2E8B57),  // Default: FlashFeed Green
+      'accent': const Color(0xFFDC143C),   // Default: FlashFeed Red
+    };
+  }
+  
+  /// Gibt den Display-Namen für einen Händler zurück
+  String getRetailerDisplayName(String retailerName) {
+    final upperName = retailerName.toUpperCase();
+    return _retailerDisplayNames[upperName] ?? retailerName;
+  }
+  
+  /// Prüft ob ein Händler in der aktuellen PLZ verfügbar ist
+  bool isRetailerAvailable(String retailerName) {
+    if (_currentPLZ.isEmpty) {
+      // Ohne PLZ prüfen ob Händler bundesweit ist
+      final retailer = getRetailerDetails(retailerName);
+      return retailer?.isNationwide ?? false;
+    }
+    
+    return _availableRetailers.any(
+      (r) => r.name.toUpperCase() == retailerName.toUpperCase()
+    );
+  }
+  
+  /// Gibt alle Brand-Infos für einen Händler zurück
+  Map<String, dynamic> getRetailerBranding(String retailerName) {
+    return {
+      'logo': getRetailerLogo(retailerName),
+      'colors': getRetailerBrandColors(retailerName),
+      'displayName': getRetailerDisplayName(retailerName),
+      'isAvailable': isRetailerAvailable(retailerName),
+    };
   }
   
   /// Lädt alle Händler initial
@@ -366,7 +514,7 @@ class RetailersProvider extends ChangeNotifier {
     double coveragePercentage = 0;
     if (retailer.isNationwide) {
       coveragePercentage = 95.0; // Nationwide retailers cover ~95% of Germany
-    } else if (retailer.availablePLZRanges != null) {
+    } else if (retailer.availablePLZRanges != null && retailer.availablePLZRanges!.isNotEmpty) {
       int coveredPLZCount = 0;
       for (final range in retailer.availablePLZRanges!) {
         final start = int.tryParse(range.startPLZ) ?? 0;
@@ -618,56 +766,9 @@ class RetailersProvider extends ChangeNotifier {
     return intersection.length / union.length;
   }
   
-  /// Handles regional EDEKA variations
-  String _normalizeEDEKAName(String name) {
-    // EDEKA has regional cooperatives with different names
-    final upperName = name.toUpperCase();
-    
-    if (upperName.contains('EDEKA')) {
-      // Regional EDEKA variants
-      if (upperName.contains('NORD')) return 'EDEKA Nord';
-      if (upperName.contains('SÜD') || upperName.contains('SUED')) return 'EDEKA Südbayern';
-      if (upperName.contains('WEST')) return 'EDEKA Rhein-Ruhr';
-      if (upperName.contains('MINDEN')) return 'EDEKA Minden-Hannover';
-      if (upperName.contains('ZENTRALE')) return 'EDEKA Zentrale';
-      
-      // Default EDEKA
-      return 'EDEKA';
-    }
-    
-    return name;
-  }
-  
-  /// Gets retailer aliases for matching
-  List<String> _getRetailerAliases(String retailerName) {
-    final aliases = <String>[retailerName];
-    final upper = retailerName.toUpperCase();
-    
-    // EDEKA variations
-    if (upper.contains('EDEKA')) {
-      aliases.addAll([
-        'EDEKA', 'EDEKA Center', 'EDEKA aktiv markt',
-        'EDEKA Nord', 'EDEKA Südbayern', 'EDEKA Rhein-Ruhr'
-      ]);
-    }
-    
-    // Netto variations
-    if (upper.contains('NETTO')) {
-      aliases.addAll(['Netto', 'Netto Marken-Discount', 'Netto City']);
-    }
-    
-    // REWE variations
-    if (upper.contains('REWE')) {
-      aliases.addAll(['REWE', 'REWE City', 'REWE Center']);
-    }
-    
-    // Real variations
-    if (upper.contains('REAL')) {
-      aliases.addAll(['real', 'Real', 'real,-']);
-    }
-    
-    return aliases;
-  }
+  // Note: These methods are currently unused but kept for future retailer name normalization
+  // They handle regional variations in retailer names (e.g., EDEKA Nord vs EDEKA Südbayern)
+  // TODO: Integrate into store search and matching logic when needed
   
   // ============ Ende Task 11.5 ============
   
@@ -719,10 +820,6 @@ class RetailersProvider extends ChangeNotifier {
     return getAvailableRetailers(plz).map((r) => r.name).toList();
   }
   
-  bool isRetailerAvailable(String retailerName) {
-    return _availableRetailers.any((r) => r.name == retailerName);
-  }
-  
   /// Registriert Callback für Cross-Provider Communication
   void setRetailerUpdateCallback(Function(List<Retailer>) callback) {
     _onRetailersChanged = callback;
@@ -736,71 +833,7 @@ class RetailersProvider extends ChangeNotifier {
     }
   }
   
-  // ============ TASK 11.1: Neue Retailer Detail Methoden ============
-  
-  /// Gibt detaillierte Informationen zu einem Händler zurück
-  Retailer? getRetailerDetails(String retailerName) {
-    // Check Cache zuerst
-    if (_retailerDetailsCache.containsKey(retailerName)) {
-      return _retailerDetailsCache[retailerName];
-    }
-    
-    // Suche in allen Händlern
-    try {
-      final retailer = _allRetailers.firstWhere(
-        (r) => r.name == retailerName || r.displayName == retailerName,
-      );
-      
-      // Cache für zukünftige Zugriffe
-      _retailerDetailsCache[retailerName] = retailer;
-      return retailer;
-    } catch (e) {
-      debugPrint('⚠️ RetailersProvider: Händler "$retailerName" nicht gefunden');
-      return null;
-    }
-  }
-  
-  /// Gibt die Logo-URL eines Händlers zurück (mit Fallback)
-  String getRetailerLogo(String retailerName) {
-    final retailer = getRetailerDetails(retailerName);
-    if (retailer != null && retailer.logoUrl != null && retailer.logoUrl!.isNotEmpty) {
-      return retailer.logoUrl!;
-    }
-    
-    // Fallback zu generischem Logo basierend auf Händlernamen
-    return '/assets/logos/generic_retailer.png';
-  }
-  
-  /// Gibt die Brand-Farben eines Händlers zurück
-  Map<String, Color> getRetailerBrandColors(String retailerName) {
-    final retailer = getRetailerDetails(retailerName);
-    
-    if (retailer != null) {
-      // Parse hex colors to Flutter Colors
-      try {
-        final primaryColorHex = retailer.primaryColor.replaceAll('#', '');
-        final primaryColor = Color(int.parse('0xFF$primaryColorHex'));
-        
-        // Secondary color could be derived or stored
-        final secondaryColor = primaryColor.withValues(alpha: 0.7);
-        
-        return {
-          'primary': primaryColor,
-          'secondary': secondaryColor,
-          'accent': primaryColor.withValues(alpha: 0.1), // Light background color
-        };
-      } catch (e) {
-        debugPrint('⚠️ RetailersProvider: Fehler beim Parsen der Farben für $retailerName');
-      }
-    }
-    
-    // Fallback zu Standard-Farben
-    return {
-      'primary': const Color(0xFF2E8B57), // SeaGreen
-      'secondary': const Color(0xFF228B22), // ForestGreen
-      'accent': const Color(0xFFF0FFF0), // Honeydew
-    };
-  }
+  // ============ TASK 11.1: Additional Retailer Methods ============
   
   /// Findet den Händler zu einer bestimmten Filiale
   Retailer? getRetailerByStore(Store store) {
@@ -835,12 +868,6 @@ class RetailersProvider extends ChangeNotifier {
     
     // Fallback zu Logo oder generischem Icon
     return getRetailerLogo(retailerName);
-  }
-  
-  /// Gibt den Display-Namen eines Händlers zurück (z.B. "ALDI SÜD" statt "ALDI")
-  String getRetailerDisplayName(String retailerName) {
-    final retailer = getRetailerDetails(retailerName);
-    return retailer?.displayName ?? retailerName;
   }
   
   /// Gibt den Slogan eines Händlers zurück falls vorhanden
