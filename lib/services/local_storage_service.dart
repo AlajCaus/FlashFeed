@@ -26,6 +26,7 @@ class LocalStorageService {
   static const String _userPLZKey = 'user_plz';
   static const String _plzCacheTimestampKey = 'plz_cache_timestamp';
   static const String _hasAskedForLocationKey = 'has_asked_for_location';
+  static const String _searchHistoryKey = 'search_history';
   
   /// User-PLZ speichern mit Timestamp
   /// 
@@ -133,10 +134,54 @@ class LocalStorageService {
     }
   }
   
+  /// Search History Methods
+  Future<List<String>> getSearchHistory() async {
+    try {
+      final history = _prefs!.getStringList(_searchHistoryKey) ?? [];
+      return history;
+    } catch (e) {
+      debugPrint('❌ LocalStorage Fehler beim Laden der Such-Historie: $e');
+      return [];
+    }
+  }
+  
+  Future<bool> addToSearchHistory(String query) async {
+    if (query.trim().isEmpty) return false;
+    
+    try {
+      List<String> history = _prefs!.getStringList(_searchHistoryKey) ?? [];
+      
+      // Remove if already exists (to move to top)
+      history.remove(query);
+      
+      // Add to beginning
+      history.insert(0, query);
+      
+      // Keep only last 10 searches
+      if (history.length > 10) {
+        history = history.sublist(0, 10);
+      }
+      
+      return await _prefs!.setStringList(_searchHistoryKey, history);
+    } catch (e) {
+      debugPrint('❌ LocalStorage Fehler beim Speichern der Such-Historie: $e');
+      return false;
+    }
+  }
+  
+  Future<bool> clearSearchHistory() async {
+    try {
+      return await _prefs!.remove(_searchHistoryKey);
+    } catch (e) {
+      debugPrint('❌ LocalStorage Fehler beim Löschen der Such-Historie: $e');
+      return false;
+    }
+  }
+  
   /// Gesamten Cache löschen (für Tests oder Reset)
   Future<bool> clearAll() async {
     try {
-      final keys = [_userPLZKey, _plzCacheTimestampKey, _hasAskedForLocationKey];
+      final keys = [_userPLZKey, _plzCacheTimestampKey, _hasAskedForLocationKey, _searchHistoryKey];
       final results = await Future.wait(
         keys.map((key) => _prefs!.remove(key))
       );
@@ -157,6 +202,7 @@ class LocalStorageService {
         'userPLZ': _prefs!.getString(_userPLZKey),
         'cacheTimestamp': _prefs!.getInt(_plzCacheTimestampKey),
         'hasAskedForLocation': _prefs!.getBool(_hasAskedForLocationKey),
+        'searchHistory': _prefs!.getStringList(_searchHistoryKey),
         'cacheAgeMinutes': () {
           final timestamp = _prefs!.getInt(_plzCacheTimestampKey);
           if (timestamp == null) return null;

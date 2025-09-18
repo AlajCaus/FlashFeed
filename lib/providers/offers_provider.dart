@@ -49,7 +49,7 @@ class OffersProvider extends ChangeNotifier {
   
   // Task 9.4.1: Cache Management
   final Map<String, FilterCacheEntry> _filterCache = {};
-  static const Duration _cacheTimeToLive = Duration(minutes: 5);
+  // static const Duration _cacheTimeToLive = Duration(minutes: 5); // Currently unused
   static const int _maxCacheEntries = 50;
   int _cacheHits = 0;
   int _cacheMisses = 0;
@@ -65,7 +65,7 @@ class OffersProvider extends ChangeNotifier {
   
   // Task 9.4.3: Debounced Search
   Timer? _searchDebounceTimer;
-  Duration _searchDebounceDelay = const Duration(milliseconds: 300);
+  final Duration _searchDebounceDelay = const Duration(milliseconds: 300); // Made final as suggested
   bool _isSearchPending = false;
   String _pendingSearchQuery = '';
   
@@ -249,7 +249,10 @@ class OffersProvider extends ChangeNotifier {
   
   // Getters
   List<Offer> get offers => _displayedOffers.isNotEmpty ? _displayedOffers : _filteredOffers;
+  List<Offer> get displayedOffers => _displayedOffers.isNotEmpty ? _displayedOffers : _filteredOffers; // Task 10: For pagination
   List<Offer> get allOffers => _allOffers;
+  List<Offer> get filteredOffers => _filteredOffers; // For UI components
+  int get totalOffers => _allOffers.length; // Total count for statistics
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   
@@ -371,7 +374,7 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Load Offers with regional filtering support (Task 5c.2)
-  Future<void> loadOffers({bool applyRegionalFilter = true}) async {
+  Future<void> loadOffers({bool applyRegionalFilter = true, bool forceRefresh = false}) async {
     if (_isLoading) return;
     
     _setLoading(true);
@@ -1292,45 +1295,51 @@ class OffersProvider extends ChangeNotifier {
     return counts;
   }
   
-  /// Get sort options with current counts
-  Map<String, dynamic> getSortOptions() {
+  /// Get sort options as map with named keys
+  Map<String, dynamic> getSortOptionsMap() {
     return {
       'priceAsc': {
         'label': 'Preis aufsteigend',
-        'icon': 'arrow-up',
         'description': 'Günstigste zuerst',
+        'icon': Icons.arrow_upward,
+        'value': OfferSortType.priceAsc,
         'active': _sortType == OfferSortType.priceAsc,
       },
       'priceDesc': {
         'label': 'Preis absteigend',
-        'icon': 'arrow-down', 
         'description': 'Teuerste zuerst',
+        'icon': Icons.arrow_downward,
+        'value': OfferSortType.priceDesc,
         'active': _sortType == OfferSortType.priceDesc,
       },
       'discountDesc': {
         'label': 'Höchste Rabatte',
-        'icon': 'percent',
         'description': 'Beste Deals zuerst',
+        'icon': Icons.local_offer,
+        'value': OfferSortType.discountDesc,
         'active': _sortType == OfferSortType.discountDesc,
       },
       'distanceAsc': {
         'label': 'Entfernung',
-        'icon': 'map-pin',
         'description': hasUserLocation ? 'Nächste zuerst' : 'Nach Berlin sortiert',
+        'icon': Icons.near_me,
+        'value': OfferSortType.distanceAsc,
         'active': _sortType == OfferSortType.distanceAsc,
         'hasLocation': hasUserLocation,
         'locationSource': locationSource,
       },
       'validityDesc': {
         'label': 'Läuft bald ab',
-        'icon': 'clock',
         'description': 'Nach Gültigkeit sortiert',
+        'icon': Icons.lock_clock_rounded,
+        'value': OfferSortType.validityDesc,
         'active': _sortType == OfferSortType.validityDesc,
       },
       'nameAsc': {
         'label': 'Produktname A-Z',
-        'icon': 'type',
         'description': 'Alphabetisch sortiert',
+        'icon': Icons.sort_by_alpha,
+        'value': OfferSortType.nameAsc,
         'active': _sortType == OfferSortType.nameAsc,
       },
     };
@@ -1415,7 +1424,7 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Filter Methods (for tests)
+  // Filter Methods (for tests and UI)
   void clearFilters() {
     _selectedCategory = null;
     _selectedRetailer = null;
@@ -1423,6 +1432,39 @@ class OffersProvider extends ChangeNotifier {
     _searchQuery = '';
     _maxPrice = null;
     _showOnlyWithDiscount = false;
+    _applyFilters();
+  }
+  
+  // Task 10: Enhanced Filter Methods for UI
+  void filterByCategories(List<String> categories) {
+    // For MVP, we only support single category
+    // Could be extended to support multiple categories
+    _selectedCategory = categories.isNotEmpty ? categories.first : null;
+    _applyFilters();
+  }
+  
+  void filterByRetailers(List<String> retailers) {
+    // For MVP, we only support single retailer
+    // Could be extended to support multiple retailers
+    _selectedRetailer = retailers.isNotEmpty ? retailers.first : null;
+    _applyFilters();
+  }
+  
+  void filterByPriceRange(double min, double max) {
+    _maxPrice = max;
+    // Could add _minPrice if needed
+    _applyFilters();
+  }
+  
+  void filterByMinDiscount(double minDiscount) {
+    _showOnlyWithDiscount = minDiscount > 0;
+    // Could add _minDiscountPercent field for more precision
+    _applyFilters();
+  }
+  
+  void setRegionalFilter(bool onlyAvailable) {
+    // This is already handled by regional filtering
+    // Could add a flag to show/hide unavailable offers
     _applyFilters();
   }
   
@@ -1511,6 +1553,27 @@ class OffersProvider extends ChangeNotifier {
     // For now, first 3 offers are free, rest locked
     return index >= 3;
   }
+  
+  // Convert sort options map to list for UI
+  List<Map<String, dynamic>> getSortOptions() {
+    final optionsMap = getSortOptionsMap();
+    final List<Map<String, dynamic>> optionsList = [];
+    
+    // Convert map entries to list, rename 'active' to 'status'
+    optionsMap.forEach((key, value) {
+      final mapEntry = value as Map<String, dynamic>;
+      optionsList.add({
+        'label': mapEntry['label'],
+        'icon': mapEntry['icon'],  // Already IconData!
+        'value': mapEntry['value'], // Already OfferSortType!
+        'status': mapEntry['active'], // Just rename
+      });
+    });
+    
+    return optionsList;
+  }
+  
+
   
   @override
   void dispose() {
