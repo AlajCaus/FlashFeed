@@ -286,7 +286,36 @@ class Store {
   
   /// Ist die Filiale jetzt geöffnet?
   bool get isOpenNow => isOpenAt(DateTime.now());
-  
+
+  /// Gibt den nächsten Öffnungszeitpunkt zurück (null wenn immer geschlossen)
+  DateTime? getNextOpeningTime() {
+    final now = DateTime.now();
+
+    // Überprüfe heute und die nächsten 7 Tage
+    for (int dayOffset = 0; dayOffset < 7; dayOffset++) {
+      final checkDate = now.add(Duration(days: dayOffset));
+      final weekdayStr = _getWeekdayString(checkDate.weekday);
+      final hours = openingHours[weekdayStr];
+
+      if (hours == null || hours.isClosed) continue;
+
+      final openTime = DateTime(
+        checkDate.year,
+        checkDate.month,
+        checkDate.day,
+        hours.openMinutes ~/ 60,
+        hours.openMinutes % 60,
+      );
+
+      // Wenn heute und öffnet später, oder zukünftiger Tag
+      if (openTime.isAfter(now)) {
+        return openTime;
+      }
+    }
+
+    return null; // Immer geschlossen oder keine Öffnungszeiten
+  }
+
   String _getWeekdayString(int weekday) {
     switch (weekday) {
       case 1: return 'Montag';

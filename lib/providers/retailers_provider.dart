@@ -514,9 +514,9 @@ class RetailersProvider extends ChangeNotifier {
     double coveragePercentage = 0;
     if (retailer.isNationwide) {
       coveragePercentage = 95.0; // Nationwide retailers cover ~95% of Germany
-    } else if (retailer.availablePLZRanges != null && retailer.availablePLZRanges!.isNotEmpty) {
+    } else if (retailer.availablePLZRanges.isNotEmpty) {
       int coveredPLZCount = 0;
-      for (final range in retailer.availablePLZRanges!) {
+      for (final range in retailer.availablePLZRanges) {
         final start = int.tryParse(range.startPLZ) ?? 0;
         final end = int.tryParse(range.endPLZ) ?? 0;
         coveredPLZCount += (end - start);
