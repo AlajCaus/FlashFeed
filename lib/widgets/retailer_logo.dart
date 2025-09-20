@@ -51,12 +51,18 @@ class RetailerLogo extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return Consumer<RetailersProvider>(
-      builder: (context, retailersProvider, child) {
-        final logoUrl = retailersProvider.getRetailerLogo(retailerName);
-        final brandColors = retailersProvider.getRetailerBrandColors(retailerName);
-        final displayName = retailersProvider.getRetailerDisplayName(retailerName);
-        
+    // Task 18.1: Optimized with Selector - only rebuilds when retailer-specific data changes
+    return Selector<RetailersProvider, Map<String, dynamic>>(
+      selector: (context, provider) => {
+        'logo': provider.getRetailerLogo(retailerName),
+        'colors': provider.getRetailerBrandColors(retailerName),
+        'displayName': provider.getRetailerDisplayName(retailerName),
+      },
+      builder: (context, data, child) {
+        final logoUrl = data['logo'] as String;
+        final brandColors = data['colors'] as Map<String, Color>;
+        final displayName = data['displayName'] as String;
+
         Widget logoWidget = Container(
           width: _logoSize,
           height: _logoSize,
@@ -75,7 +81,7 @@ class RetailerLogo extends StatelessWidget {
             child: _buildLogoContent(logoUrl, displayName, brandColors['primary']),
           ),
         );
-        
+
         if (onTap != null) {
           logoWidget = InkWell(
             onTap: onTap,
@@ -83,7 +89,7 @@ class RetailerLogo extends StatelessWidget {
             child: logoWidget,
           );
         }
-        
+
         return logoWidget;
       },
     );

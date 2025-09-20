@@ -705,13 +705,15 @@ class OffersProvider extends ChangeNotifier {
     // Task 9.4.2: Reset pagination when filters change
     _resetPagination();
     _updateDisplayedOffers();
-    
-    if (_disposed) return; // Defensive check against disposed provider
-    notifyListeners();
-    
-    // Apply sorting (async)
+
+    // Task 18.3: Only notify once after all updates complete
+    // Apply sorting (async) - will notify listeners after completion
     if (filtered.isNotEmpty) {
       _applySorting();
+    } else {
+      // Only notify if not sorting (sorting will notify)
+      if (_disposed) return;
+      notifyListeners();
     }
   }
   

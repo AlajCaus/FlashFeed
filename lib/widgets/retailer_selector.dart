@@ -62,17 +62,18 @@ class _RetailerSelectorState extends State<RetailerSelector> {
   
   @override
   Widget build(BuildContext context) {
-    return Consumer<RetailersProvider>(
-      builder: (context, retailersProvider, child) {
-        // Get retailers based on filter
-        List<Retailer> retailers = _showOnlyAvailable
-            ? retailersProvider.availableRetailers
-            : retailersProvider.allRetailers;
-        
+    // Task 18.1: Optimized with Selector - only rebuilds when retailers list changes
+    return Selector<RetailersProvider, List<Retailer>>(
+      selector: (context, provider) => _showOnlyAvailable
+          ? provider.availableRetailers
+          : provider.allRetailers,
+      builder: (context, retailers, child) {
+        final retailersProvider = Provider.of<RetailersProvider>(context, listen: false);
+
         if (retailers.isEmpty) {
           return _buildEmptyState(context);
         }
-        
+
         return Column(
           children: [
             _buildFilterBar(context, retailersProvider),

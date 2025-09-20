@@ -77,11 +77,14 @@ class _RetailerAvailabilityCardState extends State<RetailerAvailabilityCard> {
   
   @override
   Widget build(BuildContext context) {
-    return Consumer<RetailersProvider>(
-      builder: (context, retailersProvider, child) {
-        final isAvailable = retailersProvider.getAvailableRetailers(widget.userPLZ)
-            .any((r) => r.name == widget.retailerName);
-        
+    // Task 18.1: Optimized with Selector - only rebuilds when availability changes
+    return Selector<RetailersProvider, bool>(
+      selector: (context, provider) => provider
+          .getAvailableRetailers(widget.userPLZ)
+          .any((r) => r.name == widget.retailerName),
+      builder: (context, isAvailable, child) {
+        final retailersProvider = Provider.of<RetailersProvider>(context, listen: false);
+
         return Card(
           elevation: 2,
           shape: RoundedRectangleBorder(

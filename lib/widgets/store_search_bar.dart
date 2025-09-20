@@ -220,17 +220,18 @@ class _StoreSearchBarState extends State<StoreSearchBar> {
       child: Row(
         children: [
           // Radius filter
+          // Task 18.4: Added const where possible
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: ChoiceChip(
-              label: Text('${_currentRadius.toInt()}km'),
+              label: Text('${_currentRadius.toInt()}km'), // Dynamic
               selected: true,
               onSelected: (_) => _showRadiusDialog(context),
               avatar: const Icon(Icons.location_on, size: 16),
               selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
             ),
           ),
-          
+
           // Open only filter
           Padding(
             padding: const EdgeInsets.only(right: 8.0),

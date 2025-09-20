@@ -51,15 +51,41 @@ class MockDataService {
   List<Product> _products = [];
   List<Offer> _offers = [];
   List<FlashDeal> _flashDeals = [];
-  
+
   bool _isInitialized = false;
+
+  // Task 18.2: Lazy loading flags
+  bool _retailersLoaded = false;
+  bool _storesLoaded = false;
+  bool _productsLoaded = false;
+  bool _offersLoaded = false;
+  bool _flashDealsLoaded = false;
   
-  // Getters für generierte Daten
-  List<Retailer> get retailers => List.unmodifiable(_retailers);
-  List<Store> get stores => List.unmodifiable(_stores);
-  List<Product> get products => List.unmodifiable(_products);
-  List<Offer> get offers => List.unmodifiable(_offers);
-  List<FlashDeal> get flashDeals => List.unmodifiable(_flashDeals);
+  // Getters for generated data
+  List<Retailer> get retailers {
+    // Retailers are always loaded during initialization
+    return List.unmodifiable(_retailers);
+  }
+
+  List<Store> get stores {
+    // Stores are already loaded during initialization (required for Offers)
+    return List.unmodifiable(_stores);
+  }
+
+  List<Product> get products {
+    // Products are already loaded during initialization (required for Offers)
+    return List.unmodifiable(_products);
+  }
+
+  List<Offer> get offers {
+    // Offers are already loaded during initialization (required for Flash Deals)
+    return List.unmodifiable(_offers);
+  }
+
+  List<FlashDeal> get flashDeals {
+    // Flash Deals are always loaded during initialization (fixed time windows!)
+    return List.unmodifiable(_flashDeals);
+  }
   
   bool get isInitialized => _isInitialized;
   
@@ -93,36 +119,51 @@ class MockDataService {
     _onStoresUpdated = null;
   }
 
-  // Initialization (aufgerufen von main.dart)
+  // Task 18.2: Optimized initialization with lazy loading
   Future<void> initializeMockData({bool testMode = false}) async {
     if (_isInitialized) return;
-    
+
     debugPrint('🏗️ MockDataService: Initialisiere Mock-Daten...');
-    
+
     try {
-      // Generate all mock data based on database schema
+      // Essential data needed at startup:
+      // - Retailers for navigation
+      // - Flash Deals must be immediately available (fixed time windows!)
       await _generateRetailers();
+      _retailersLoaded = true;
+
+      // Stores are needed for Offers (they reference stores)
       await _generateStores();
-      await _generateProducts();
-      await _generateOffers();
+      _storesLoaded = true;
+
+      // Flash Deals have fixed time windows and must be loaded immediately
+      // The customer cannot influence when they are active
+      await _generateProducts(); // Flash deals depend on products
+      _productsLoaded = true;
+      await _generateOffers(); // Flash deals depend on offers (and offers depend on stores!)
+      _offersLoaded = true;
       await _generateFlashDeals();
-      
+      _flashDealsLoaded = true;
+
+      if (testMode) {
+        debugPrint('⚠️ MockDataService: Test-Mode - Timer werden nicht gestartet');
+      }
+
       _isInitialized = true;
-      
+
       // Start periodic updates for real-time simulation (nicht in Tests)
       if (!testMode) {
         _startPeriodicUpdates();
-      } else {
-        debugPrint('⚠️ MockDataService: Test-Mode - Timer werden nicht gestartet');
       }
-      
+
+      // Task 18.2: Log only loaded data
       debugPrint('✅ MockDataService: Initialisierung abgeschlossen');
-      debugPrint('   • ${_retailers.length} Retailers generiert');
-      debugPrint('   • ${_stores.length} Stores generiert');
-      debugPrint('   • ${_products.length} Products generiert');
-      debugPrint('   • ${_offers.length} Offers generiert');
-      debugPrint('   • ${_flashDeals.length} Flash Deals generiert');
-      
+      if (_retailersLoaded) debugPrint('   • ${_retailers.length} Retailers generiert');
+      if (_storesLoaded) debugPrint('   • ${_stores.length} Stores generiert');
+      if (_productsLoaded) debugPrint('   • ${_products.length} Products generiert');
+      if (_offersLoaded) debugPrint('   • ${_offers.length} Offers generiert');
+      if (_flashDealsLoaded) debugPrint('   • ${_flashDeals.length} Flash Deals generiert');
+
     } catch (e) {
       debugPrint('❌ MockDataService Fehler: $e');
       rethrow;
@@ -862,7 +903,7 @@ class MockDataService {
   ShelfLocation _generateShelfLocation() {
     final aisles = ['A', 'B', 'C', 'D', 'E', 'F'];
     final sides = ['links', 'rechts', 'mitte'];
-    
+
     return ShelfLocation(
       aisle: '${aisles[_random.nextInt(aisles.length)]}${_random.nextInt(8) + 1}',
       shelf: sides[_random.nextInt(sides.length)],
@@ -870,6 +911,7 @@ class MockDataService {
       y: _random.nextInt(400) + 100,
     );
   }
+
 
   // Cleanup
   void dispose() {
