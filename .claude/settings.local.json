@@ -13,7 +13,9 @@
       "WebFetch(domain:docs.claude.com)",
       "Bash(find:*)",
       "Bash(dir:*)",
-      "Bash(flutter build:*)"
+      "Bash(flutter build:*)",
+      "Bash(dart analyze:*)",
+      "Bash(dart test:*)"
     ],
     "deny": [],
     "ask": []

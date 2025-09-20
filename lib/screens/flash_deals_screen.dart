@@ -7,6 +7,10 @@ import '../utils/responsive_helper.dart';
 import '../widgets/flash_deals_filter_bar.dart';
 import '../widgets/flash_deals_statistics.dart';
 
+// Conditional import for web audio service
+import '../services/web_audio_service_stub.dart'
+    if (dart.library.html) '../services/web_audio_service_web.dart';
+
 /// FlashDealsScreen - Panel 3: Echtzeit-Rabatte
 /// 
 /// UI-Spezifikationen:
@@ -64,7 +68,6 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
   @override
   Widget build(BuildContext context) {
     final flashDealsProvider = context.watch<FlashDealsProvider>();
-    final locationProvider = context.watch<LocationProvider>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -199,16 +202,64 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
       });
     }
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-      transform: Matrix4.identity()
-        ..setEntry(3, 2, 0.001)
-        ..rotateX(isExpired ? 0.05 : 0),
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 500),
-        opacity: isExpired ? 0.5 : 1.0,
-        child: _buildFlashDealCard(deal, isExpired),
+    // Wrap with Dismissible for swipe functionality
+    return Dismissible(
+      key: Key(deal.id),
+      direction: DismissDirection.horizontal,
+      onDismissed: (direction) {
+        if (direction == DismissDirection.endToStart) {
+          // Swipe left: Hide deal
+          context.read<FlashDealsProvider>().hideDeal(deal.id);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('"${deal.productName}" ausgeblendet'),
+              action: SnackBarAction(
+                label: 'Rückgängig',
+                onPressed: () {
+                  context.read<FlashDealsProvider>().unhideDeal(deal.id);
+                },
+              ),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        } else {
+          // Swipe right: Favorite deal
+          _favoriteDeal(deal);
+          // Re-add deal since we don't actually remove favorites
+          context.read<FlashDealsProvider>().loadFlashDeals();
+        }
+      },
+      background: Container(
+        margin: EdgeInsets.only(bottom: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space4)),
+        decoration: BoxDecoration(
+          color: primaryGreen,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(Icons.favorite, color: Colors.white, size: 32),
+      ),
+      secondaryBackground: Container(
+        margin: EdgeInsets.only(bottom: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space4)),
+        decoration: BoxDecoration(
+          color: primaryRed,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(Icons.visibility_off, color: Colors.white, size: 32),
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+        transform: Matrix4.identity()
+          ..setEntry(3, 2, 0.001)
+          ..rotateX(isExpired ? 0.05 : 0),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 500),
+          opacity: isExpired ? 0.5 : 1.0,
+          child: _buildFlashDealCard(deal, isExpired),
+        ),
       ),
     );
   }
@@ -391,7 +442,9 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                     ),
                   ),
                 ),
-                // Distance display would go here if we had coordinates
+                // Distance display
+                if (locationProvider.hasLocation)
+                  _buildDistanceChip(deal),
               ],
             ),
 
@@ -472,7 +525,54 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
     return Icon(Icons.shopping_basket, size: 20, color: textSecondary);
   }
 
-  // Distance calculation removed - would need proper coordinates integration
+  // Distance calculation with actual coordinates
+  Widget _buildDistanceChip(FlashDeal deal) {
+    final locationProvider = context.watch<LocationProvider>();
+
+    if (!locationProvider.hasLocation) return const SizedBox.shrink();
+
+    try {
+      final distance = locationProvider.calculateDistance(
+        deal.storeLat,
+        deal.storeLng,
+      );
+
+      Color chipColor;
+      if (distance < 1) {
+        chipColor = primaryGreen;
+      } else if (distance < 3) {
+        chipColor = secondaryOrange;
+      } else {
+        chipColor = textSecondary;
+      }
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: chipColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: chipColor.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.location_on, size: 12, color: chipColor),
+            const SizedBox(width: 2),
+            Text(
+              '${distance.toStringAsFixed(1)} km',
+              style: TextStyle(
+                fontSize: 11,
+                color: chipColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      return const SizedBox.shrink();
+    }
+  }
 
   void _shareDeal(FlashDeal deal) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -557,8 +657,13 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
       ),
     );
 
-    // Optional: Play a notification sound (web audio API)
-    // This would require additional implementation
+    // Play a notification sound (web audio API)
+    _playNotificationSound();
+  }
+
+  void _playNotificationSound() {
+    // Use web audio service for cross-platform compatibility
+    WebAudioServiceImpl.playNotificationSound();
   }
 
   void _showLageplanModal(BuildContext context, FlashDeal deal) {

@@ -288,7 +288,10 @@ class FlashDealsProvider extends ChangeNotifier {
   // Load Flash Deals from MockDataService
   void _loadFlashDealsFromService() {
     if (_mockDataService.isInitialized) {
-      _flashDeals = List.from(_mockDataService.flashDeals);
+      // Filter out hidden deals
+      _flashDeals = _mockDataService.flashDeals
+          .where((deal) => !_hiddenDealIds.contains(deal.id))
+          .toList();
       _applyRegionalFiltering(); // FIX: Apply regional filtering first
       _applyFilters();
       if (!_disposed) notifyListeners();
@@ -452,6 +455,21 @@ class FlashDealsProvider extends ChangeNotifier {
         deal.remainingMinutes <= minutes && !deal.isExpired).toList();
   }
   
+  // Hide/Unhide deals for swipe-to-dismiss
+  final Set<String> _hiddenDealIds = {};
+
+  void hideDeal(String dealId) {
+    _hiddenDealIds.add(dealId);
+    _flashDeals.removeWhere((deal) => deal.id == dealId);
+    if (!_disposed) notifyListeners();
+  }
+
+  void unhideDeal(String dealId) {
+    _hiddenDealIds.remove(dealId);
+    // Reload deals to restore the unhidden deal
+    loadFlashDeals();
+  }
+
   // Available filters from current deals
   List<String> get currentDealRetailers {
     return _flashDeals
