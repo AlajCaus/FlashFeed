@@ -25,6 +25,9 @@ class FlashDealsProvider extends ChangeNotifier {
   // Regional State (Task 5b.6: Cross-Provider Integration)
   String? _userPLZ;
   List<String> _availableRetailers = [];
+
+  // LocationProvider reference for auto-cleanup
+  LocationProvider? _locationProvider;
   
   // Standard constructor with global service
   FlashDealsProvider({MockDataService? testService}) {
@@ -56,23 +59,27 @@ class FlashDealsProvider extends ChangeNotifier {
   
   // Task 5c.5: Cross-Provider Communication Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
+    // Store reference for auto-cleanup during disposal
+    _locationProvider = locationProvider;
+
     // Register for both location and regional data updates
     locationProvider.registerLocationChangeCallback(_onLocationChanged);
     locationProvider.registerRegionalDataCallback(_onRegionalDataChanged);
-    
+
     // Get initial regional data if available
     if (locationProvider.hasPostalCode && locationProvider.availableRetailersInRegion.isNotEmpty) {
       _userPLZ = locationProvider.postalCode;
       _availableRetailers = List.from(locationProvider.availableRetailersInRegion);
       _applyRegionalFiltering();
     }
-    
+
     debugPrint('FlashDealsProvider: Registered with LocationProvider');
   }
   
   void unregisterFromLocationProvider(LocationProvider locationProvider) {
     locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
     locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
+    _locationProvider = null; // Clear reference
     debugPrint('FlashDealsProvider: Unregistered from LocationProvider');
   }
   
@@ -371,7 +378,19 @@ class FlashDealsProvider extends ChangeNotifier {
   void dispose() {
     // Prevent double disposal
     if (_disposed) return;
-    
+
+    // CRITICAL: Auto-unregister callbacks to prevent memory leaks
+    if (_locationProvider != null) {
+      try {
+        _locationProvider!.unregisterLocationChangeCallback(_onLocationChanged);
+        _locationProvider!.unregisterRegionalDataCallback(_onRegionalDataChanged);
+        debugPrint('✅ FlashDealsProvider: Auto-unregistered callbacks during disposal');
+      } catch (e) {
+        debugPrint('⚠️ FlashDealsProvider: Error during callback cleanup: $e');
+      }
+      _locationProvider = null;
+    }
+
     _disposed = true; // Mark provider as disposed
     // Clean up callbacks if needed
     super.dispose();

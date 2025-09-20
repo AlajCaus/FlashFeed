@@ -245,7 +245,8 @@ class MockRetailersRepository implements RetailersRepository {
 
   @override
   Future<List<Retailer>> getAllRetailers() async {
-    await Future.delayed(Duration(milliseconds: 200));
+    // PERFORMANCE: Reduce delay in test mode
+    await Future.delayed(Duration(milliseconds: _testService != null ? 10 : 200));
     // Use data from MockDataService if available, fallback to static list
     if (_hasDataService) {
       return List.from(_testService!.retailers);
@@ -323,7 +324,8 @@ class MockRetailersRepository implements RetailersRepository {
   
   @override
   Future<List<Store>> getAllStores() async {
-    await Future.delayed(Duration(milliseconds: 200));
+    // PERFORMANCE: Reduce delay in test mode
+    await Future.delayed(Duration(milliseconds: _testService != null ? 10 : 200));
     
     // Use data from MockDataService if available (with 35+ Berlin stores),
     // fallback to static list for tests

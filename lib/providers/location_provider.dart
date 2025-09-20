@@ -2,6 +2,7 @@
 // Erweitert: PLZ-Fallback-Kette mit LocalStorage & Dialog Integration (Task 5b.3)
 
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/local_storage_service.dart';
 import '../services/plz_lookup_service.dart';
@@ -67,6 +68,10 @@ class LocationProvider extends ChangeNotifier {
   // Provider Callbacks (Task 5b.5: Cross-Provider Communication)
   final List<VoidCallback> _locationChangeCallbacks = [];
   final List<Function(String?, List<String>)> _regionalDataCallbacks = [];
+
+  // Defensive limits to prevent DoS attacks via callback flooding
+  static const int _maxLocationCallbacks = 50;
+  static const int _maxRegionalDataCallbacks = 50;
   
   // PLZ Fallback State (Task 5b.3)
   String? _userPLZ; // Cached user PLZ from LocalStorage
@@ -214,26 +219,83 @@ class LocationProvider extends ChangeNotifier {
     _checkDisposed();
     return hasLocation || hasPostalCode;
   }
+
+  // Testing getters for callback management
+  @visibleForTesting
+  int get locationCallbackCount {
+    _checkDisposed();
+    return _locationChangeCallbacks.length;
+  }
+
+  @visibleForTesting
+  int get regionalDataCallbackCount {
+    _checkDisposed();
+    return _regionalDataCallbacks.length;
+  }
+
+  @visibleForTesting
+  static int get maxLocationCallbacks => _maxLocationCallbacks;
+
+  @visibleForTesting
+  static int get maxRegionalDataCallbacks => _maxRegionalDataCallbacks;
   
   // Provider Callbacks API (Task 5b.5)
   void registerLocationChangeCallback(VoidCallback callback) {
     _checkDisposed();
+
+    // Defensive limit check
+    if (_locationChangeCallbacks.length >= _maxLocationCallbacks) {
+      debugPrint('⚠️ LocationProvider: Location callback limit reached ($_maxLocationCallbacks). Rejecting registration.');
+      throw StateError('Maximum location callbacks reached ($_maxLocationCallbacks). Cannot register more callbacks.');
+    }
+
+    // Prevent duplicate registrations
+    if (_locationChangeCallbacks.contains(callback)) {
+      debugPrint('⚠️ LocationProvider: Duplicate location callback registration ignored.');
+      return;
+    }
+
     _locationChangeCallbacks.add(callback);
+    debugPrint('✅ LocationProvider: Location callback registered. Total: ${_locationChangeCallbacks.length}/$_maxLocationCallbacks');
   }
-  
+
   void registerRegionalDataCallback(Function(String?, List<String>) callback) {
     _checkDisposed();
+
+    // Defensive limit check
+    if (_regionalDataCallbacks.length >= _maxRegionalDataCallbacks) {
+      debugPrint('⚠️ LocationProvider: Regional data callback limit reached ($_maxRegionalDataCallbacks). Rejecting registration.');
+      throw StateError('Maximum regional data callbacks reached ($_maxRegionalDataCallbacks). Cannot register more callbacks.');
+    }
+
+    // Prevent duplicate registrations
+    if (_regionalDataCallbacks.contains(callback)) {
+      debugPrint('⚠️ LocationProvider: Duplicate regional data callback registration ignored.');
+      return;
+    }
+
     _regionalDataCallbacks.add(callback);
+    debugPrint('✅ LocationProvider: Regional data callback registered. Total: ${_regionalDataCallbacks.length}/$_maxRegionalDataCallbacks');
   }
   
   void unregisterLocationChangeCallback(VoidCallback callback) {
     _checkDisposed();
-    _locationChangeCallbacks.remove(callback);
+    final wasRemoved = _locationChangeCallbacks.remove(callback);
+    if (wasRemoved) {
+      debugPrint('✅ LocationProvider: Location callback unregistered. Remaining: ${_locationChangeCallbacks.length}/$_maxLocationCallbacks');
+    } else {
+      debugPrint('⚠️ LocationProvider: Location callback not found for unregistration.');
+    }
   }
-  
+
   void unregisterRegionalDataCallback(Function(String?, List<String>) callback) {
     _checkDisposed();
-    _regionalDataCallbacks.remove(callback);
+    final wasRemoved = _regionalDataCallbacks.remove(callback);
+    if (wasRemoved) {
+      debugPrint('✅ LocationProvider: Regional data callback unregistered. Remaining: ${_regionalDataCallbacks.length}/$_maxRegionalDataCallbacks');
+    } else {
+      debugPrint('⚠️ LocationProvider: Regional data callback not found for unregistration.');
+    }
   }
   
   // CORE METHODE: ensureLocationData() für Tests

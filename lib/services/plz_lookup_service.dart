@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
@@ -43,9 +44,11 @@ class PLZLookupException implements Exception {
 /// Features: LRU-Cache, Time-Based Expiry, Performance-Monitoring
 class PLZLookupService {
   static final PLZLookupService _instance = PLZLookupService._internal();
+
   factory PLZLookupService() => _instance;
+
   PLZLookupService._internal() {
-    _startBackgroundCleanup();
+    // Timer is started lazily on first real use, not in constructor
   }
 
   // Enhanced Cache mit LRU und Expiry (Task 5b.4)
@@ -65,6 +68,7 @@ class PLZLookupService {
   
   // Background-Cleanup Timer
   Timer? _cleanupTimer;
+  bool _timerStarted = false;
   
   // Nominatim API base URL
   static const String _nominatimBaseUrl = 'https://nominatim.openstreetmap.org';
@@ -81,6 +85,9 @@ class PLZLookupService {
   /// Returns: Deutsche Postleitzahl (z.B. "10115")
   /// Throws: [PLZLookupException] bei Fehlern
   Future<String> getPLZFromCoordinates(double latitude, double longitude) async {
+    // Start timer on first actual use (lazy initialization)
+    _ensureTimerStarted();
+
     // Input-Validierung
     if (!_isValidCoordinate(latitude, longitude)) {
       throw const PLZLookupException('Ungültige GPS-Koordinaten');
@@ -157,12 +164,30 @@ class PLZLookupService {
     debugPrint('🗑️ PLZ-Cache LRU Eviction: $evictionCount entries removed (Total evictions: $_cacheEvictions)');
   }
   
+  /// Ensure background cleanup is started (lazy initialization)
+  void _ensureTimerStarted() {
+    if (!_timerStarted && _cleanupTimer == null) {
+      _timerStarted = true;
+      _startBackgroundCleanup();
+    }
+  }
+
   /// Background-Cleanup-Timer starten (Task 5b.4)
   void _startBackgroundCleanup() {
+    // Only start timer in production, not in tests
+    // Check if we're in a test environment
+    final isTestEnvironment = Platform.environment.containsKey('FLUTTER_TEST') ||
+                             const String.fromEnvironment('FLUTTER_TEST').isNotEmpty;
+
+    if (isTestEnvironment) {
+      debugPrint('⏰ PLZ-Cache Background-Cleanup deaktiviert (Test Environment)');
+      return;
+    }
+
     _cleanupTimer = Timer.periodic(_cleanupInterval, (timer) {
       _performBackgroundCleanup();
     });
-    
+
     debugPrint('⏰ PLZ-Cache Background-Cleanup gestartet (Interval: ${_cleanupInterval.inMinutes}min)');
   }
   

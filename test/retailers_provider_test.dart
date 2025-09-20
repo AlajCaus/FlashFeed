@@ -25,6 +25,7 @@ void main() {
       provider = RetailersProvider(
         repository: repository,
         mockDataService: testMockDataService,
+        
       );
       
       // Wait for initial load to complete
@@ -224,9 +225,12 @@ void main() {
         expect(coverage['retailerName'], equals('NonExistentRetailer'));
       });
 
-      test('should calculate correct coverage percentage for nationwide retailer', () {
+      test('should calculate correct coverage percentage for nationwide retailer', () async {
+        // Ensure stores are loaded first to avoid race condition
+        await provider.searchStores('EDEKA');
+
         final coverage = provider.getRetailerCoverage('EDEKA');
-        
+
         if (coverage['isNationwide'] == true) {
           final percentage = double.parse(coverage['coveragePercentage'].toString());
           expect(percentage, greaterThan(90)); // Nationwide should be ~95%
@@ -246,27 +250,18 @@ void main() {
 
       test('should include services offered', () async {
         // Load stores first to ensure services are available
-        await provider.searchStores('', sortBy: StoreSearchSort.name);
-        
+        await provider.searchStores('EDEKA');
+
         final coverage = provider.getRetailerCoverage('EDEKA');
-        
+
         expect(coverage['servicesOffered'], isA<List>());
-        
+
         // EDEKA stores should offer various services
         final services = coverage['servicesOffered'] as List;
-        // Services might be empty if no stores are loaded, which is okay for test mode
         expect(services, isA<List>());
-        
-        // If stores are loaded, check that services exist
-        if (provider.allStores.isNotEmpty) {
-          final edekaStores = provider.allStores.where(
-            (s) => s.retailerName == 'EDEKA'
-          ).toList();
-          
-          if (edekaStores.isNotEmpty && edekaStores.any((s) => s.services.isNotEmpty)) {
-            expect(services, isNotEmpty);
-          }
-        }
+
+        // Services should be available since we searched for EDEKA stores
+        expect(services, isNotEmpty);
       });
 
       test('should include branding information', () {
@@ -480,7 +475,7 @@ void main() {
         expect(alternatives, isNotEmpty);
         
         // 4. Load stores before checking coverage (needed for totalStores count)
-        await provider.searchStores('', sortBy: StoreSearchSort.name);
+        await provider.searchStores('Store');
         
         // 5. Check coverage of first alternative
         if (alternatives.isNotEmpty) {
@@ -572,6 +567,7 @@ void main() {
         final testProvider = RetailersProvider(
           repository: repository,
           mockDataService: testMockDataService,
+          
         );
         
         // Should not throw when disposing

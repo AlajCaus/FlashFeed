@@ -5,6 +5,7 @@
 // INTEGRATION: LocationProvider Callbacks für PLZ-Updates
 // DATENQUELLE: MockDataService (global von main.dart)
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../repositories/retailers_repository.dart';
@@ -35,6 +36,13 @@ class RetailersProvider extends ChangeNotifier {
   
   // Disposal tracking
   bool _disposed = false;
+
+  // Timer tracking for proper cleanup
+  Timer? _searchTimeoutTimer;
+
+  /// Returns true if this provider has been disposed
+  @visibleForTesting
+  bool get isDisposed => _disposed;
   
   // ============ Task 11.1 & 11.6: Branding & UI Support ============
   
@@ -128,6 +136,7 @@ class RetailersProvider extends ChangeNotifier {
   final Map<String, List<Retailer>> _plzRetailerCache = {};
   final Map<String, Retailer> _retailerDetailsCache = {}; // Task 11.1: Cache für Details
   final Map<String, StoreSearchCacheEntry> _storeSearchCache = {}; // Task 11.4: Store-Search Cache
+  static const int _maxCacheSize = 100; // PERFORMANCE: Cache-Limit für Memory-Effizienz
   
   // Task 11.4: Store-Search State
   List<Store> _allStores = [];
@@ -148,7 +157,8 @@ class RetailersProvider extends ChangeNotifier {
     required RetailersRepository repository,
     required MockDataService mockDataService,
   }) : _repository = repository {
-    // Initial load on creation
+    // Always load retailers on creation - this is the expected behavior
+    // The loadRetailers method handles concurrent calls properly
     loadRetailers();
   }
   
@@ -253,13 +263,39 @@ class RetailersProvider extends ChangeNotifier {
     };
   }
   
+  // Future to track ongoing load operation
+  Future<void>? _loadFuture;
+  bool _isInitialLoad = true;
+
   /// Lädt alle Händler initial
   Future<void> loadRetailers() async {
     if (_disposed) return;
-    
+
+    // If already loading, return the existing future to avoid concurrent loads
+    if (_loadFuture != null) {
+      return _loadFuture!;
+    }
+
+    // Create new load operation
+    _loadFuture = _loadRetailersInternal();
+
+    try {
+      await _loadFuture;
+    } finally {
+      _loadFuture = null;
+    }
+  }
+
+  Future<void> _loadRetailersInternal() async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+
+    // Don't call notifyListeners during construction
+    // This can cause issues with Provider initialization
+    if (!_isInitialLoad) {
+      notifyListeners();
+    }
+    _isInitialLoad = false;
     
     try {
       // Lade Händler vom Repository
@@ -558,7 +594,9 @@ class RetailersProvider extends ChangeNotifier {
     final preferredRetailer = getRetailerDetails(preferredRetailerName);
     if (preferredRetailer == null) {
       debugPrint('⚠️ Preferred retailer "$preferredRetailerName" nicht gefunden');
-      return getAvailableRetailers(plz); // Return all available as alternatives
+      final availableAlternatives = getAvailableRetailers(plz);
+      debugPrint('ℹ️ Found ${availableAlternatives.length} available alternatives for PLZ $plz');
+      return availableAlternatives; // Return all available as alternatives
     }
     
     // Check if preferred retailer is available
@@ -774,21 +812,25 @@ class RetailersProvider extends ChangeNotifier {
   
   /// Task 5c.5: Cross-Provider Integration Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
+    // Store reference for auto-cleanup during disposal
+    _locationProvider = locationProvider;
+
     // Register for location and regional data updates
     locationProvider.registerLocationChangeCallback(_onLocationChanged);
     locationProvider.registerRegionalDataCallback(_onRegionalDataChanged);
-    
+
     // Get initial regional data if available
     if (locationProvider.hasPostalCode) {
       updateUserLocation(locationProvider.postalCode!);
     }
-    
+
     debugPrint('RetailersProvider: Registered with LocationProvider');
   }
   
   void unregisterFromLocationProvider(LocationProvider locationProvider) {
     locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
     locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
+    _locationProvider = null; // Clear reference
     debugPrint('RetailersProvider: Unregistered from LocationProvider');
   }
   
@@ -1087,37 +1129,99 @@ class RetailersProvider extends ChangeNotifier {
     StoreSearchSort sortBy = StoreSearchSort.distance,
   }) async {
     if (_disposed) return [];
-    
+
+    // 🚨 PRODUCTION SAFETY: Input validation
+    final trimmedQuery = query.trim();
+
+    // Reject empty or whitespace-only queries
+    if (trimmedQuery.isEmpty) {
+      debugPrint('⚠️ RetailersProvider: Empty search query rejected');
+      _isSearching = false;
+      notifyListeners();
+      return [];
+    }
+
+    // Require minimum 2 characters for performance
+    if (trimmedQuery.length < 2) {
+      debugPrint('⚠️ RetailersProvider: Query too short (${trimmedQuery.length} chars): "$trimmedQuery"');
+      _isSearching = false;
+      notifyListeners();
+      return [];
+    }
+
+    // Sanitize query - remove special characters that could cause issues
+    final sanitizedQuery = trimmedQuery.replaceAll(RegExp(r'[^\w\s\-äöüßÄÖÜ]'), '');
+    if (sanitizedQuery.isEmpty) {
+      debugPrint('⚠️ RetailersProvider: Query contains only special characters: "$query"');
+      _isSearching = false;
+      notifyListeners();
+      return [];
+    }
+
+    debugPrint('🔍 RetailersProvider: Searching for "$sanitizedQuery" (original: "$query")');
+
     // Update search state
     _isSearching = true;
-    _lastSearchQuery = query;
+    _lastSearchQuery = sanitizedQuery;
     notifyListeners();
-    
+
+    // 🚨 PRODUCTION SAFETY: Timeout protection with timer tracking
+    _searchTimeoutTimer?.cancel(); // Cancel any previous timeout timer
+
+    return _performSearchInternal(sanitizedQuery, plz, radiusKm, requiredServices, openOnly, sortBy)
+        .timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            debugPrint('🚨 RetailersProvider: Search timeout for "$sanitizedQuery"');
+            _searchTimeoutTimer = null; // Clear timeout timer reference
+            _isSearching = false;
+            // Safety check: Don't notify if already disposed
+            if (!_disposed) {
+              notifyListeners();
+            }
+            return <Store>[];
+          },
+        )
+        .whenComplete(() {
+          _searchTimeoutTimer = null; // Clear timer on completion
+        });
+  }
+
+  Future<List<Store>> _performSearchInternal(
+    String sanitizedQuery,
+    String? plz,
+    double? radiusKm,
+    List<String>? requiredServices,
+    bool openOnly,
+    StoreSearchSort sortBy,
+  ) async {
     try {
-      // 1. Cache-Check
+      // 1. Cache-Check (use sanitized query for cache)
       final cacheKey = _generateSearchCacheKey(
-        query, plz, radiusKm, requiredServices, openOnly
+        sanitizedQuery, plz, radiusKm, requiredServices, openOnly
       );
-      
+
       if (_storeSearchCache.containsKey(cacheKey)) {
         final cached = _storeSearchCache[cacheKey]!;
         if (DateTime.now().difference(cached.timestamp).inMinutes < 5) {
           _searchResults = cached.results;
           _isSearching = false;
-          notifyListeners();
+          // Safety check: Don't notify if already disposed
+          if (!_disposed) {
+            notifyListeners();
+          }
+          debugPrint('✅ RetailersProvider: Cache hit for "$sanitizedQuery"');
           return cached.results;
         }
       }
-      
+
       // 2. Load all stores if not loaded
       if (_allStores.isEmpty) {
         await _loadAllStores();
       }
-      
-      // 3. Text-Search with fuzzy matching
-      List<Store> filtered = query.isEmpty 
-          ? List.from(_allStores)
-          : _performTextSearch(_allStores, query);
+
+      // 3. Text-Search with fuzzy matching (sanitizedQuery is never empty here)
+      List<Store> filtered = _performTextSearch(_allStores, sanitizedQuery);
       
       // 4. Apply Filters
       if (plz != null && plz.isNotEmpty) {
@@ -1139,23 +1243,26 @@ class RetailersProvider extends ChangeNotifier {
       // 5. Sort Results
       filtered = await _sortStores(filtered, sortBy);
       
-      // 6. Cache & Update State
-      _storeSearchCache[cacheKey] = StoreSearchCacheEntry(
-        filtered, 
-        DateTime.now()
-      );
-      
+      // 6. Cache & Update State with LRU eviction
+      _addToSearchCache(cacheKey, filtered);
+
       _searchResults = filtered;
       _isSearching = false;
-      notifyListeners();
-      
+      // Safety check: Don't notify if already disposed
+      if (!_disposed) {
+        notifyListeners();
+      }
+
       return filtered;
-      
+
     } catch (e) {
       debugPrint('❌ Store search failed: $e');
       _isSearching = false;
       _errorMessage = 'Fehler bei der Filial-Suche: $e';
-      notifyListeners();
+      // Safety check: Don't notify if already disposed
+      if (!_disposed) {
+        notifyListeners();
+      }
       return [];
     }
   }
@@ -1487,10 +1594,53 @@ class RetailersProvider extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+
+    // CRITICAL: Auto-unregister callbacks to prevent memory leaks
+    if (_locationProvider != null) {
+      try {
+        _locationProvider!.unregisterLocationChangeCallback(_onLocationChanged);
+        _locationProvider!.unregisterRegionalDataCallback(_onRegionalDataChanged);
+        debugPrint('✅ RetailersProvider: Auto-unregistered callbacks during disposal');
+      } catch (e) {
+        debugPrint('⚠️ RetailersProvider: Error during callback cleanup: $e');
+      }
+      _locationProvider = null;
+    }
+
+    // Cancel any pending search timeout timer
+    _searchTimeoutTimer?.cancel();
+    _searchTimeoutTimer = null;
+
     clearCache();
     _onRetailersChanged = null;
-    _locationProvider = null;
     super.dispose();
+  }
+
+  /// PERFORMANCE: LRU Cache-Management für Search-Cache
+  void _addToSearchCache(String cacheKey, List<Store> results) {
+    // Wenn Cache-Limit erreicht, entferne ältesten Eintrag (LRU)
+    if (_storeSearchCache.length >= _maxCacheSize) {
+      DateTime oldestTime = DateTime.now();
+      String? oldestKey;
+
+      for (final entry in _storeSearchCache.entries) {
+        if (entry.value.timestamp.isBefore(oldestTime)) {
+          oldestTime = entry.value.timestamp;
+          oldestKey = entry.key;
+        }
+      }
+
+      if (oldestKey != null) {
+        _storeSearchCache.remove(oldestKey);
+        debugPrint('🧹 RetailersProvider: LRU Cache evicted oldest entry');
+      }
+    }
+
+    // Neuen Eintrag hinzufügen
+    _storeSearchCache[cacheKey] = StoreSearchCacheEntry(
+      results,
+      DateTime.now()
+    );
   }
 }
 

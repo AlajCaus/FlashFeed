@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(findstr:*)",
+      "Bash(tasklist)",
+      "Bash(claude --model-info)",
+      "Bash(claude config)",
+      "Bash(claude config list)",
+      "Bash(claude --model opus)",
+      "Bash(claude config set model opus)",
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(find:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []

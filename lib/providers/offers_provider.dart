@@ -149,7 +149,7 @@ class OffersProvider extends ChangeNotifier {
   void unregisterFromLocationProvider(LocationProvider locationProvider) {
     locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
     locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
-    _locationProvider = null;
+    _locationProvider = null; // Clear reference
     debugPrint('OffersProvider: Unregistered from LocationProvider');
   }
   
@@ -1579,20 +1579,32 @@ class OffersProvider extends ChangeNotifier {
   void dispose() {
     // Prevent double disposal
     if (_disposed) return;
-    
+
     // Task 9.4.3: Cancel debounce timer
     _searchDebounceTimer?.cancel();
     _searchDebounceTimer = null;
-    
+
     // Task 9.4.1: Clear cache
     _filterCache.clear();
-    
+
     // CRITICAL FIX: Unregister callback BEFORE marking as disposed
     if (_registeredService != null) {
       _registeredService!.clearOffersCallback();
       _registeredService = null;
     }
-    
+
+    // CRITICAL: Auto-unregister location callbacks to prevent memory leaks
+    if (_locationProvider != null) {
+      try {
+        _locationProvider!.unregisterLocationChangeCallback(_onLocationChanged);
+        _locationProvider!.unregisterRegionalDataCallback(_onRegionalDataChanged);
+        debugPrint('✅ OffersProvider: Auto-unregistered callbacks during disposal');
+      } catch (e) {
+        debugPrint('⚠️ OffersProvider: Error during callback cleanup: $e');
+      }
+      _locationProvider = null;
+    }
+
     _disposed = true; // Mark provider as disposed
     // Clean up resources
     super.dispose();

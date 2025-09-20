@@ -24,6 +24,7 @@ class RetailerTestHelpers {
     final provider = RetailersProvider(
       repository: repository,
       mockDataService: service,
+      
     );
     
     // Load initial data

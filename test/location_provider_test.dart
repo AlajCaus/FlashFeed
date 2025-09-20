@@ -1483,8 +1483,8 @@ void main() {
         );
         final callbacks = <void Function()>[];
         
-        // Register 100 callbacks
-        for (int i = 0; i < 100; i++) {
+        // Register 45 callbacks (within production limit of 50)
+        for (int i = 0; i < 45; i++) {
           void callback() {}
           callbacks.add(callback);
           testProvider.registerLocationChangeCallback(callback);
