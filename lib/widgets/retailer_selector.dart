@@ -18,14 +18,14 @@ class RetailerSelector extends StatefulWidget {
   final String? emptyMessage;
   
   const RetailerSelector({
-    Key? key,
+    super.key,
     required this.onSelectionChanged,
     this.initialSelection,
     this.multiSelect = true,
     this.showOnlyAvailable = false,
     this.displayMode = RetailerDisplayMode.grid,
     this.emptyMessage,
-  }) : super(key: key);
+  });
   
   @override
   State<RetailerSelector> createState() => _RetailerSelectorState();
@@ -252,12 +252,12 @@ class _RetailerGridItem extends StatelessWidget {
   final VoidCallback onTap;
   
   const _RetailerGridItem({
-    Key? key,
+    super.key,
     required this.retailer,
     required this.isSelected,
     required this.isAvailable,
     required this.onTap,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -346,12 +346,12 @@ class _RetailerListItem extends StatelessWidget {
   final VoidCallback onTap;
   
   const _RetailerListItem({
-    Key? key,
+    super.key,
     required this.retailer,
     required this.isSelected,
     required this.isAvailable,
     required this.onTap,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {

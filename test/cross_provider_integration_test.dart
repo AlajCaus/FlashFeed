@@ -380,10 +380,10 @@ void main() {
         // Create properly referenceable callbacks
         for (int i = 0; i < 40; i++) {
           final callbackIndex = i; // Capture index for closure
-          Function(String?, List<String>) callback = (String? plz, List<String> retailers) {
+          callback(String? plz, List<String> retailers) {
             // Dummy operation with captured index to ensure unique but referenceable callbacks
             debugPrint('Test callback $callbackIndex triggered with PLZ: $plz');
-          };
+          }
           callbacks.add(callback);
           locationProvider.registerRegionalDataCallback(callback);
         }
@@ -425,9 +425,9 @@ void main() {
         // Act: Register many callbacks (100, well beyond old limit of 50)
         for (int i = 0; i < 100; i++) {
           final callbackIndex = i;
-          Function(String?, List<String>) callback = (String? plz, List<String> retailers) {
+          callback(String? plz, List<String> retailers) {
             debugPrint('Callback $callbackIndex triggered');
-          };
+          }
           callbacks.add(callback);
           locationProvider.registerRegionalDataCallback(callback);
         }

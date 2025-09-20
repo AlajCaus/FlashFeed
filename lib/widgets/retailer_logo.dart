@@ -18,14 +18,14 @@ class RetailerLogo extends StatelessWidget {
   final bool showBorder;
   
   const RetailerLogo({
-    Key? key,
+    super.key,
     required this.retailerName,
     this.size = LogoSize.medium,
     this.shape = LogoShape.rounded,
     this.onTap,
     this.backgroundColor,
     this.showBorder = false,
-  }) : super(key: key);
+  });
   
   double get _logoSize {
     switch (size) {
@@ -161,13 +161,13 @@ class RetailerLogoRow extends StatelessWidget {
   final Function(String)? onRetailerTap;
   
   const RetailerLogoRow({
-    Key? key,
+    super.key,
     required this.retailerNames,
     this.size = LogoSize.small,
     this.shape = LogoShape.circle,
     this.spacing = 8.0,
     this.onRetailerTap,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {

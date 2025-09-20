@@ -14,12 +14,12 @@ class RetailerAvailabilityCard extends StatefulWidget {
   final Function(String)? onAlternativeSelected;
   
   const RetailerAvailabilityCard({
-    Key? key,
+    super.key,
     required this.retailerName,
     required this.userPLZ,
     this.onChangePLZ,
     this.onAlternativeSelected,
-  }) : super(key: key);
+  });
   
   @override
   State<RetailerAvailabilityCard> createState() => _RetailerAvailabilityCardState();
@@ -410,10 +410,10 @@ class _AlternativeRetailerChip extends StatelessWidget {
   final VoidCallback? onTap;
   
   const _AlternativeRetailerChip({
-    Key? key,
+    super.key,
     required this.retailer,
     this.onTap,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {

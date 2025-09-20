@@ -2,16 +2,11 @@
 // Testet vollständige Integration zwischen RetailersProvider, LocationProvider und UI
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flashfeed/providers/retailers_provider.dart';
 import 'package:flashfeed/providers/location_provider.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
 import 'package:flashfeed/services/gps/test_gps_service.dart';
 import 'package:flashfeed/repositories/mock_retailers_repository.dart';
-import 'package:flashfeed/widgets/store_search_bar.dart';
-import 'package:flashfeed/widgets/retailer_logo.dart';
-import 'package:flashfeed/widgets/retailer_selector.dart';
 
 void main() {
   group('Task 11.7.3: End-to-End Retailer Search Integration', () {

@@ -10,11 +10,11 @@ class StoreOpeningHours extends StatelessWidget {
   final bool compact;
   
   const StoreOpeningHours({
-    Key? key,
+    super.key,
     required this.store,
     this.showFullWeek = false,
     this.compact = false,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -309,9 +309,9 @@ class StoreStatusBadge extends StatelessWidget {
   final Store store;
   
   const StoreStatusBadge({
-    Key? key,
+    super.key,
     required this.store,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {

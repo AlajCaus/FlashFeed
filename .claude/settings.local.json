@@ -12,7 +12,8 @@
       "Bash(claude config set model opus)",
       "WebFetch(domain:docs.claude.com)",
       "Bash(find:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(flutter build:*)"
     ],
     "deny": [],
     "ask": []

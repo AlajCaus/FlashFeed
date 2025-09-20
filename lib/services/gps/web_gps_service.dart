@@ -24,7 +24,8 @@ class WebGPSService implements GPSService {
 
     try {
       // Check if geolocation is available
-      if (!html.window.navigator.geolocation.isSupported) {
+      // Note: isSupported is not available, check for null instead
+      if (html.window.navigator.geolocation == null) {
         debugPrint('❌ Geolocation not supported in this browser');
         _hasPermission = false;
         _permissionChecked = true;
@@ -40,9 +41,9 @@ class WebGPSService implements GPSService {
           _hasPermission = true;
           _permissionChecked = true;
 
-          // Cache the position
-          _lastLatitude = position.coords!.latitude!;
-          _lastLongitude = position.coords!.longitude!;
+          // Cache the position (convert num to double)
+          _lastLatitude = position.coords!.latitude!.toDouble();
+          _lastLongitude = position.coords!.longitude!.toDouble();
           _lastPositionTime = DateTime.now();
 
           completer.complete(true);
@@ -118,20 +119,17 @@ class WebGPSService implements GPSService {
       final completer = Completer<GPSResult>();
 
       // Configure options for high accuracy
-      final options = html.PositionOptions()
-        ..enableHighAccuracy = true
-        ..timeout = Duration(seconds: 15)
-        ..maximumAge = Duration(minutes: 5);
+      // Note: PositionOptions is deprecated, use parameters directly
 
       html.window.navigator.geolocation.getCurrentPosition(
-        enableHighAccuracy: options.enableHighAccuracy,
-        timeout: options.timeout,
-        maximumAge: options.maximumAge,
+        enableHighAccuracy: true,
+        timeout: Duration(seconds: 15),
+        maximumAge: Duration(minutes: 5),
       ).then(
         (html.Geoposition position) {
-          final lat = position.coords!.latitude!;
-          final lng = position.coords!.longitude!;
-          final accuracy = position.coords!.accuracy;
+          final lat = position.coords!.latitude!.toDouble();
+          final lng = position.coords!.longitude!.toDouble();
+          final accuracy = position.coords!.accuracy?.toDouble();
 
           debugPrint('✅ GPS location obtained: $lat, $lng (accuracy: ${accuracy}m)');
 

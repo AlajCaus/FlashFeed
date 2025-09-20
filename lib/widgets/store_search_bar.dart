@@ -16,13 +16,13 @@ class StoreSearchBar extends StatefulWidget {
   final String? placeholder;
   
   const StoreSearchBar({
-    Key? key,
+    super.key,
     required this.onStoreSelected,
     this.searchRadius = 5.0,
     this.requiredServices,
     this.openOnly = false,
     this.placeholder,
-  }) : super(key: key);
+  });
   
   @override
   State<StoreSearchBar> createState() => _StoreSearchBarState();
@@ -273,7 +273,7 @@ class _StoreSearchBarState extends State<StoreSearchBar> {
                 selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -402,10 +402,10 @@ class _StoreSearchResult extends StatelessWidget {
   final VoidCallback onTap;
   
   const _StoreSearchResult({
-    Key? key,
+    super.key,
     required this.store,
     required this.onTap,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
