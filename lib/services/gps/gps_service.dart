@@ -20,12 +20,18 @@ class GPSResult {
   final double longitude;
   final bool success;
   final String? error;
+  final bool isCached;
+  final bool isFallback;
+  final double? accuracy;
 
   GPSResult({
     required this.latitude,
     required this.longitude,
     required this.success,
     this.error,
+    this.isCached = false,
+    this.isFallback = false,
+    this.accuracy,
   });
 }
 
