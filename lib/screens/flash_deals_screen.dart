@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/flash_deals_provider.dart';
+import '../providers/location_provider.dart';
 import '../models/models.dart';
 import '../utils/responsive_helper.dart';
+import '../widgets/flash_deals_filter_bar.dart';
+import '../widgets/flash_deals_statistics.dart';
 
 /// FlashDealsScreen - Panel 3: Echtzeit-Rabatte
 /// 
@@ -17,30 +20,65 @@ class FlashDealsScreen extends StatefulWidget {
   State<FlashDealsScreen> createState() => _FlashDealsScreenState();
 }
 
-class _FlashDealsScreenState extends State<FlashDealsScreen> {
+class _FlashDealsScreenState extends State<FlashDealsScreen>
+    with SingleTickerProviderStateMixin {
   static const Color primaryGreen = Color(0xFF2E8B57);
   static const Color primaryRed = Color(0xFFDC143C);
   static const Color secondaryOrange = Color(0xFFFF6347);
   static const Color textSecondary = Color(0xFF666666);
 
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  final ScrollController _scrollController = ScrollController();
+
+  // Track expired deals for animation
+  final Set<String> _expiredDealIds = {};
+
   @override
   void initState() {
     super.initState();
+
+    // Initialize animation controller
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeIn,
+    );
+    _animationController.forward();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FlashDealsProvider>().loadFlashDeals();
     });
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final flashDealsProvider = context.watch<FlashDealsProvider>();
-    // Location provider is available if needed
-    // final locationProvider = context.watch<LocationProvider>();
+    final locationProvider = context.watch<LocationProvider>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: Column(
         children: [
+          // Statistics Dashboard
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: const FlashDealsStatistics(),
+            ),
+          ),
+
           // Professor Demo Button
           Container(
             padding: const EdgeInsets.all(16),
@@ -81,6 +119,9 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
             ),
           ),
 
+          // Filter Bar
+          const FlashDealsFilterBar(),
+
           // Flash Deals List
           Expanded(
             child: flashDealsProvider.isLoading
@@ -93,6 +134,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
                         },
                         child: ResponsiveHelper.isDesktop(context)
                             ? GridView.builder(
+                                controller: _scrollController,
                                 padding: ResponsiveHelper.getScreenPadding(context),
                                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: ResponsiveHelper.isTablet(context) ? 2 : 3,
@@ -103,15 +145,16 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
                                 itemCount: flashDealsProvider.flashDeals.length,
                                 itemBuilder: (context, index) {
                                   final deal = flashDealsProvider.flashDeals[index];
-                                  return _buildFlashDealCard(deal);
+                                  return _buildAnimatedDealCard(deal, index);
                                 },
                               )
                             : ListView.builder(
+                                controller: _scrollController,
                                 padding: ResponsiveHelper.getScreenPadding(context),
                                 itemCount: flashDealsProvider.flashDeals.length,
                                 itemBuilder: (context, index) {
                                   final deal = flashDealsProvider.flashDeals[index];
-                                  return _buildFlashDealCard(deal);
+                                  return _buildAnimatedDealCard(deal, index);
                                 },
                               ),
                       ),
@@ -142,10 +185,39 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
     );
   }
 
-  Widget _buildFlashDealCard(FlashDeal deal) {
+  Widget _buildAnimatedDealCard(FlashDeal deal, int index) {
+    final isExpired = deal.remainingSeconds <= 0;
+    final wasExpired = _expiredDealIds.contains(deal.productName);
+
+    if (isExpired && !wasExpired) {
+      _expiredDealIds.add(deal.productName);
+      // Trigger expired animation
+      Future.delayed(Duration.zero, () {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      transform: Matrix4.identity()
+        ..setEntry(3, 2, 0.001)
+        ..rotateX(isExpired ? 0.05 : 0),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 500),
+        opacity: isExpired ? 0.5 : 1.0,
+        child: _buildFlashDealCard(deal, isExpired),
+      ),
+    );
+  }
+
+  Widget _buildFlashDealCard(FlashDeal deal, bool isExpired) {
     final Color timerColor = _getTimerColor(deal.remainingSeconds);
     final cardPadding = ResponsiveHelper.getCardPadding(context);
     final spacing = ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space4);
+    final locationProvider = context.watch<LocationProvider>();
     
     return Container(
       margin: EdgeInsets.only(bottom: spacing),
@@ -218,25 +290,64 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
             ),
             
             const SizedBox(height: 12),
-            
-            // Product Name
-            Text(
-              deal.productName,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-              ),
+
+            // Product Name with Category Icon
+            Row(
+              children: [
+                _getCategoryIcon(deal.productName),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    deal.productName,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      decoration: isExpired ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            
+
             const SizedBox(height: 4),
-            
-            // Brand
-            Text(
-              deal.brand,
-              style: TextStyle(
-                fontSize: 14,
-                color: textSecondary,
-              ),
+
+            // Brand with Regional Badge
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    deal.brand,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: textSecondary,
+                    ),
+                  ),
+                ),
+                if (locationProvider.hasPostalCode)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.location_on, size: 12, color: Colors.blue),
+                        const SizedBox(width: 2),
+                        Text(
+                          'Regional',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ),
             
             const SizedBox(height: 12),
@@ -266,7 +377,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
             
             const SizedBox(height: 8),
             
-            // Store Info
+            // Store Info with Distance
             Row(
               children: [
                 Icon(Icons.store, size: 16, color: textSecondary),
@@ -280,20 +391,47 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
                     ),
                   ),
                 ),
+                // Distance display would go here if we had coordinates
               ],
             ),
-            
+
+            // Quick Actions
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.share, size: 20),
+                  color: textSecondary,
+                  onPressed: () => _shareDeal(deal),
+                  tooltip: 'Teilen',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.favorite_border, size: 20),
+                  color: textSecondary,
+                  onPressed: () => _favoriteDeal(deal),
+                  tooltip: 'Favorit',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.directions, size: 20),
+                  color: textSecondary,
+                  onPressed: () => _navigateToDeal(deal),
+                  tooltip: 'Navigation',
+                ),
+              ],
+            ),
+
             const SizedBox(height: 12),
-            
+
             // Action Button
             ElevatedButton(
-              onPressed: () => _showLageplanModal(context, deal),
+              onPressed: isExpired ? null : () => _showLageplanModal(context, deal),
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryGreen,
+                backgroundColor: isExpired ? Colors.grey : primaryGreen,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 40),
               ),
-              child: const Text('Zum Lageplan'),
+              child: Text(isExpired ? 'Deal abgelaufen' : 'Zum Lageplan'),
             ),
           ],
         ),
@@ -317,8 +455,63 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
            '${secs.toString().padLeft(2, '0')}';
   }
 
+  // Helper methods for new features
+  Icon _getCategoryIcon(String productName) {
+    final name = productName.toLowerCase();
+    if (name.contains('fleisch') || name.contains('wurst')) {
+      return Icon(Icons.set_meal, size: 20, color: primaryRed);
+    } else if (name.contains('obst') || name.contains('gemüse')) {
+      return Icon(Icons.eco, size: 20, color: primaryGreen);
+    } else if (name.contains('milch') || name.contains('käse')) {
+      return Icon(Icons.egg, size: 20, color: secondaryOrange);
+    } else if (name.contains('brot') || name.contains('backware')) {
+      return Icon(Icons.bakery_dining, size: 20, color: Colors.brown);
+    } else if (name.contains('getränk')) {
+      return Icon(Icons.local_drink, size: 20, color: Colors.blue);
+    }
+    return Icon(Icons.shopping_basket, size: 20, color: textSecondary);
+  }
+
+  // Distance calculation removed - would need proper coordinates integration
+
+  void _shareDeal(FlashDeal deal) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Deal "${deal.productName}" geteilt!'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _favoriteDeal(FlashDeal deal) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('"${deal.productName}" zu Favoriten hinzugefügt!'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _navigateToDeal(FlashDeal deal) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Navigation zu ${deal.storeName} gestartet!'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   // Task 14: Mock Push Notification for new deals
   void _showNewDealNotification(BuildContext context, FlashDeal deal) {
+    // Smooth scroll to top to show new deal
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+    }
+
     // Show impressive notification banner
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
