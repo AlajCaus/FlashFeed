@@ -402,7 +402,6 @@ class _StoreSearchResult extends StatelessWidget {
   final VoidCallback onTap;
   
   const _StoreSearchResult({
-    super.key,
     required this.store,
     required this.onTap,
   });

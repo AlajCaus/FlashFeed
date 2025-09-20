@@ -410,7 +410,6 @@ class _AlternativeRetailerChip extends StatelessWidget {
   final VoidCallback? onTap;
   
   const _AlternativeRetailerChip({
-    super.key,
     required this.retailer,
     this.onTap,
   });

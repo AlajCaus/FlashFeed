@@ -80,7 +80,7 @@ class _MapScreenState extends State<MapScreen> {
     return Stack(
       children: [
         // OpenStreetMap
-        Container(
+        SizedBox(
           height: screenHeight - 120,
           child: FlutterMap(
             mapController: _mapController,
@@ -202,12 +202,12 @@ class _MapScreenState extends State<MapScreen> {
     if (hasLocation) {
       // Use searchStores with location filter
       stores = retailersProvider.allStores.where((store) {
-        if (store.latitude == null || store.longitude == null) return false;
+        if (store.longitude == null) return false;
         final distance = _calculateDistance(
           locationProvider.latitude!,
           locationProvider.longitude!,
-          store.latitude!,
-          store.longitude!,
+          store.latitude,
+          store.longitude,
         );
         return distance <= _radiusKm;
       }).toList();
@@ -221,10 +221,10 @@ class _MapScreenState extends State<MapScreen> {
 
     // Create markers for each store
     for (final store in stores) {
-      if (store.latitude != null && store.longitude != null) {
+      if (store.longitude != null) {
         markers.add(
           Marker(
-            point: LatLng(store.latitude!, store.longitude!),
+            point: LatLng(store.latitude, store.longitude),
             width: 40,
             height: 40,
             child: GestureDetector(
@@ -568,29 +568,29 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ],
           ),
-          if (store.phoneNumber != null) ...[
-            SizedBox(height: ResponsiveHelper.space3),
-            Row(
-              children: [
-                Icon(Icons.phone, size: 16, color: textSecondary),
-                const SizedBox(width: 8),
-                Text(
-                  store.phoneNumber!,
-                  style: TextStyle(
-                    fontSize: ResponsiveHelper.getBodySize(context),
-                    color: textSecondary,
-                  ),
+          ...[
+          SizedBox(height: ResponsiveHelper.space3),
+          Row(
+            children: [
+              Icon(Icons.phone, size: 16, color: textSecondary),
+              const SizedBox(width: 8),
+              Text(
+                store.phoneNumber!,
+                style: TextStyle(
+                  fontSize: ResponsiveHelper.getBodySize(context),
+                  color: textSecondary,
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
+        ],
         ],
       ),
     );
   }
 
   Future<void> _openNavigation(Store store) async {
-    if (store.latitude == null || store.longitude == null) {
+    if (store.longitude == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Keine Koordinaten für diese Filiale verfügbar'),
@@ -599,8 +599,8 @@ class _MapScreenState extends State<MapScreen> {
       return;
     }
 
-    final lat = store.latitude!;
-    final lng = store.longitude!;
+    final lat = store.latitude;
+    final lng = store.longitude;
     final address = Uri.encodeComponent('${store.street}, ${store.zipCode} ${store.city}');
 
     // Different URLs for web and mobile

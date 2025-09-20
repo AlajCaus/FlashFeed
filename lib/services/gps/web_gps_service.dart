@@ -27,12 +27,6 @@ class WebGPSService implements GPSService {
       // Check if geolocation is available
       // Note: isSupported is deprecated, check for null instead
       final geolocation = html.window.navigator.geolocation;
-      if (geolocation == null) {
-        debugPrint('❌ Geolocation not supported in this browser');
-        _hasPermission = false;
-        _permissionChecked = true;
-        return false;
-      }
 
       // Try to get current position to trigger permission dialog
       final completer = Completer<bool>();
@@ -131,10 +125,6 @@ class WebGPSService implements GPSService {
     try {
       final completer = Completer<GPSResult>();
       final geolocation = html.window.navigator.geolocation;
-
-      if (geolocation == null) {
-        return _getFallbackLocation('Geolocation not available');
-      }
 
       // Get position with options
       geolocation.getCurrentPosition(

@@ -252,7 +252,6 @@ class _RetailerGridItem extends StatelessWidget {
   final VoidCallback onTap;
   
   const _RetailerGridItem({
-    super.key,
     required this.retailer,
     required this.isSelected,
     required this.isAvailable,
@@ -346,7 +345,6 @@ class _RetailerListItem extends StatelessWidget {
   final VoidCallback onTap;
   
   const _RetailerListItem({
-    super.key,
     required this.retailer,
     required this.isSelected,
     required this.isAvailable,

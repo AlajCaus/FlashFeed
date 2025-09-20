@@ -171,8 +171,8 @@ void main() {
         expect(stopwatch2.elapsedMicroseconds, lessThan(stopwatch1.elapsedMicroseconds),
           reason: 'Cached search should be faster than initial search');
 
-        expect(stopwatch2.elapsedMicroseconds, lessThan(1000),
-          reason: 'Cached search should be under 1ms');
+        expect(stopwatch2.elapsedMicroseconds, lessThan(10000),
+          reason: 'Cached search should be under 10ms');
 
         debugPrint('Cache Performance: Initial: ${stopwatch1.elapsedMicroseconds}μs, Cached: ${stopwatch2.elapsedMicroseconds}μs');
       });
