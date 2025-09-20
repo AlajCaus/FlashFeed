@@ -1,7 +1,11 @@
 // FlashFeed User Provider - Freemium Logic & Settings
 // Verwaltet User-Einstellungen und Premium-Features
+// Task 16: Cross-Provider Communication für Freemium-Limits
 
 import 'package:flutter/material.dart';
+import 'offers_provider.dart';
+import 'flash_deals_provider.dart';
+import 'retailers_provider.dart';
 
 enum UserTier {
   free,       // Kostenloser User
@@ -14,11 +18,11 @@ class UserProvider extends ChangeNotifier {
   String? _userId;
   String? _userName;
   bool _isLoggedIn = false;
-  
+
   // Freemium Limits & Usage
-  static const int freeOffersLimit = 10;        // Max. 10 Angebote für Free User
-  static const int freeSearchesLimit = 5;       // Max. 5 Suchen pro Tag
-  static const int freeFlashDealsLimit = 3;    // Max. 3 Flash Deals
+  static const int freeRetailersLimit = 1;      // Free User: 1 Händler
+  static const int freeSearchesLimit = 999;     // Unbegrenzte Suchen
+  static const int freeFlashDealsLimit = 999;   // Alle Flash Deals sichtbar
   
   int _offersViewed = 0;
   int _searchesToday = 0;
@@ -37,7 +41,12 @@ class UserProvider extends ChangeNotifier {
   bool _hasAdvancedFilters = false;
   bool _hasFlashDealsAccess = false;
   bool _hasMapFeatures = false;
-  
+
+  // Task 16: Provider References for Freemium Enforcement
+  OffersProvider? _offersProvider;
+  FlashDealsProvider? _flashDealsProvider;
+  RetailersProvider? _retailersProvider;
+
   // Constructor
   UserProvider() {
     _initializeUser();
@@ -60,7 +69,7 @@ class UserProvider extends ChangeNotifier {
   int get offersViewed => _offersViewed;
   int get searchesToday => _searchesToday;
   int get flashDealsViewed => _flashDealsViewed;
-  int get remainingOffers => isPremium ? -1 : (freeOffersLimit - _offersViewed).clamp(0, freeOffersLimit);
+  int get availableRetailers => isPremium ? -1 : freeRetailersLimit;
   int get remainingSearches => isPremium ? -1 : (freeSearchesLimit - _searchesToday).clamp(0, freeSearchesLimit);
   int get remainingFlashDeals => isPremium ? -1 : (freeFlashDealsLimit - _flashDealsViewed).clamp(0, freeFlashDealsLimit);
   
@@ -111,18 +120,30 @@ class UserProvider extends ChangeNotifier {
   
   // Usage Tracking & Limits
   bool canViewOffers() {
-    _checkDailyReset();
-    return isPremium || _offersViewed < freeOffersLimit;
+    // Free users can see ALL offers from their selected retailer
+    return true;
   }
-  
+
   bool canPerformSearch() {
-    _checkDailyReset();
-    return isPremium || _searchesToday < freeSearchesLimit;
+    // Free users can search as much as they want
+    return true;
   }
-  
+
   bool canViewFlashDeals() {
-    _checkDailyReset();
-    return isPremium || _flashDealsViewed < freeFlashDealsLimit;
+    // Free users can see ALL flash deals from their selected retailer
+    return true;
+  }
+
+  bool canSelectRetailer(String retailerId, List<String> currentSelectedRetailers) {
+    // Free users can only select 1 retailer
+    if (isPremium) return true;
+
+    // If trying to select more than 1 retailer
+    if (!currentSelectedRetailers.contains(retailerId) &&
+        currentSelectedRetailers.length >= freeRetailersLimit) {
+      return false;
+    }
+    return true;
   }
   
   void incrementOffersViewed() {
@@ -210,16 +231,16 @@ class UserProvider extends ChangeNotifier {
   // Premium Upgrade Prompts
   String getUpgradePrompt(String feature) {
     switch (feature.toLowerCase()) {
+      case 'retailers':
+        return 'Als Free User können Sie nur einen Händler auswählen. Upgraden Sie zu Premium für alle Händler!';
       case 'offers':
-        return 'Sie haben Ihr Angebote-Limit erreicht. Upgraden Sie zu Premium für unbegrenzte Angebote!';
-      case 'search':
-        return 'Tägliches Such-Limit erreicht. Mit Premium können Sie unbegrenzt suchen!';
+        return 'Mit Premium sehen Sie Angebote von ALLEN Händlern gleichzeitig!';
       case 'flashdeals':
-        return 'Flash Deal Limit erreicht. Premium User sehen alle Flash Deals!';
+        return 'Mit Premium sehen Sie Flash Deals von ALLEN Händlern!';
       case 'map':
         return 'Karten-Features sind nur für Premium User verfügbar.';
       case 'filters':
-        return 'Erweiterte Filter sind ein Premium-Feature.';
+        return 'Mit Premium können Sie mehrere Händler gleichzeitig filtern.';
       default:
         return 'Dieses Feature ist nur für Premium User verfügbar.';
     }
@@ -233,9 +254,8 @@ class UserProvider extends ChangeNotifier {
       'searchesToday': _searchesToday,
       'flashDealsViewed': _flashDealsViewed,
       'favoriteRetailers': _favoriteRetailers.length,
-      'remainingOffers': remainingOffers,
-      'remainingSearches': remainingSearches,
-      'remainingFlashDeals': remainingFlashDeals,
+      'availableRetailers': availableRetailers,
+      'isPremium': isPremium,
     };
   }
   
@@ -273,22 +293,100 @@ class UserProvider extends ChangeNotifier {
     _resetUsage();
     notifyListeners();
   }
-  
+
   // Task 7: Alias for Professor Demo activation
   void activatePremiumDemo() {
     enableDemoMode();
   }
-  
+
   void resetToFreeMode() {
     _userTier = UserTier.free;
     _updatePremiumFeatures();
     _resetUsage();
     notifyListeners();
   }
-  
+
+  // Task 16: Cross-Provider Communication Methods
+  void registerWithProviders({
+    required OffersProvider offersProvider,
+    required FlashDealsProvider flashDealsProvider,
+    required RetailersProvider retailersProvider,
+  }) {
+    _offersProvider = offersProvider;
+    _flashDealsProvider = flashDealsProvider;
+    _retailersProvider = retailersProvider;
+
+    debugPrint('UserProvider: Registered with all providers for freemium enforcement');
+  }
+
+  void unregisterFromProviders() {
+    _offersProvider = null;
+    _flashDealsProvider = null;
+    _retailersProvider = null;
+    debugPrint('UserProvider: Unregistered from all providers');
+  }
+
+  // Task 16: Apply Freemium Limits
+  List<dynamic> applyFreemiumLimits(List<dynamic> items, String type) {
+    // Premium users see everything
+    if (isPremium) return items;
+
+    // Free users see ALL offers/deals from their selected retailer
+    // No limits on content, only on retailer selection
+    return items;
+  }
+
+  // Filter retailers for free users
+  List<String> filterAvailableRetailers(List<String> retailers) {
+    if (isPremium) return retailers;
+
+    // Free users can only see/select 1 retailer at a time
+    if (retailers.isEmpty) return retailers;
+
+    // Return only the first retailer for free users
+    return retailers.take(freeRetailersLimit).toList();
+  }
+
+  // Task 16: Check if user can perform action
+  bool canPerformAction(String action) {
+    _checkDailyReset();
+
+    switch (action) {
+      case 'viewOffers':
+        return canViewOffers();
+      case 'search':
+        return canPerformSearch();
+      case 'viewFlashDeals':
+        return canViewFlashDeals();
+      case 'useMap':
+        return canUseMapFeatures();
+      case 'advancedFilters':
+        return canUseAdvancedFilters();
+      default:
+        return true;
+    }
+  }
+
+  // Task 16: Get remaining limit for UI display
+  String getRemainingLimitText(String type) {
+    if (isPremium) return 'Premium: Alle Händler verfügbar';
+
+    switch (type) {
+      case 'offers':
+        return 'Free: 1 Händler - Alle Angebote sichtbar';
+      case 'retailers':
+        return 'Free: 1 Händler wählbar';
+      case 'flashdeals':
+        return 'Free: 1 Händler - Alle Flash Deals sichtbar';
+      default:
+        return 'Free: 1 Händler verfügbar';
+    }
+  }
+
   @override
   void dispose() {
-    // Clean up resources
+    // Clean up provider references
+    unregisterFromProviders();
     super.dispose();
   }
 }

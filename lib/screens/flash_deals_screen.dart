@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/flash_deals_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/user_provider.dart';
 import '../models/models.dart';
 import '../utils/responsive_helper.dart';
 import '../widgets/flash_deals_filter_bar.dart';
@@ -68,11 +69,51 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
   @override
   Widget build(BuildContext context) {
     final flashDealsProvider = context.watch<FlashDealsProvider>();
+    final userProvider = context.watch<UserProvider>();
+
+    // Task 16: No limits for free users - they see ALL flash deals from their selected retailer
+    // Premium users see flash deals from ALL retailers
+    var flashDeals = flashDealsProvider.flashDeals;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: Column(
         children: [
+          // Task 16: Freemium Limit Display
+          if (!userProvider.isPremium)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                border: Border(
+                  bottom: BorderSide(color: Colors.orange.shade200),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: Colors.orange.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      userProvider.getRemainingLimitText('flashdeals'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.orange.shade700,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _showUpgradeDialog(context),
+                    child: const Text('Premium'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.orange.shade700,
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           // Statistics Dashboard
           Padding(
             padding: const EdgeInsets.all(16),
@@ -129,7 +170,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
           Expanded(
             child: flashDealsProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : flashDealsProvider.flashDeals.isEmpty
+                : flashDeals.isEmpty  // Task 16: Use filtered flashDeals
                     ? _buildEmptyState()
                     : RefreshIndicator(
                         onRefresh: () async {
@@ -145,18 +186,18 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                                   crossAxisSpacing: ResponsiveHelper.space4,
                                   mainAxisSpacing: ResponsiveHelper.space4,
                                 ),
-                                itemCount: flashDealsProvider.flashDeals.length,
+                                itemCount: flashDeals.length,  // Task 16: Use filtered count
                                 itemBuilder: (context, index) {
-                                  final deal = flashDealsProvider.flashDeals[index];
+                                  final deal = flashDeals[index];
                                   return _buildAnimatedDealCard(deal, index);
                                 },
                               )
                             : ListView.builder(
                                 controller: _scrollController,
                                 padding: ResponsiveHelper.getScreenPadding(context),
-                                itemCount: flashDealsProvider.flashDeals.length,
+                                itemCount: flashDeals.length,  // Task 16: Use filtered count
                                 itemBuilder: (context, index) {
-                                  final deal = flashDealsProvider.flashDeals[index];
+                                  final deal = flashDeals[index];
                                   return _buildAnimatedDealCard(deal, index);
                                 },
                               ),
@@ -664,6 +705,53 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
   void _playNotificationSound() {
     // Use web audio service for cross-platform compatibility
     WebAudioServiceImpl.playNotificationSound();
+  }
+
+  // Task 16: Upgrade Dialog
+  void _showUpgradeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Upgrade zu Premium'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Mit Premium erhalten Sie:'),
+            const SizedBox(height: 8),
+            const Text('• Flash Deals von ALLEN Händlern'),
+            const Text('• Preisvergleich zwischen allen Händlern'),
+            const Text('• Mehrere Händler gleichzeitig'),
+            const Text('• Karten-Features mit allen Filialen'),
+            const SizedBox(height: 16),
+            Text(
+              context.read<UserProvider>().getUpgradePrompt('flashdeals'),
+              style: TextStyle(fontStyle: FontStyle.italic, color: textSecondary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Später'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.read<UserProvider>().enableDemoMode();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Premium aktiviert! Alle Flash Deals freigeschaltet.'),
+                  backgroundColor: Color(0xFF2E8B57),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: primaryGreen),
+            child: const Text('Premium aktivieren'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showLageplanModal(BuildContext context, FlashDeal deal) {

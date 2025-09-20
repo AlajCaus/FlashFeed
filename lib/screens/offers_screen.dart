@@ -107,6 +107,53 @@ class _OffersScreenState extends State<OffersScreen> {
       builder: (context) => _buildSortOptions(),
     );
   }
+
+  // Task 16: Upgrade Dialog for Premium Features
+  void _showUpgradeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Upgrade zu Premium'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Mit Premium erhalten Sie:'),
+            const SizedBox(height: 8),
+            const Text('• Angebote von ALLEN Händlern gleichzeitig'),
+            const Text('• Preisvergleich zwischen allen Händlern'),
+            const Text('• Mehrere Händler-Filter'),
+            const Text('• Karten-Features mit allen Filialen'),
+            const SizedBox(height: 16),
+            Text(
+              context.read<UserProvider>().getUpgradePrompt('offers'),
+              style: TextStyle(fontStyle: FontStyle.italic, color: textSecondary),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Später'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.read<UserProvider>().enableDemoMode();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Premium aktiviert! Alle Angebote freigeschaltet.'),
+                  backgroundColor: Color(0xFF2E8B57),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: primaryGreen),
+            child: const Text('Premium aktivieren'),
+          ),
+        ],
+      ),
+    );
+  }
   
   Widget _buildSortOptions() {
     final offersProvider = context.watch<OffersProvider>();
@@ -161,8 +208,11 @@ class _OffersScreenState extends State<OffersScreen> {
   }
   
   Widget _buildOffersGrid(OffersProvider offersProvider, UserProvider userProvider) {
-    final offers = offersProvider.displayedOffers;
-    
+    var offers = offersProvider.displayedOffers;
+
+    // Task 16: No limits for free users - they see ALL offers from their selected retailer
+    // Premium users see offers from ALL retailers
+
     if (offers.isEmpty) {
       return Center(
         child: RegionalAvailabilityBanner(
@@ -170,7 +220,7 @@ class _OffersScreenState extends State<OffersScreen> {
         ),
       );
     }
-    
+
     // Group offers by product for price comparison
     final Map<String, List<Offer>> offersByProduct = {};
     for (final offer in offers) {
@@ -378,6 +428,41 @@ class _OffersScreenState extends State<OffersScreen> {
             onFilterTap: _showFilterModal,
           ),
           
+          // Task 16: Freemium Limit Display
+          if (!userProvider.isPremium)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                border: Border(
+                  bottom: BorderSide(color: Colors.orange.shade200),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: Colors.orange.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      userProvider.getRemainingLimitText('offers'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.orange.shade700,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _showUpgradeDialog(context),
+                    child: const Text('Premium'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.orange.shade700,
+                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           // Filter Statistics Bar
           if (offersProvider.hasActiveFilters)
             Container(

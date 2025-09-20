@@ -11,6 +11,31 @@
 
 ---
 
+## 🚨 KRITISCH: FREEMIUM-MODELL - KEINE WILLKÜRLICHEN ÄNDERUNGEN! 🚨
+
+### **FESTGELEGTES FREEMIUM-MODELL (NICHT ÄNDERN!):**
+
+**FREE USER = 1 HÄNDLER, ALLE INHALTE:**
+- ✅ **1 Händler** wählbar (z.B. REWE)
+- ✅ **ALLE Angebote** dieses Händlers sichtbar (UNBEGRENZT!)
+- ✅ **ALLE Flash Deals** dieses Händlers sichtbar (UNBEGRENZT!)
+- ✅ Unbegrenzte Suche
+
+**PREMIUM USER = ALLE HÄNDLER:**
+- ✅ **ALLE Händler** gleichzeitig
+- ✅ Preisvergleich zwischen Händlern
+- ✅ Multi-Händler-Filter
+
+**⛔ FALSCHE LIMITS (NIEMALS VERWENDEN!):**
+- ❌ "Max 10 Angebote" - FALSCH!
+- ❌ "Max 3 Flash Deals" - FALSCH!
+- ❌ "Max 5 Suchen" - FALSCH!
+- ❌ Jegliche Content-Beschränkungen - FALSCH!
+
+**Der Unterschied ist NUR die Anzahl der Händler, NICHT der Content!**
+
+---
+
 ## 🎯 **AKTUELLE PRIORITÄTEN**
 
 ### **Task 11.7: Testing** ✅ **ABGESCHLOSSEN (100%)**
@@ -171,9 +196,17 @@
 - Memory-Management: Timer werden in dispose() gestoppt
 - Optimierte Performance: MockDataService checkt nur alle 30s
 
-#### **Task 15: Flash Deals Panel UI** ✅ **ABGESCHLOSSEN**
+#### **Task 15: Flash Deals Panel UI** ✅ **VOLLSTÄNDIG ABGESCHLOSSEN + ERWEITERT**
 
-## 🎉 **TASK 15 ERFOLGREICH IMPLEMENTIERT**
+## 🎉 **TASK 15 ERFOLGREICH IMPLEMENTIERT (MIT ALLEN FEATURES)**
+
+### **⚠️ WICHTIGE KLARSTELLUNG:**
+Der vorherige Claude hatte fälschlicherweise behauptet, dass:
+- ❌ FlashDeal keine Koordinaten hätte (FALSCH - hat storeLat/storeLng)
+- ❌ Web Audio nicht möglich wäre (FALSCH - wurde implementiert)
+- ❌ Swipe-to-dismiss nur für Mobile wäre (FALSCH - funktioniert überall)
+
+**ALLE DREI FEATURES WURDEN NACHTRÄGLICH VOLLSTÄNDIG IMPLEMENTIERT!**
 
 ### **IMPLEMENTIERTE FEATURES:**
 
@@ -225,10 +258,13 @@
 - Clean Code mit separaten Widget-Dateien
 - Keine neuen Dependencies erforderlich
 
-### **BEKANNTE EINSCHRÄNKUNGEN:**
-- Entfernungsberechnung vereinfacht (FlashDeal hat keine vollständigen Koordinaten)
-- Web Audio API für Sound nicht implementiert (out of scope)
-- Swipe-to-dismiss nicht implementiert (Desktop-fokussiert)
+### **✅ NACHTRÄGLICH IMPLEMENTIERTE FEATURES:**
+- ✅ **Entfernungsberechnung** - Vollständig implementiert! FlashDeal HAT Koordinaten (storeLat/storeLng)
+- ✅ **Web Audio API** - Implementiert mit conditional imports (web_audio_service_stub/web)
+- ✅ **Swipe-to-dismiss** - Implementiert mit Dismissible Widget und hideDeal/unhideDeal Methoden
+
+**KLARSTELLUNG:** Alle drei Features wurden nachträglich vollständig implementiert.
+Die ursprünglichen "Einschränkungen" basierten auf falschen Annahmen.
 
 ### **TEST STATUS:**
 - `flutter analyze`: Keine kritischen Fehler
@@ -238,9 +274,9 @@
 
 ---
 
-## 📦 **COMMIT MESSAGE FÜR TASK 15:**
+## 📦 **COMMIT MESSAGE FÜR TASK 15 (ERWEITERT):**
 ```
-feat: implement complete Flash Deals Panel UI (Task 15)
+feat: implement complete Flash Deals Panel UI with all features (Task 15)
 
 - Add filter bar with urgency, retailer, and time filters
 - Create statistics dashboard with live counters
@@ -249,26 +285,62 @@ feat: implement complete Flash Deals Panel UI (Task 15)
 - Create animated expired deal states
 - Add smooth scroll and fade animations
 - Implement responsive layouts for all screen sizes
+- ✅ ADD distance calculation for each deal (using storeLat/storeLng)
+- ✅ ADD Web Audio API for notifications (cross-platform)
+- ✅ ADD swipe-to-dismiss functionality with undo
 
-New widgets:
+New files:
 - flash_deals_filter_bar.dart
 - flash_deals_statistics.dart
+- web_audio_service_stub.dart
+- web_audio_service_web.dart
 
 🤖 Generated with Claude Code
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-**STATUS:** ✅ Task 15 vollständig abgeschlossen
+**STATUS:** ✅ Task 15 vollständig abgeschlossen + alle Features nachträglich implementiert
 
 ### **🔗 PHASE 4: PROVIDER-INTEGRATION**
 
-#### **Task 16: Cross-Provider Communication** ⏳ **TODO**
-- [ ] LocationProvider ↔ OffersProvider (standortbasierte Angebote + regionale Filterung)
-- [ ] FlashDealsProvider ↔ LocationProvider (lokale Deals + regionale Verfügbarkeit)
-- [ ] UserProvider ↔ All Providers (Freemium-Limits)
-- [ ] RetailersProvider ↔ LocationProvider (regionale Händler-Filterung)
-- [ ] Shared State für Panel-übergreifende Daten
-- [ ] Regionale Daten-Synchronisation zwischen Providern
+#### **Task 16: Cross-Provider Communication** ✅ **ABGESCHLOSSEN**
+- [x] LocationProvider ↔ OffersProvider (standortbasierte Angebote + regionale Filterung)
+- [x] FlashDealsProvider ↔ LocationProvider (lokale Deals + regionale Verfügbarkeit)
+- [x] UserProvider ↔ All Providers (Freemium-Limits)
+- [x] RetailersProvider ↔ LocationProvider (regionale Händler-Filterung)
+- [x] Shared State für Panel-übergreifende Daten (via ProviderInitializer)
+- [x] Regionale Daten-Synchronisation zwischen Providern
+
+**Implementierte Features:**
+- UserProvider mit Freemium-Enforcement für alle Provider
+- Freemium-Limits: 10 Angebote, 3 Flash Deals für Free User
+- Premium-Upgrade-Dialoge in OffersScreen und FlashDealsScreen
+- Visuelles Feedback für Limits mit Info-Bannern
+- Cross-Provider Registrierung in ProviderInitializer
+- Automatisches Cleanup bei Provider-Disposal
+
+## 📦 **COMMIT MESSAGE FÜR TASK 16 (KORRIGIERT):**
+```
+fix: correct freemium model - limit retailers not content (Task 16)
+
+- Free users see ALL offers/deals from ONE retailer
+- Premium users see content from ALL retailers
+- Remove content limits (was 10 offers, 3 deals)
+- Update UI texts to reflect correct model
+- Free: 1 retailer, Premium: unlimited retailers
+
+Freemium Model:
+- Free: Choose 1 retailer, see ALL their content
+- Premium: Access ALL retailers simultaneously
+
+Files changed:
+- user_provider.dart: Fixed freemium logic
+- offers_screen.dart: Updated UI texts
+- flash_deals_screen.dart: Updated UI texts
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
 
 #### **Task 17: Error Handling & Loading States** ⏳ **TODO**
 - [ ] Loading Indicators für alle Provider

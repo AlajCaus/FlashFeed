@@ -2,6 +2,19 @@
 
 ✅ **Git Setup erfolgreich abgeschlossen!**
 
+## 🚨 KRITISCHES FREEMIUM-MODELL - NICHT ÄNDERN! 🚨
+
+**FREE USER:**
+- 1 Händler wählbar
+- ALLE Angebote dieses Händlers (UNBEGRENZT!)
+- ALLE Flash Deals dieses Händlers (UNBEGRENZT!)
+
+**PREMIUM USER:**
+- ALLE Händler gleichzeitig
+- Preisvergleich zwischen Händlern
+
+**NIEMALS hardcodierte Limits wie "10 Angebote" oder "3 Flash Deals" verwenden!**
+
 1. Denke zunächst über das Problem nach, suche in der Codebasis nach relevanten Dateien und schreibe einen Plan in tasks/todo.md.
 2. Der Plan sollte eine Liste mit Aufgaben enthalten, die du abhaken kannst, sobald du sie erledigt hast.
 3. Bevor du mit der Arbeit beginnst, melde dich bei mir, damit ich den Plan überprüfen kann.

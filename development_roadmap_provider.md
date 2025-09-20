@@ -1,5 +1,35 @@
 # FlashFeed Entwicklungsplan - Provider Pattern
 
+## ⚠️ WICHTIG: FREEMIUM-MODELL - NICHT ÄNDERN! ⚠️
+
+### **FREEMIUM-MODELL DEFINITION (FESTGELEGT - KEINE WILLKÜRLICHEN ÄNDERUNGEN!)**
+
+**FREE USER (Kostenlos):**
+- ✅ Kann **EINEN (1) Händler** auswählen (z.B. REWE oder EDEKA)
+- ✅ Sieht **ALLE Angebote** dieses einen Händlers (KEIN LIMIT!)
+- ✅ Sieht **ALLE Flash Deals** dieses einen Händlers (KEIN LIMIT!)
+- ✅ Unbegrenzte Suche innerhalb dieses Händlers
+- ✅ Vollständige App-Funktionalität für diesen einen Händler
+
+**PREMIUM USER (Bezahlt):**
+- ✅ Zugriff auf **ALLE Händler gleichzeitig**
+- ✅ Preisvergleich zwischen allen Händlern
+- ✅ Multi-Händler-Filter und Suche
+- ✅ Karten-Features mit allen Filialen aller Händler
+- ✅ Aggregierte Ansicht aller Angebote
+
+**❌ NIEMALS DIESE LIMITS VERWENDEN (FALSCH!):**
+- ❌ NICHT: "Max 10 Angebote für Free User"
+- ❌ NICHT: "Max 3 Flash Deals für Free User"
+- ❌ NICHT: "Max 5 Suchen pro Tag"
+- ❌ NICHT: Irgendwelche Content-Limits
+
+**📝 GRUND:**
+Free User sollen die volle Funktionalität mit einem Händler erleben können.
+Das Upgrade-Argument ist der Preisvergleich zwischen Händlern, nicht künstliche Limits!
+
+---
+
 ## PHASE 1: MVP (3 Wochen - Provider-basiert)
 
 ### Woche 1: Grundlagen & Provider Setup
