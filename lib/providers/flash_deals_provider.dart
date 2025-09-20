@@ -1,6 +1,7 @@
 // FlashFeed Flash Deals Provider - Echtzeit Rabatte
 // Nutzt MockDataService für Live-Updates
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../main.dart'; // Access to global mockDataService
@@ -13,15 +14,19 @@ class FlashDealsProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   bool _disposed = false; // Track disposal state
-  
+
   // Service instance (for test compatibility)
   late final MockDataService _mockDataService;
-  
+
+  // Task 14: Echtzeit-Countdown Timer
+  Timer? _countdownTimer;
+  bool _isCountdownActive = false;
+
   // Filter State
   String? _selectedUrgencyLevel;
   String? _selectedRetailer;
   int? _maxRemainingMinutes;
-  
+
   // Regional State (Task 5b.6: Cross-Provider Integration)
   String? _userPLZ;
   List<String> _availableRetailers = [];
@@ -33,6 +38,12 @@ class FlashDealsProvider extends ChangeNotifier {
   FlashDealsProvider({MockDataService? testService}) {
     _mockDataService = testService ?? mockDataService;
     _initializeCallbacks();
+
+    // Task 14: Start real-time countdown only in non-test environments
+    // Check if we're using a test service - if so, don't start the timer
+    if (testService == null) {
+      _startCountdownTimer();
+    }
   }
   
   // Getters
@@ -188,12 +199,92 @@ class FlashDealsProvider extends ChangeNotifier {
           _loadFlashDealsFromService();
         }
       });
-      
+
       // Initial load
       _loadFlashDealsFromService();
     }
   }
-  
+
+  // Task 14: Echtzeit-Countdown Timer Management
+  void _startCountdownTimer() {
+    if (_isCountdownActive) return;
+
+    _countdownTimer?.cancel();
+    _isCountdownActive = true;
+
+    // Update countdown every second for real-time experience
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!_disposed) {
+        _updateLocalCountdowns();
+      }
+    });
+
+    debugPrint('⏱️ FlashDealsProvider: Echtzeit-Countdown gestartet (1-Sekunden-Updates)');
+  }
+
+  void _stopCountdownTimer() {
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    _isCountdownActive = false;
+    debugPrint('⏹️ FlashDealsProvider: Countdown-Timer gestoppt');
+  }
+
+  // Public methods for test control
+  void startTimerForTesting() {
+    if (!_isCountdownActive) {
+      _startCountdownTimer();
+    }
+  }
+
+  void stopTimerForTesting() {
+    _stopCountdownTimer();
+  }
+
+  void _updateLocalCountdowns() {
+    if (_flashDeals.isEmpty) return;
+
+    final now = DateTime.now();
+    bool hasExpiredDeals = false;
+
+    // Update remaining seconds for all deals
+    for (int i = 0; i < _flashDeals.length; i++) {
+      final deal = _flashDeals[i];
+      final newRemainingSeconds = deal.expiresAt.difference(now).inSeconds;
+
+      if (newRemainingSeconds <= 0) {
+        hasExpiredDeals = true;
+        continue;
+      }
+
+      // Update urgency level based on remaining time
+      final newUrgencyLevel = newRemainingSeconds < 1800 ? 'high' :    // < 30 min
+                              newRemainingSeconds < 3600 ? 'medium' :  // < 1 hour
+                              'low';
+
+      // Update deal with new countdown values
+      _flashDeals[i] = deal.copyWith(
+        remainingSeconds: newRemainingSeconds,
+        urgencyLevel: newUrgencyLevel,
+      );
+    }
+
+    // Remove expired deals
+    if (hasExpiredDeals) {
+      final beforeCount = _flashDeals.length;
+      _flashDeals.removeWhere((deal) =>
+        deal.expiresAt.difference(now).inSeconds <= 0);
+      final removedCount = beforeCount - _flashDeals.length;
+      if (removedCount > 0) {
+        debugPrint('🗑️ $removedCount Flash Deal(s) abgelaufen und entfernt');
+      }
+    }
+
+    // Notify listeners for UI update
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
+
   // Load Flash Deals from MockDataService
   void _loadFlashDealsFromService() {
     if (_mockDataService.isInitialized) {
@@ -220,19 +311,38 @@ class FlashDealsProvider extends ChangeNotifier {
     }
   }
   
-  // Professor Demo: Generate Instant Flash Deal
+  // Task 14: Enhanced Professor Demo - Generate Impressive Flash Deals
   FlashDeal generateInstantFlashDeal() {
     try {
+      // Generate impressive deal with short duration (5-15 minutes)
       final deal = _mockDataService.generateInstantFlashDeal();
-      
+
       // Update local state immediately
       _loadFlashDealsFromService();
-      
+
+      // Trigger notification for new deal
+      _showFlashDealNotification(deal);
+
+      // Ensure countdown is active for new deal
+      if (!_isCountdownActive) {
+        _startCountdownTimer();
+      }
+
+      debugPrint('🎓 Professor Demo: Beeindruckender Flash Deal generiert!');
+      debugPrint('   → ${deal.productName} (-${deal.discountPercentage}%)');
+      debugPrint('   → Läuft ab in ${deal.remainingMinutes} Minuten');
+
       return deal;
     } catch (e) {
       _setError('Fehler beim Generieren des Flash Deals: ${e.toString()}');
       rethrow;
     }
+  }
+
+  // Task 14: Mock Push Notification
+  void _showFlashDealNotification(FlashDeal deal) {
+    // This will be called from UI to show SnackBar or Dialog
+    debugPrint('🔔 NEU: ${deal.productName} jetzt -${deal.discountPercentage}%!');
   }
   
   // Filter by Urgency Level
@@ -378,6 +488,9 @@ class FlashDealsProvider extends ChangeNotifier {
   void dispose() {
     // Prevent double disposal
     if (_disposed) return;
+
+    // Task 14: Stop countdown timer
+    _stopCountdownTimer();
 
     // CRITICAL: Auto-unregister callbacks to prevent memory leaks
     if (_locationProvider != null) {

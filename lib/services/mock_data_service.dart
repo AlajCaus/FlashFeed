@@ -138,14 +138,15 @@ class MockDataService {
       _onFlashDealsUpdated?.call(); // Direkte Provider-Benachrichtigung
     });
     
-    // Countdown Updates: alle 60 Sekunden Timer aktualisieren
+    // Task 14: Reduced countdown updates - Provider handles second-by-second updates
+    // MockDataService only updates deal state every 30 seconds for performance
     _countdownTimer?.cancel();
-    _countdownTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       _updateCountdownTimers();
       _onFlashDealsUpdated?.call(); // Provider-Update für Timer
     });
-    
-    debugPrint('⏰ MockDataService: Timer gestartet (Flash Deals: 2h, Countdown: 1min)');
+
+    debugPrint('⏰ MockDataService: Timer gestartet (Flash Deals: 2h, State-Check: 30s)');
   }
 
   // Mock Data Generation basierend auf Datenbank-Schema
@@ -718,19 +719,79 @@ class MockDataService {
     );
   }
 
-  // Professor Demo Features
+  // Task 14: Enhanced Professor Demo Features
   FlashDeal generateInstantFlashDeal() {
     final now = DateTime.now();
-    final deal = _generateSingleFlashDeal(now)!;
-    
-    // Add to active deals
-    _flashDeals.add(deal);
-    
+
+    // Generate impressive demo deal with short duration
+    final deal = _generateProfessorDemoDeal(now);
+
+    // Add to active deals at the beginning for visibility
+    _flashDeals.insert(0, deal);
+
+    // Limit total deals to prevent overflow
+    if (_flashDeals.length > 30) {
+      _flashDeals.removeLast();
+    }
+
     // Notify providers immediately
     _onFlashDealsUpdated?.call();
-    
-    debugPrint('🎓 Professor Demo: Instant Flash Deal generiert - ${deal.productName}');
+
+    debugPrint('🎓 Professor Demo: BEEINDRUCKENDER Flash Deal generiert!');
+    debugPrint('   → ${deal.productName} von ${deal.brand}');
+    debugPrint('   → ${deal.discountPercentage}% Rabatt (${deal.originalPrice.toStringAsFixed(2)}€ → ${deal.flashPrice.toStringAsFixed(2)}€)');
+    debugPrint('   → Läuft ab in ${deal.remainingMinutes} Minuten!');
+
     return deal;
+  }
+
+  // Task 14: Generate impressive demo deals
+  FlashDeal _generateProfessorDemoDeal(DateTime currentTime) {
+    if (_products.isEmpty || _stores.isEmpty) {
+      throw Exception('No products or stores available');
+    }
+
+    // Select premium products for impressive demo
+    final premiumProducts = _products.where((p) => p.basePriceCents > 1000).toList();
+    final product = premiumProducts.isNotEmpty
+        ? premiumProducts[_random.nextInt(premiumProducts.length)]
+        : _products[_random.nextInt(_products.length)];
+
+    final beaconStores = _stores.where((s) => s.hasBeacon).toList();
+    if (beaconStores.isEmpty) {
+      throw Exception('No beacon stores available');
+    }
+
+    final store = beaconStores[_random.nextInt(beaconStores.length)];
+    final retailer = _retailers.firstWhere((r) => r.id == store.chainId);
+
+    // Impressive discount: 50-70% for demo
+    final discountPercent = _random.nextInt(21) + 50; // 50-70%
+    final originalPrice = product.basePriceCents;
+    final flashPrice = (originalPrice * (1 - discountPercent / 100)).round();
+
+    // Short duration for urgency: 5-15 minutes
+    final durationMinutes = _random.nextInt(11) + 5; // 5-15 minutes
+    final expiresAt = currentTime.add(Duration(minutes: durationMinutes));
+
+    return FlashDeal(
+      id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
+      productName: product.name,
+      brand: product.brand,
+      retailer: retailer.name,
+      storeName: store.name,
+      storeAddress: store.address,
+      originalPriceCents: originalPrice,
+      flashPriceCents: flashPrice,
+      discountPercentage: discountPercent,
+      expiresAt: expiresAt,
+      remainingSeconds: expiresAt.difference(currentTime).inSeconds,
+      urgencyLevel: 'high', // Always high urgency for demo
+      estimatedStock: _random.nextInt(10) + 3, // Low stock for urgency
+      shelfLocation: _generateShelfLocation(),
+      storeLat: store.latitude,
+      storeLng: store.longitude,
+    );
   }
   
   // Test Helper: Manual timer update for test mode

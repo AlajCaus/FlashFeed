@@ -46,13 +46,20 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
               onPressed: () {
-                flashDealsProvider.loadFlashDeals();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Neue Flash Deals generiert!'),
-                    backgroundColor: Color(0xFF2E8B57),
-                  ),
-                );
+                // Task 14: Enhanced Professor Demo with notification
+                try {
+                  final newDeal = flashDealsProvider.generateInstantFlashDeal();
+
+                  // Show impressive notification
+                  _showNewDealNotification(context, newDeal);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Fehler: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryGreen,
@@ -308,6 +315,57 @@ class _FlashDealsScreenState extends State<FlashDealsScreen> {
     return '${hours.toString().padLeft(2, '0')}:'
            '${minutes.toString().padLeft(2, '0')}:'
            '${secs.toString().padLeft(2, '0')}';
+  }
+
+  // Task 14: Mock Push Notification for new deals
+  void _showNewDealNotification(BuildContext context, FlashDeal deal) {
+    // Show impressive notification banner
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 5),
+        backgroundColor: primaryRed,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.flash_on, color: Colors.yellow, size: 24),
+                const SizedBox(width: 8),
+                const Text(
+                  '🔥 FLASH DEAL!',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${deal.productName} - ${deal.discountPercentage}% RABATT!',
+              style: const TextStyle(fontSize: 14, color: Colors.white),
+            ),
+            Text(
+              'Nur noch ${deal.remainingMinutes} Minuten! Bei ${deal.retailer}',
+              style: TextStyle(fontSize: 12, color: Colors.white.withAlpha(204)),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'ANSEHEN',
+          textColor: Colors.yellow,
+          onPressed: () {
+            // Scroll to top to see the new deal
+          },
+        ),
+      ),
+    );
+
+    // Optional: Play a notification sound (web audio API)
+    // This would require additional implementation
   }
 
   void _showLageplanModal(BuildContext context, FlashDeal deal) {

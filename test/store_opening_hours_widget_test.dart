@@ -353,7 +353,8 @@ void main() {
         expect(find.textContaining('07:00'), findsWidgets);
         expect(find.textContaining('22:00'), findsWidgets);
         expect(find.textContaining('09:00'), findsWidgets);
-        expect(find.text('Geschlossen'), findsOneWidget);
+        // Changed: Allow multiple "Geschlossen" texts (can appear in header and detail)
+        expect(find.text('Geschlossen'), findsWidgets);
       });
 
       testWidgets('should handle holiday hours', (tester) async {

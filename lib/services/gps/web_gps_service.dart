@@ -2,6 +2,7 @@
 // Task 12: LocationProvider Setup with Web Geolocation
 
 import 'dart:async';
+// ignore: deprecated_member_use
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'gps_service.dart';
@@ -24,8 +25,9 @@ class WebGPSService implements GPSService {
 
     try {
       // Check if geolocation is available
-      // Note: isSupported is not available, check for null instead
-      if (html.window.navigator.geolocation == null) {
+      // Note: isSupported is deprecated, check for null instead
+      final geolocation = html.window.navigator.geolocation;
+      if (geolocation == null) {
         debugPrint('❌ Geolocation not supported in this browser');
         _hasPermission = false;
         _permissionChecked = true;
@@ -35,37 +37,48 @@ class WebGPSService implements GPSService {
       // Try to get current position to trigger permission dialog
       final completer = Completer<bool>();
 
-      html.window.navigator.geolocation.getCurrentPosition().then(
+      geolocation.getCurrentPosition().then(
         (html.Geoposition position) {
           debugPrint('✅ GPS permission granted');
           _hasPermission = true;
           _permissionChecked = true;
 
-          // Cache the position (convert num to double)
-          _lastLatitude = position.coords!.latitude!.toDouble();
-          _lastLongitude = position.coords!.longitude!.toDouble();
-          _lastPositionTime = DateTime.now();
+          // Cache the position (convert num to double safely)
+          final coords = position.coords;
+          if (coords != null) {
+            _lastLatitude = coords.latitude?.toDouble();
+            _lastLongitude = coords.longitude?.toDouble();
+            _lastPositionTime = DateTime.now();
+          }
 
           completer.complete(true);
         },
-        onError: (html.PositionError error) {
-          debugPrint('❌ GPS permission denied or error: ${error.message}');
-          _hasPermission = false;
-          _permissionChecked = true;
+        onError: (dynamic error) {
+          // Handle error generically
+          String errorMessage = 'Unknown error';
+          int errorCode = 0;
 
-          // Handle different error codes
-          switch (error.code) {
-            case 1: // PERMISSION_DENIED
-              debugPrint('User denied GPS permission');
-              break;
-            case 2: // POSITION_UNAVAILABLE
-              debugPrint('Position unavailable');
-              break;
-            case 3: // TIMEOUT
-              debugPrint('GPS request timed out');
-              break;
+          if (error is html.PositionError) {
+            errorMessage = error.message ?? 'Position error';
+            errorCode = error.code ?? 0;
+
+            // Handle different error codes
+            switch (errorCode) {
+              case 1: // PERMISSION_DENIED
+                debugPrint('User denied GPS permission');
+                break;
+              case 2: // POSITION_UNAVAILABLE
+                debugPrint('Position unavailable');
+                break;
+              case 3: // TIMEOUT
+                debugPrint('GPS request timed out');
+                break;
+            }
           }
 
+          debugPrint('❌ GPS permission denied or error: $errorMessage');
+          _hasPermission = false;
+          _permissionChecked = true;
           completer.complete(false);
         }
       );
@@ -117,36 +130,49 @@ class WebGPSService implements GPSService {
 
     try {
       final completer = Completer<GPSResult>();
+      final geolocation = html.window.navigator.geolocation;
 
-      // Configure options for high accuracy
-      // Note: PositionOptions is deprecated, use parameters directly
+      if (geolocation == null) {
+        return _getFallbackLocation('Geolocation not available');
+      }
 
-      html.window.navigator.geolocation.getCurrentPosition(
+      // Get position with options
+      geolocation.getCurrentPosition(
         enableHighAccuracy: true,
         timeout: Duration(seconds: 15),
         maximumAge: Duration(minutes: 5),
       ).then(
         (html.Geoposition position) {
-          final lat = position.coords!.latitude!.toDouble();
-          final lng = position.coords!.longitude!.toDouble();
-          final accuracy = position.coords!.accuracy?.toDouble();
+          final coords = position.coords;
+          if (coords != null) {
+            // Safe type conversion from num to double
+            final lat = coords.latitude?.toDouble() ?? 0.0;
+            final lng = coords.longitude?.toDouble() ?? 0.0;
+            final accuracy = coords.accuracy?.toDouble();
 
-          debugPrint('✅ GPS location obtained: $lat, $lng (accuracy: ${accuracy}m)');
+            debugPrint('✅ GPS location obtained: $lat, $lng (accuracy: ${accuracy}m)');
 
-          // Cache the position
-          _lastLatitude = lat;
-          _lastLongitude = lng;
-          _lastPositionTime = DateTime.now();
+            // Cache the position
+            _lastLatitude = lat;
+            _lastLongitude = lng;
+            _lastPositionTime = DateTime.now();
 
-          completer.complete(GPSResult(
-            latitude: lat,
-            longitude: lng,
-            success: true,
-            accuracy: accuracy,
-          ));
+            completer.complete(GPSResult(
+              latitude: lat,
+              longitude: lng,
+              success: true,
+              accuracy: accuracy,
+            ));
+          } else {
+            completer.complete(_getFallbackLocation('No coordinates available'));
+          }
         },
-        onError: (html.PositionError error) {
-          debugPrint('❌ Error getting GPS location: ${error.message}');
+        onError: (dynamic error) {
+          String errorMessage = 'Unknown error';
+          if (error is html.PositionError) {
+            errorMessage = error.message ?? 'Position error';
+          }
+          debugPrint('❌ Error getting GPS location: $errorMessage');
 
           // If we have cached position less than 5 minutes old, use it
           if (_lastLatitude != null &&
@@ -162,7 +188,7 @@ class WebGPSService implements GPSService {
             ));
           } else {
             // Fall back to IP-based geolocation or default
-            completer.complete(_getFallbackLocation(error.message));
+            completer.complete(_getFallbackLocation(errorMessage));
           }
         }
       );
@@ -367,4 +393,3 @@ class WebGPSService implements GPSService {
     return '60000'; // Frankfurt region (center)
   }
 }
-
