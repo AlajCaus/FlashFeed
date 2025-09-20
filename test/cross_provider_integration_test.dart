@@ -414,40 +414,27 @@ void main() {
         callbacks.clear();
       });
 
-      test('Defensive callback limits enforcement', () async {
-        // Arrange: Try to register more callbacks than the limit
+      test('Unlimited callbacks are supported in production', () async {
+        // This test verifies that artificial callback limits have been removed
+        // In production, callbacks are managed by widget lifecycle
+
+        // Arrange: Store initial callback count
+        final initialCount = locationProvider.regionalDataCallbackCount;
         final callbacks = <Function(String?, List<String>)>[];
-        final maxCallbacks = LocationProvider.maxRegionalDataCallbacks;
 
-        // First, fill up to the limit (accounting for 3 existing provider callbacks)
-        final availableSlots = maxCallbacks - locationProvider.regionalDataCallbackCount;
-
-        for (int i = 0; i < availableSlots; i++) {
+        // Act: Register many callbacks (100, well beyond old limit of 50)
+        for (int i = 0; i < 100; i++) {
           final callbackIndex = i;
           Function(String?, List<String>) callback = (String? plz, List<String> retailers) {
-            debugPrint('Limit test callback $callbackIndex triggered');
+            debugPrint('Callback $callbackIndex triggered');
           };
           callbacks.add(callback);
           locationProvider.registerRegionalDataCallback(callback);
         }
 
-        // Verify we're at the limit
-        expect(locationProvider.regionalDataCallbackCount, equals(maxCallbacks));
-
-        // Act: Try to register one more callback (should fail)
-        Function(String?, List<String>) extraCallback = (String? plz, List<String> retailers) {
-          debugPrint('This callback should not be registered');
-        };
-
-        // Assert: Should throw StateError when limit is exceeded
-        expect(
-          () => locationProvider.registerRegionalDataCallback(extraCallback),
-          throwsA(isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            contains('Maximum regional data callbacks reached'),
-          )),
-        );
+        // Assert: All callbacks should be registered
+        expect(locationProvider.regionalDataCallbackCount, equals(initialCount + 100),
+            reason: 'Should allow unlimited callback registrations');
 
         // Cleanup: Unregister all test callbacks
         for (final callback in callbacks) {
@@ -455,7 +442,8 @@ void main() {
         }
 
         // Verify cleanup
-        expect(locationProvider.regionalDataCallbackCount, equals(3), reason: 'Should be back to just provider callbacks');
+        expect(locationProvider.regionalDataCallbackCount, equals(initialCount),
+            reason: 'Should be back to initial callback count after cleanup');
       });
       
       test('Provider disposal cleanup', () async {

@@ -69,9 +69,9 @@ class LocationProvider extends ChangeNotifier {
   final List<VoidCallback> _locationChangeCallbacks = [];
   final List<Function(String?, List<String>)> _regionalDataCallbacks = [];
 
-  // Defensive limits to prevent DoS attacks via callback flooding
-  static const int _maxLocationCallbacks = 50;
-  static const int _maxRegionalDataCallbacks = 50;
+  // NOTE: Callback limits removed for production use
+  // In a real app, callbacks are managed by widget lifecycle
+  // and Provider framework, not arbitrary limits
   
   // PLZ Fallback State (Task 5b.3)
   String? _userPLZ; // Cached user PLZ from LocalStorage
@@ -233,21 +233,11 @@ class LocationProvider extends ChangeNotifier {
     return _regionalDataCallbacks.length;
   }
 
-  @visibleForTesting
-  static int get maxLocationCallbacks => _maxLocationCallbacks;
-
-  @visibleForTesting
-  static int get maxRegionalDataCallbacks => _maxRegionalDataCallbacks;
+  // Callback limits removed - no artificial restrictions in production
   
   // Provider Callbacks API (Task 5b.5)
   void registerLocationChangeCallback(VoidCallback callback) {
     _checkDisposed();
-
-    // Defensive limit check
-    if (_locationChangeCallbacks.length >= _maxLocationCallbacks) {
-      debugPrint('⚠️ LocationProvider: Location callback limit reached ($_maxLocationCallbacks). Rejecting registration.');
-      throw StateError('Maximum location callbacks reached ($_maxLocationCallbacks). Cannot register more callbacks.');
-    }
 
     // Prevent duplicate registrations
     if (_locationChangeCallbacks.contains(callback)) {
@@ -256,17 +246,13 @@ class LocationProvider extends ChangeNotifier {
     }
 
     _locationChangeCallbacks.add(callback);
-    debugPrint('✅ LocationProvider: Location callback registered. Total: ${_locationChangeCallbacks.length}/$_maxLocationCallbacks');
+    debugPrint('✅ LocationProvider: Location callback registered. Total: ${_locationChangeCallbacks.length}');
   }
 
   void registerRegionalDataCallback(Function(String?, List<String>) callback) {
     _checkDisposed();
 
-    // Defensive limit check
-    if (_regionalDataCallbacks.length >= _maxRegionalDataCallbacks) {
-      debugPrint('⚠️ LocationProvider: Regional data callback limit reached ($_maxRegionalDataCallbacks). Rejecting registration.');
-      throw StateError('Maximum regional data callbacks reached ($_maxRegionalDataCallbacks). Cannot register more callbacks.');
-    }
+    // No artificial limits in production
 
     // Prevent duplicate registrations
     if (_regionalDataCallbacks.contains(callback)) {
@@ -275,14 +261,14 @@ class LocationProvider extends ChangeNotifier {
     }
 
     _regionalDataCallbacks.add(callback);
-    debugPrint('✅ LocationProvider: Regional data callback registered. Total: ${_regionalDataCallbacks.length}/$_maxRegionalDataCallbacks');
+    debugPrint('✅ LocationProvider: Regional data callback registered. Total: ${_regionalDataCallbacks.length}');
   }
   
   void unregisterLocationChangeCallback(VoidCallback callback) {
     _checkDisposed();
     final wasRemoved = _locationChangeCallbacks.remove(callback);
     if (wasRemoved) {
-      debugPrint('✅ LocationProvider: Location callback unregistered. Remaining: ${_locationChangeCallbacks.length}/$_maxLocationCallbacks');
+      debugPrint('✅ LocationProvider: Location callback unregistered. Remaining: ${_locationChangeCallbacks.length}');
     } else {
       debugPrint('⚠️ LocationProvider: Location callback not found for unregistration.');
     }
@@ -292,7 +278,7 @@ class LocationProvider extends ChangeNotifier {
     _checkDisposed();
     final wasRemoved = _regionalDataCallbacks.remove(callback);
     if (wasRemoved) {
-      debugPrint('✅ LocationProvider: Regional data callback unregistered. Remaining: ${_regionalDataCallbacks.length}/$_maxRegionalDataCallbacks');
+      debugPrint('✅ LocationProvider: Regional data callback unregistered. Remaining: ${_regionalDataCallbacks.length}');
     } else {
       debugPrint('⚠️ LocationProvider: Regional data callback not found for unregistration.');
     }
