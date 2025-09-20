@@ -342,13 +342,13 @@ Files changed:
 Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-#### **Task 17: Error Handling & Loading States** ⏳ **TODO**
-- [ ] Loading Indicators für alle Provider
-- [ ] Error-Recovery Mechanismen
-- [ ] Offline-Fallback (cached Mock-Daten)
-- [ ] User-friendly Error Messages
-- [ ] "Keine Händler in Ihrer Region" Error-Cases
-- [ ] PLZ-Lookup Fehlerbehandlung (GPS nicht verfügbar, ungültige PLZ)
+#### **Task 17: Error Handling & Loading States** ✅ **DONE**
+- [x] Loading Indicators für alle Provider
+- [x] Error-Recovery Mechanismen (Retry-Buttons)
+- [x] Offline-Fallback (In-Memory Cache Service)
+- [x] User-friendly Error Messages (ErrorStateWidget)
+- [x] "Keine Händler in Ihrer Region" Error-Cases
+- [x] PLZ-Lookup Fehlerbehandlung (GPS nicht verfügbar, ungültige PLZ)
 
 #### **Task 18: Performance-Optimierung** ⏳ **TODO**
 - [ ] Provider Disposal richtig implementieren
@@ -390,6 +390,50 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - [ ] Event/State-Klassen-Entwürfe
 - [ ] Migration-Timeline verfeinern
 - [ ] Testabdeckung für Repository Layer
+
+### **🧹 PHASE 6: CODE CLEANUP & QUALITY**
+
+#### **Task 24: Code Aufräumen & Qualität** ⏳ **TODO**
+**Sammlung von Code-Qualitäts- und Aufräum-Aufgaben**
+
+##### **Debug-Output Bereinigung**
+- [ ] Entfernen/Reduzieren der 258 "MockDataService not available" Warnungen in Tests
+- [ ] Bereinigung übermäßiger debugPrint() Statements in Production Code
+- [ ] Konsolidierung der Test-Ausgaben (weniger verbose)
+- [ ] Entfernen der "❌ PLZ-Location-Setup fehlgeschlagen" Ausgaben in Tests
+
+##### **Test-Qualität**
+- [ ] Sicherstellen dass ALLE Tests ohne Warnings laufen
+- [ ] Test-Coverage für neue Features (Error Handling, Skeleton Screens)
+- [ ] Flaky Tests stabilisieren (Timing-Issues)
+- [ ] Test-Performance verbessern (aktuell >1 Minute Laufzeit)
+
+##### **Code-Konsistenz**
+- [ ] Einheitliche Error-Handling Patterns
+- [ ] Konsistente Verwendung von async/await vs .then()
+- [ ] Einheitliche Namenskonventionen (z.B. _disposed vs disposed)
+- [ ] TODO-Kommentare im Code aufarbeiten
+
+##### **Memory & Performance**
+- [ ] Memory Leaks in Providern final beheben
+- [ ] Dispose-Methoden vollständig implementieren
+- [ ] Timer-Cleanup sicherstellen
+- [ ] Callback-Registrierungen aufräumen
+
+##### **Documentation**
+- [ ] Fehlende Dokumentation ergänzen
+- [ ] Veraltete Kommentare aktualisieren
+- [ ] API-Dokumentation für public methods
+- [ ] README.md aktualisieren mit neuen Features
+
+##### **Code Smells**
+- [ ] Duplicate Code eliminieren
+- [ ] Zu lange Methoden aufteilen
+- [ ] Magic Numbers durch Konstanten ersetzen
+- [ ] Unused imports entfernen
+- [ ] Dead code entfernen
+
+**Priorität:** MITTEL - Sollte vor Production Release erledigt werden
 
 ---
 

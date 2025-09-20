@@ -7,6 +7,8 @@ import '../models/models.dart';
 import '../utils/responsive_helper.dart';
 import '../widgets/flash_deals_filter_bar.dart';
 import '../widgets/flash_deals_statistics.dart';
+import '../widgets/error_state_widget.dart';
+import '../widgets/skeleton_loader.dart';
 
 // Conditional import for web audio service
 import '../services/web_audio_service_stub.dart'
@@ -166,45 +168,84 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
           // Filter Bar
           const FlashDealsFilterBar(),
 
-          // Flash Deals List
+          // Flash Deals List with enhanced error handling
           Expanded(
-            child: flashDealsProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : flashDeals.isEmpty  // Task 16: Use filtered flashDeals
-                    ? _buildEmptyState()
-                    : RefreshIndicator(
-                        onRefresh: () async {
-                          await flashDealsProvider.loadFlashDeals();
-                        },
-                        child: ResponsiveHelper.isDesktop(context)
-                            ? GridView.builder(
-                                controller: _scrollController,
-                                padding: ResponsiveHelper.getScreenPadding(context),
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: ResponsiveHelper.isTablet(context) ? 2 : 3,
-                                  childAspectRatio: 2.5,
-                                  crossAxisSpacing: ResponsiveHelper.space4,
-                                  mainAxisSpacing: ResponsiveHelper.space4,
-                                ),
-                                itemCount: flashDeals.length,  // Task 16: Use filtered count
-                                itemBuilder: (context, index) {
-                                  final deal = flashDeals[index];
-                                  return _buildAnimatedDealCard(deal, index);
-                                },
-                              )
-                            : ListView.builder(
-                                controller: _scrollController,
-                                padding: ResponsiveHelper.getScreenPadding(context),
-                                itemCount: flashDeals.length,  // Task 16: Use filtered count
-                                itemBuilder: (context, index) {
-                                  final deal = flashDeals[index];
-                                  return _buildAnimatedDealCard(deal, index);
-                                },
-                              ),
-                      ),
+            child: _buildContentArea(flashDealsProvider, flashDeals),
           ),
         ],
       ),
+    );
+  }
+
+  /// Build content area with proper error handling and loading states
+  Widget _buildContentArea(FlashDealsProvider flashDealsProvider, List<FlashDeal> flashDeals) {
+    // Check for error state first
+    if (flashDealsProvider.errorMessage != null && !flashDealsProvider.isLoading) {
+      ErrorType errorType = ErrorType.general;
+
+      // Determine error type based on message
+      if (flashDealsProvider.errorMessage!.toLowerCase().contains('netzwerk') ||
+          flashDealsProvider.errorMessage!.toLowerCase().contains('internet')) {
+        errorType = ErrorType.network;
+      } else if (flashDealsProvider.errorMessage!.toLowerCase().contains('region')) {
+        errorType = ErrorType.region;
+      } else if (flashDealsProvider.errorMessage!.toLowerCase().contains('keine')) {
+        errorType = ErrorType.noData;
+      }
+
+      return ErrorStateWidget(
+        errorMessage: flashDealsProvider.errorMessage,
+        errorType: errorType,
+        onRetry: () async {
+          await flashDealsProvider.loadFlashDeals();
+        },
+      );
+    }
+
+    // Check for loading state
+    if (flashDealsProvider.isLoading && flashDealsProvider.flashDeals.isEmpty) {
+      // Initial loading - show skeleton
+      return const SingleChildScrollView(
+        child: FlashDealsListSkeleton(itemCount: 6),
+      );
+    }
+
+    // Check for empty state
+    if (!flashDealsProvider.isLoading && flashDeals.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    // Show content with refresh indicator
+    return RefreshIndicator(
+      color: primaryRed,
+      onRefresh: () async {
+        await flashDealsProvider.loadFlashDeals();
+      },
+      child: ResponsiveHelper.isDesktop(context)
+          ? GridView.builder(
+              controller: _scrollController,
+              padding: ResponsiveHelper.getScreenPadding(context),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: ResponsiveHelper.isTablet(context) ? 2 : 3,
+                childAspectRatio: 2.5,
+                crossAxisSpacing: ResponsiveHelper.space4,
+                mainAxisSpacing: ResponsiveHelper.space4,
+              ),
+              itemCount: flashDeals.length,
+              itemBuilder: (context, index) {
+                final deal = flashDeals[index];
+                return _buildAnimatedDealCard(deal, index);
+              },
+            )
+          : ListView.builder(
+              controller: _scrollController,
+              padding: ResponsiveHelper.getScreenPadding(context),
+              itemCount: flashDeals.length,
+              itemBuilder: (context, index) {
+                final deal = flashDeals[index];
+                return _buildAnimatedDealCard(deal, index);
+              },
+            ),
     );
   }
 

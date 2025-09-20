@@ -8,6 +8,7 @@ import '../repositories/offers_repository.dart';
 import '../repositories/mock_offers_repository.dart';
 import '../data/product_category_mapping.dart';
 import '../models/models.dart';
+import '../services/offline_service.dart';
 import '../main.dart'; // Access to global mockDataService
 import '../services/mock_data_service.dart'; // For test service parameter
 import '../providers/location_provider.dart'; // Task 5b.5: Provider-Callbacks

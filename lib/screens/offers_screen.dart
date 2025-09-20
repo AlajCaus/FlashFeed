@@ -10,6 +10,8 @@ import '../widgets/offer_filter_bar.dart';
 import '../widgets/offer_comparison_card.dart';
 import '../widgets/offer_detail_modal.dart';
 import '../widgets/regional_availability_banner.dart';
+import '../widgets/error_state_widget.dart';
+import '../widgets/skeleton_loader.dart';
 
 /// OffersScreen - Panel 1: Angebotsvergleich (Enhanced Version)
 /// 
@@ -207,6 +209,60 @@ class _OffersScreenState extends State<OffersScreen> {
     );
   }
   
+  /// Build content area with proper error handling and loading states
+  Widget _buildContentArea(OffersProvider offersProvider, UserProvider userProvider) {
+    // Check for error state first
+    if (offersProvider.errorMessage != null && !offersProvider.isLoading) {
+      ErrorType errorType = ErrorType.general;
+
+      // Determine error type based on message
+      if (offersProvider.errorMessage!.toLowerCase().contains('netzwerk') ||
+          offersProvider.errorMessage!.toLowerCase().contains('internet')) {
+        errorType = ErrorType.network;
+      } else if (offersProvider.errorMessage!.toLowerCase().contains('region')) {
+        errorType = ErrorType.region;
+      } else if (offersProvider.errorMessage!.toLowerCase().contains('keine')) {
+        errorType = ErrorType.noData;
+      }
+
+      return ErrorStateWidget(
+        errorMessage: offersProvider.errorMessage,
+        errorType: errorType,
+        onRetry: () async {
+          await offersProvider.loadOffers();
+        },
+      );
+    }
+
+    // Check for loading state
+    if (offersProvider.isLoading && offersProvider.offers.isEmpty) {
+      // Initial loading - show skeleton
+      return const SingleChildScrollView(
+        child: OffersGridSkeleton(itemCount: 8),
+      );
+    }
+
+    // Check for empty state
+    if (!offersProvider.isLoading && offersProvider.offers.isEmpty) {
+      return ErrorStateWidget(
+        errorType: ErrorType.noData,
+        errorMessage: 'Keine Angebote verfügbar. Bitte wählen Sie einen anderen Händler oder erweitern Sie Ihre Suche.',
+        onRetry: () async {
+          await offersProvider.loadOffers();
+        },
+      );
+    }
+
+    // Show content with optional refresh indicator
+    return RefreshIndicator(
+      color: primaryGreen,
+      onRefresh: () async {
+        await offersProvider.loadOffers();
+      },
+      child: _buildOffersGrid(offersProvider, userProvider),
+    );
+  }
+
   Widget _buildOffersGrid(OffersProvider offersProvider, UserProvider userProvider) {
     var offers = offersProvider.displayedOffers;
 
@@ -553,11 +609,9 @@ class _OffersScreenState extends State<OffersScreen> {
             ),
           ),
           
-          // Content Area
+          // Content Area with enhanced error handling and loading states
           Expanded(
-            child: offersProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildOffersGrid(offersProvider, userProvider),
+            child: _buildContentArea(offersProvider, userProvider),
           ),
         ],
       ),

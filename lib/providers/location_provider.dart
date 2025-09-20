@@ -402,6 +402,17 @@ class LocationProvider extends ChangeNotifier {
       
     } catch (e) {
       debugPrint('❌ PLZ-Location-Setup fehlgeschlagen: $e');
+
+      // Task 17: Specific error message for invalid PLZ
+      if (plz.length != 5) {
+        _setLocationError('Ungültige PLZ. Bitte geben Sie eine 5-stellige deutsche Postleitzahl ein.');
+      } else if (_getCoordinatesForPLZ(plz)['lat'] == 52.5200 &&
+                 _getCoordinatesForPLZ(plz)['lng'] == 13.4050) {
+        // Default coordinates returned - PLZ not in database
+        _setLocationError('PLZ $plz nicht in unserer Datenbank. Bitte versuchen Sie eine andere PLZ aus einer größeren Stadt.');
+      } else {
+        _setLocationError('Fehler beim Verarbeiten der PLZ $plz.');
+      }
     } finally {
       _setLoadingLocation(false);
     }
@@ -805,6 +816,18 @@ class LocationProvider extends ChangeNotifier {
   
   void _setLocationError(String? error) {
     _locationError = error;
+
+    // Task 17: Enhanced error messages for specific cases
+    if (error != null) {
+      if (error.contains('permission') || error.contains('denied')) {
+        _locationError = 'Standortberechtigung verweigert. Bitte aktivieren Sie GPS in den Einstellungen.';
+      } else if (error.contains('timeout') || error.contains('unavailable')) {
+        _locationError = 'Standort konnte nicht ermittelt werden. Bitte versuchen Sie es erneut oder geben Sie Ihre PLZ manuell ein.';
+      } else if (error.contains('network')) {
+        _locationError = 'Netzwerkfehler beim Abrufen des Standorts. Bitte überprüfen Sie Ihre Internetverbindung.';
+      }
+    }
+
     notifyListeners();
   }
   
