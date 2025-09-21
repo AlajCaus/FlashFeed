@@ -292,19 +292,50 @@ class OfferComparisonCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     
-                    // Product image placeholder
+                    // Product image
                     Container(
-                      height: isMobile ? 60 : 80,
+                      height: isMobile ? 80 : 100,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F5F5),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Center(
-                        child: Icon(
-                          _getCategoryIcon(primaryOffer.flashFeedCategory),
-                          size: isMobile ? 32 : 40,
-                          color: primaryGreen.withAlpha(153),
-                        ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: primaryOffer.thumbnailUrl != null
+                            ? Image.network(
+                                primaryOffer.thumbnailUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Fallback to icon if image fails
+                                  return Center(
+                                    child: Icon(
+                                      _getCategoryIcon(primaryOffer.flashFeedCategory),
+                                      size: isMobile ? 32 : 40,
+                                      color: primaryGreen.withAlpha(153),
+                                    ),
+                                  );
+                                },
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                              loadingProgress.expectedTotalBytes!
+                                          : null,
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Center(
+                                child: Icon(
+                                  _getCategoryIcon(primaryOffer.flashFeedCategory),
+                                  size: isMobile ? 32 : 40,
+                                  color: primaryGreen.withAlpha(153),
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 8),

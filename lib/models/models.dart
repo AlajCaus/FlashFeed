@@ -18,6 +18,8 @@ class Offer {
   final DateTime validUntil;
   final double? storeLat;       // Optional store latitude
   final double? storeLng;       // Optional store longitude
+  final String? imageUrl;       // Product image URL
+  final String? thumbnailUrl;   // Smaller thumbnail for lists
 
   Offer({
     required this.id,
@@ -32,6 +34,8 @@ class Offer {
     required this.validUntil,
     this.storeLat,
     this.storeLng,
+    this.imageUrl,
+    this.thumbnailUrl,
   });
 
   /// Zugeordnete FlashFeed Kategorie (aus product_category_mapping.dart)

@@ -198,7 +198,7 @@ class MockDataService {
         name: 'EDEKA',
         displayName: 'EDEKA',
 
-        logoUrl: '/assets/logos/edeka.png',  // Task 11.2: Logo URL
+        logoUrl: _generateRetailerLogoUrl('EDEKA'),  // Dynamic logo URL
         primaryColor: '#005CA9',
         secondaryColor: '#FFE500',  // Task 11.2: EDEKA Gelb
         iconUrl: '/assets/icons/edeka_icon.png',  // Task 11.2: Icon
@@ -215,7 +215,7 @@ class MockDataService {
         id: 'rewe',
         name: 'REWE',
         displayName: 'REWE',
-        logoUrl: '/assets/logos/rewe.png',  // Task 11.2: Logo URL
+        logoUrl: _generateRetailerLogoUrl('rewe'),  // Dynamic logo URL
         primaryColor: '#CC071E',
         secondaryColor: '#FFF200',  // Task 11.2: REWE Gelb
         iconUrl: '/assets/icons/rewe_icon.png',  // Task 11.2: Icon
@@ -232,7 +232,7 @@ class MockDataService {
         id: 'aldi',
         name: 'ALDI SÜD',
         displayName: 'ALDI SÜD',  // Task 11.2: Korrekter Display Name
-        logoUrl: '/assets/logos/aldi.png',  // Task 11.2: Logo URL
+        logoUrl: _generateRetailerLogoUrl('aldi'),  // Dynamic logo URL
         primaryColor: '#00549F',
         secondaryColor: '#FF6600',  // Task 11.2: ALDI Orange
         iconUrl: '/assets/icons/aldi_icon.png',  // Task 11.2: Icon
@@ -249,7 +249,7 @@ class MockDataService {
         id: 'lidl',
         name: 'LIDL',
         displayName: 'Lidl',  // Task 11.2: Korrekter Display Name
-        logoUrl: '/assets/logos/lidl.png',  // Task 11.2: Logo URL
+        logoUrl: _generateRetailerLogoUrl('lidl'),  // Dynamic logo URL
         primaryColor: '#0050AA',
         secondaryColor: '#FFE500',  // Task 11.2: Lidl Gelb
         iconUrl: '/assets/icons/lidl_icon.png',  // Task 11.2: Icon
@@ -266,7 +266,7 @@ class MockDataService {
         id: 'netto_schwarz',
         name: 'NETTO',
         displayName: 'Netto Marken-Discount',  // Task 11.2: Vollständiger Name
-        logoUrl: '/assets/logos/netto.png',  // Task 11.2: Vereinheitlichte URL
+        logoUrl: _generateRetailerLogoUrl('Netto'),  // Dynamic logo URL
         primaryColor: '#FFD100',
         secondaryColor: '#000000',  // Task 11.2: Netto Schwarz
         iconUrl: '/assets/icons/netto_icon.png',  // Task 11.2: Scottie Icon
@@ -286,7 +286,7 @@ class MockDataService {
         id: 'penny',
         name: 'PENNY',
         displayName: 'Penny',
-        logoUrl: '/assets/logos/penny.png',  // Task 11.2: Vereinheitlichte URL
+        logoUrl: _generateRetailerLogoUrl('Penny'),  // Dynamic logo URL
         primaryColor: '#D4001A',
         secondaryColor: '#FFE500',  // Task 11.2: Penny Gelb
         iconUrl: '/assets/icons/penny_icon.png',  // Task 11.2: Icon
@@ -303,7 +303,7 @@ class MockDataService {
         id: 'kaufland',
         name: 'KAUFLAND',
         displayName: 'Kaufland',
-        logoUrl: '/assets/logos/kaufland.png',  // Task 11.2: Vereinheitlichte URL
+        logoUrl: _generateRetailerLogoUrl('Kaufland'),  // Dynamic logo URL
         primaryColor: '#E40521',  // Task 11.2: Korrigiertes Kaufland Rot
         secondaryColor: '#FFFFFF',  // Task 11.2: Kaufland Weiß
         iconUrl: '/assets/icons/kaufland_icon.png',  // Task 11.2: K Icon
@@ -320,7 +320,7 @@ class MockDataService {
         id: 'real',
         name: 'REAL',
         displayName: 'real,-',  // Task 11.2: Stylisiert mit Komma
-        logoUrl: '/assets/logos/real.png',  // Task 11.2: Vereinheitlichte URL
+        logoUrl: _generateRetailerLogoUrl('Real'),  // Dynamic logo URL
         primaryColor: '#003F74',  // Task 11.2: Real Dunkelblau
         secondaryColor: '#E30613',  // Task 11.2: Real Rot
         iconUrl: '/assets/icons/real_icon.png',  // Task 11.2: Icon
@@ -339,7 +339,7 @@ class MockDataService {
         id: 'globus',
         name: 'GLOBUS',
         displayName: 'Globus',
-        logoUrl: '/assets/logos/globus.png',  // Task 11.2: Vereinheitlichte URL
+        logoUrl: _generateRetailerLogoUrl('Globus'),  // Dynamic logo URL
         primaryColor: '#0033A0',
         secondaryColor: '#FF6600',  // Task 11.2: Globus Orange
         iconUrl: '/assets/icons/globus_icon.png',  // Task 11.2: Globus Icon
@@ -358,7 +358,7 @@ class MockDataService {
         id: 'marktkauf',
         name: 'MARKTKAUF',
         displayName: 'Marktkauf',
-        logoUrl: '/assets/logos/marktkauf.png',  // Task 11.2: Vereinheitlichte URL
+        logoUrl: _generateRetailerLogoUrl('Marktkauf'),  // Dynamic logo URL
         primaryColor: '#009639',
         secondaryColor: '#FFE500',  // Task 11.2: Marktkauf Gelb
         iconUrl: '/assets/icons/marktkauf_icon.png',  // Task 11.2: Icon
@@ -378,7 +378,7 @@ class MockDataService {
         id: 'biocompany',
         name: 'BIOCOMPANY',
         displayName: 'Bio Company',  // Task 11.2: Mit Space
-        logoUrl: '/assets/logos/biocompany.png',  // Task 11.2: Vereinheitlichte URL
+        logoUrl: _generateRetailerLogoUrl('BioCompany'),  // Dynamic logo URL
         primaryColor: '#7CB342',
         secondaryColor: '#8BC34A',  // Task 11.2: BioCompany Hellgrün
         iconUrl: '/assets/icons/biocompany_icon.png',  // Task 11.2: Icon
@@ -611,6 +611,8 @@ class MockDataService {
           validUntil: DateTime.now().add(Duration(days: _random.nextInt(14) + 1)),
           storeLat: store.latitude,
           storeLng: store.longitude,
+          imageUrl: _generateProductImageUrl(product.name, product.categoryName),
+          thumbnailUrl: _generateProductImageUrl(product.name, product.categoryName, size: 200),
         ));
         offerCounter++;
       }
@@ -910,6 +912,56 @@ class MockDataService {
       x: _random.nextInt(600) + 100,
       y: _random.nextInt(400) + 100,
     );
+  }
+
+  // Generate product image URLs using placeholder services
+  String _generateProductImageUrl(String productName, String category, {int size = 400}) {
+    // Use placeholder services for realistic product images
+    // Picsum provides random images, we'll use category-specific ones
+
+    // Map categories to realistic image IDs from Lorem Picsum
+    final categoryImageMap = {
+      'Frisches Obst & Gemüse': [488, 429, 292, 1080], // Food/produce images
+      'Backwaren': [835, 1079, 326, 312],              // Bread/bakery
+      'Fleisch & Wurst': [323, 449, 674, 675],         // Meat products
+      'Milchprodukte': [670, 671, 674, 676],           // Dairy
+      'Getränke': [755, 562, 563, 564],                // Beverages
+      'Süßwaren & Snacks': [425, 326, 431, 432],       // Snacks
+      'Tiefkühlprodukte': [766, 767, 768, 769],        // Frozen
+      'Drogerie & Kosmetik': [180, 181, 217, 218],     // Beauty products
+      'Haushaltswaren': [284, 376, 377, 378],          // Household
+    };
+
+    // Get category-specific image IDs or use default food images
+    final imageIds = categoryImageMap[category] ?? [488, 292, 429, 1080];
+    final imageId = imageIds[productName.hashCode % imageIds.length];
+
+    // Return Lorem Picsum URL with consistent image based on product name
+    return 'https://picsum.photos/id/$imageId/${size}/${size}';
+  }
+
+  // Generate retailer logo URLs
+  String _generateRetailerLogoUrl(String retailerName) {
+    // Map retailer names to logo placeholder with brand colors
+    final retailerColors = {
+      'EDEKA': '005CA9',      // EDEKA Blue
+      'REWE': 'CC071E',       // REWE Red
+      'ALDI': '00549F',       // ALDI Blue
+      'LIDL': '0050AA',       // LIDL Blue
+      'Netto': 'FFD100',      // Netto Yellow
+      'Penny': 'E30613',      // Penny Red
+      'Kaufland': 'E10915',   // Kaufland Red
+      'Real': '004B93',       // Real Blue
+      'Globus': '009EE0',     // Globus Light Blue
+      'Marktkauf': '1B5E20',  // Marktkauf Green
+      'BioCompany': '7CB342', // BioCompany Light Green
+    };
+
+    final color = retailerColors[retailerName] ?? '2E8B57';
+    final letter = retailerName.isNotEmpty ? retailerName[0] : 'R';
+
+    // Use placeholder service for logo generation
+    return 'https://via.placeholder.com/150/$color/FFFFFF?text=$letter';
   }
 
 
