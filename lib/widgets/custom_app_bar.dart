@@ -4,6 +4,7 @@ import '../providers/app_provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/location_provider.dart';
 import '../utils/responsive_helper.dart';
+import '../screens/settings_screen.dart';
 
 /// CustomAppBar - Gemeinsame Top-Navigation
 /// 
@@ -137,6 +138,21 @@ class _SettingsOverlay extends StatelessWidget {
             },
           ),
           
+          // Settings
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Einstellungen'),
+            subtitle: const Text('App-Konfiguration & Demo-Zugriff'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+
           // Premium Toggle
           if (!userProvider.isPremium)
             ListTile(

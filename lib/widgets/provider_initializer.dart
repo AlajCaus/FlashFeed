@@ -6,6 +6,7 @@ import '../providers/offers_provider.dart';
 import '../providers/flash_deals_provider.dart';
 import '../providers/retailers_provider.dart';
 import '../providers/user_provider.dart';
+import '../services/demo_service.dart';
 
 /// Task 5c.5 & Task 16: Provider Initializer Widget
 /// Sets up cross-provider communication after all providers are created
@@ -43,6 +44,19 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
     final flashDealsProvider = context.read<FlashDealsProvider>();
     final retailersProvider = context.read<RetailersProvider>();
     final userProvider = context.read<UserProvider>();
+
+    // Task 21: Check for Demo Mode and auto-login as Premium
+    final demoService = DemoService();
+    if (demoService.isDemoMode) {
+      debugPrint('🎬 Demo Mode detected - activating Premium features');
+      // Auto-login as Premium user for demo
+      userProvider.loginUser(
+        'demo-user',
+        'Demo User',
+        tier: UserTier.premium,
+      );
+      userProvider.upgradeToPremium();
+    }
 
     // Register cross-provider callbacks for location-based updates
     // This sets up the communication channels between providers

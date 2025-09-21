@@ -42,6 +42,9 @@ class UserProvider extends ChangeNotifier {
   bool _hasFlashDealsAccess = false;
   bool _hasMapFeatures = false;
 
+  // Selected retailer for free users
+  String? _selectedRetailer;
+
   // Task 16: Provider References for Freemium Enforcement
   OffersProvider? _offersProvider;
   FlashDealsProvider? _flashDealsProvider;
@@ -79,6 +82,7 @@ class UserProvider extends ChangeNotifier {
   bool get darkModeEnabled => _darkModeEnabled;
   double get maxDistanceKm => _maxDistanceKm;
   List<String> get favoriteRetailers => List.unmodifiable(_favoriteRetailers);
+  String? get selectedRetailer => _selectedRetailer;
   
   // Getters - Premium Features
   bool get hasUnlimitedOffers => _hasUnlimitedOffers;
@@ -184,9 +188,14 @@ class UserProvider extends ChangeNotifier {
     _darkModeEnabled = enabled;
     notifyListeners();
   }
-  
+
   void setMaxDistance(double distanceKm) {
     _maxDistanceKm = distanceKm.clamp(1.0, 50.0);
+    notifyListeners();
+  }
+
+  void setSelectedRetailer(String? retailer) {
+    _selectedRetailer = retailer;
     notifyListeners();
   }
   

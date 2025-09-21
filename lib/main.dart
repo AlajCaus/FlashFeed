@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 // FlashFeed Theme
@@ -14,6 +15,7 @@ import 'providers/retailers_provider.dart';
 
 // FlashFeed Services
 import 'services/mock_data_service.dart';
+import 'services/demo_service.dart';
 
 // FlashFeed Repositories
 import 'repositories/mock_retailers_repository.dart';
@@ -45,12 +47,34 @@ late final MockDataService mockDataService;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize MockDataService for all providers
   mockDataService = MockDataService();
   await mockDataService.initializeMockData();
-  
+
+  // Handle URL parameters for demo mode (Web only)
+  _handleDemoMode();
+
   runApp(const FlashFeedApp());
+}
+
+// Parse URL parameters and activate demo mode if needed
+void _handleDemoMode() {
+  if (kIsWeb) {
+    // Get URL parameters from browser
+    final uri = Uri.base;
+    final params = uri.queryParameters;
+
+    if (params.isNotEmpty) {
+      final demoService = DemoService();
+      demoService.handleUrlParameters(params);
+
+      if (kDebugMode) {
+        print('URL Parameters: $params');
+        print('Demo Mode: ${demoService.isDemoMode}');
+      }
+    }
+  }
 }
 
 class FlashFeedApp extends StatelessWidget {

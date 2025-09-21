@@ -1,9 +1,14 @@
-name: FlashFeed CI/CD
+name: FlashFeed Quick Deploy (Legacy)
 
+# This workflow is kept for backwards compatibility
+# Use deploy.yml for production deployments
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
+    inputs:
+      deploy_reason:
+        description: 'Reason for manual deployment'
+        required: true
+        default: 'Quick deploy without full CI/CD'
 
 permissions:
   contents: read

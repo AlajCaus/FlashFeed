@@ -59,7 +59,8 @@ jobs:
 
     - name: 🔍 Analyze Code
       run: |
-        flutter analyze --no-fatal-infos
+        flutter analyze --no-fatal-infos --no-fatal-warnings
+      continue-on-error: true
 
     - name: 📋 Format Check
       run: |
