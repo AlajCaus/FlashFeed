@@ -15,7 +15,8 @@
       "Bash(dir:*)",
       "Bash(flutter build:*)",
       "Bash(dart analyze:*)",
-      "Bash(dart test:*)"
+      "Bash(dart test:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
