@@ -34,7 +34,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 0);  // Always start with Angebote
     
     // Task 7: Sync TabController with AppProvider
     _tabController.addListener(() {
@@ -120,7 +120,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 1400;  // Increased from 1024 to 1400 for better 3-panel display
+    final isDesktop = screenWidth >= 1200;  // Desktop mode for screens >= 1200px
 
     // Task 7: Listen to AppProvider for external navigation
     return Consumer<AppProvider>(
@@ -187,34 +187,25 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   }
   
   Widget _buildDesktopLayout() {
-    // Desktop: 3-column layout with minimum widths
+    // Desktop: 3-column layout
     return Row(
       children: [
-        // Panel 1: Angebote (minimum 350px)
+        // Panel 1: Angebote
         Expanded(
           flex: 3,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 350),
-            child: _buildPanelContainer(_buildOffersPanel(), 'Angebote'),
-          ),
+          child: _buildPanelContainer(_buildOffersPanel(), 'Angebote'),
         ),
 
-        // Panel 2: Karte (minimum 400px, larger in center)
+        // Panel 2: Karte (larger in center)
         Expanded(
           flex: 4,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 400),
-            child: _buildPanelContainer(_buildMapPanel(), 'Karte'),
-          ),
+          child: _buildPanelContainer(_buildMapPanel(), 'Karte'),
         ),
 
-        // Panel 3: Flash Deals (minimum 300px)
+        // Panel 3: Flash Deals
         Expanded(
           flex: 3,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 300),
-            child: _buildPanelContainer(_buildFlashDealsPanel(), 'Flash Deals'),
-          ),
+          child: _buildPanelContainer(_buildFlashDealsPanel(), 'Flash Deals'),
         ),
       ],
     );
