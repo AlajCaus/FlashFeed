@@ -284,13 +284,10 @@ class _OffersScreenState extends State<OffersScreen> {
       offersByProduct.putIfAbsent(key, () => []).add(offer);
     }
     
-    // Use ResponsiveHelper for dynamic grid columns
-    final gridColumns = ResponsiveHelper.getAdaptiveGridColumns(
-      context,
-      mobileColumns: 2,
-      tabletColumns: 3,
-      desktopColumns: 4,
-    );
+    // Dynamic responsive sizing
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 768;
+    final bool isTablet = screenWidth >= 768 && screenWidth < 1024;
     
     return RefreshIndicator(
       onRefresh: () => offersProvider.loadOffers(forceRefresh: true),
@@ -312,15 +309,15 @@ class _OffersScreenState extends State<OffersScreen> {
               child: _buildFeaturedSection(offersProvider),
             ),
           
-          // Main offers grid
+          // Main offers grid - Responsive with minimum card width
           SliverPadding(
-            padding: ResponsiveHelper.getScreenPadding(context),
+            padding: EdgeInsets.all(isMobile ? 8.0 : 16.0),
             sliver: SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: gridColumns,
-                childAspectRatio: ResponsiveHelper.isMobile(context) ? 0.75 : 0.85,
-                crossAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space2),
-                mainAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space2),
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: isMobile ? 200 : (isTablet ? 220 : 250),
+                childAspectRatio: isMobile ? 0.75 : 0.85,
+                crossAxisSpacing: isMobile ? 8 : 12,
+                mainAxisSpacing: isMobile ? 8 : 12,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {

@@ -120,7 +120,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = screenWidth >= 1024;
+    final isDesktop = screenWidth >= 1400;  // Increased from 1024 to 1400 for better 3-panel display
 
     // Task 7: Listen to AppProvider for external navigation
     return Consumer<AppProvider>(
@@ -187,25 +187,34 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   }
   
   Widget _buildDesktopLayout() {
-    // Desktop: 3-column layout
+    // Desktop: 3-column layout with minimum widths
     return Row(
       children: [
-        // Panel 1: Angebote
+        // Panel 1: Angebote (minimum 350px)
         Expanded(
-          flex: 1,
-          child: _buildPanelContainer(_buildOffersPanel(), 'Angebote'),
+          flex: 3,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 350),
+            child: _buildPanelContainer(_buildOffersPanel(), 'Angebote'),
+          ),
         ),
-        
-        // Panel 2: Karte (larger in center)
+
+        // Panel 2: Karte (minimum 400px, larger in center)
         Expanded(
-          flex: 2,
-          child: _buildPanelContainer(_buildMapPanel(), 'Karte'),
+          flex: 4,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 400),
+            child: _buildPanelContainer(_buildMapPanel(), 'Karte'),
+          ),
         ),
-        
-        // Panel 3: Flash Deals
+
+        // Panel 3: Flash Deals (minimum 300px)
         Expanded(
-          flex: 1,
-          child: _buildPanelContainer(_buildFlashDealsPanel(), 'Flash Deals'),
+          flex: 3,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 300),
+            child: _buildPanelContainer(_buildFlashDealsPanel(), 'Flash Deals'),
+          ),
         ),
       ],
     );

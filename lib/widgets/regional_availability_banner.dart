@@ -33,6 +33,72 @@ class RegionalAvailabilityBanner extends StatelessWidget {
   static const Color infoBorder = Color(0xFF90CAF9);
   static const Color infoText = Color(0xFF1976D2);
   
+  Future<void> _showPLZDialog(BuildContext context, LocationProvider locationProvider) async {
+    final TextEditingController plzController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('PLZ eingeben'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Bitte geben Sie Ihre Postleitzahl ein:'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: plzController,
+                keyboardType: TextInputType.number,
+                maxLength: 5,
+                decoration: const InputDecoration(
+                  hintText: 'z.B. 10115',
+                  labelText: 'Postleitzahl',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.location_on),
+                ),
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Abbrechen'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final plz = plzController.text.trim();
+                if (plz.length == 5 && RegExp(r'^\d{5}$').hasMatch(plz)) {
+                  await locationProvider.setUserPLZ(plz);
+                  if (dialogContext.mounted) {
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('PLZ $plz gespeichert'),
+                        backgroundColor: const Color(0xFF2E8B57),
+                      ),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Bitte geben Sie eine gültige 5-stellige PLZ ein'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E8B57),
+              ),
+              child: const Text('Speichern'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildWarningBanner({
     required IconData icon,
     required String title,
@@ -110,8 +176,8 @@ class RegionalAvailabilityBanner extends StatelessWidget {
         height: 32,
         child: ElevatedButton.icon(
           onPressed: () async {
-            // requestUserPLZ method not available - using ensureLocationData
-            await locationProvider.ensureLocationData();
+            // Show PLZ input dialog
+            await _showPLZDialog(context, locationProvider);
           },
           icon: const Icon(Icons.location_on, size: 16),
           label: const Text('PLZ eingeben', style: TextStyle(fontSize: 13)),
