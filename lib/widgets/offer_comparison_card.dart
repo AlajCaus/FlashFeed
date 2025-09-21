@@ -278,7 +278,7 @@ class OfferComparisonCard extends StatelessWidget {
           child: Stack(
             children: [
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(isMobile ? 10 : 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -294,7 +294,7 @@ class OfferComparisonCard extends StatelessWidget {
                     
                     // Product image placeholder
                     Container(
-                      height: isMobile ? 80 : 100,
+                      height: isMobile ? 60 : 80,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F5F5),
                         borderRadius: BorderRadius.circular(8),
@@ -302,7 +302,7 @@ class OfferComparisonCard extends StatelessWidget {
                       child: Center(
                         child: Icon(
                           _getCategoryIcon(primaryOffer.flashFeedCategory),
-                          size: 40,
+                          size: isMobile ? 32 : 40,
                           color: primaryGreen.withAlpha(153),
                         ),
                       ),
@@ -360,9 +360,9 @@ class OfferComparisonCard extends StatelessWidget {
                     
                     // Price comparison
                     _buildPriceComparison(),
-                    
-                    const Spacer(),
-                    
+
+                    const SizedBox(height: 8),
+
                     // Valid until
                     Row(
                       children: [

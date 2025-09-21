@@ -318,9 +318,9 @@ class _OffersScreenState extends State<OffersScreen> {
             sliver: SliverGrid(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: gridColumns,
-                childAspectRatio: ResponsiveHelper.isMobile(context) ? 0.65 : 0.75,
-                crossAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space3),
-                mainAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space3),
+                childAspectRatio: ResponsiveHelper.isMobile(context) ? 0.75 : 0.85,
+                crossAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space2),
+                mainAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context, ResponsiveHelper.space2),
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
