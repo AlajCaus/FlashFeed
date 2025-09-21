@@ -402,16 +402,16 @@ class _OffersScreenState extends State<OffersScreen> {
           ),
         ),
         SizedBox(
-          height: 280,
+          height: 320,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: featuredOffers.length,
             itemBuilder: (context, index) {
               final offer = featuredOffers[index];
-              
+
               return Container(
-                width: 140,
+                width: 200,
                 margin: const EdgeInsets.only(right: 12),
                 child: OfferComparisonCard(
                   primaryOffer: offer,
