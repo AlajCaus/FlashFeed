@@ -78,7 +78,7 @@ jobs:
       working-directory: ./
 
     - name: Setup Pages
-      uses: actions/configure-pages@v4
+      uses: actions/configure-pages@v5
       
     - name: Build Web App
       run: flutter build web --release --base-href "/FlashFeed/"
