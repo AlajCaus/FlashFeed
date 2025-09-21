@@ -916,28 +916,31 @@ class MockDataService {
 
   // Generate product image URLs using placeholder services
   String _generateProductImageUrl(String productName, String category, {int size = 400}) {
-    // Use placeholder services for realistic product images
-    // Picsum provides random images, we'll use category-specific ones
+    // Use placeholder service that works better with CORS
+    // We'll use via.placeholder.com with category-based colors
 
-    // Map categories to realistic image IDs from Lorem Picsum
-    final categoryImageMap = {
-      'Frisches Obst & Gemüse': [488, 429, 292, 1080], // Food/produce images
-      'Backwaren': [835, 1079, 326, 312],              // Bread/bakery
-      'Fleisch & Wurst': [323, 449, 674, 675],         // Meat products
-      'Milchprodukte': [670, 671, 674, 676],           // Dairy
-      'Getränke': [755, 562, 563, 564],                // Beverages
-      'Süßwaren & Snacks': [425, 326, 431, 432],       // Snacks
-      'Tiefkühlprodukte': [766, 767, 768, 769],        // Frozen
-      'Drogerie & Kosmetik': [180, 181, 217, 218],     // Beauty products
-      'Haushaltswaren': [284, 376, 377, 378],          // Household
+    // Map categories to colors for placeholder images
+    final categoryColorMap = {
+      'Frisches Obst & Gemüse': '8BC34A',  // Light Green
+      'Backwaren': 'FFA726',               // Orange
+      'Fleisch & Wurst': 'EF5350',         // Red
+      'Milchprodukte': '42A5F5',           // Blue
+      'Getränke': '26C6DA',                // Cyan
+      'Süßwaren & Snacks': 'AB47BC',       // Purple
+      'Tiefkühlprodukte': '5C6BC0',        // Indigo
+      'Drogerie & Kosmetik': 'EC407A',     // Pink
+      'Haushaltswaren': '78909C',          // Blue Grey
     };
 
-    // Get category-specific image IDs or use default food images
-    final imageIds = categoryImageMap[category] ?? [488, 292, 429, 1080];
-    final imageId = imageIds[productName.hashCode % imageIds.length];
+    final color = categoryColorMap[category] ?? '66BB6A';
 
-    // Return Lorem Picsum URL with consistent image based on product name
-    return 'https://picsum.photos/id/$imageId/${size}/${size}';
+    // Create short product name for display (first 3 letters)
+    final shortName = productName.length > 3
+        ? productName.substring(0, 3).toUpperCase()
+        : productName.toUpperCase();
+
+    // Use via.placeholder.com which has better CORS support
+    return 'https://via.placeholder.com/${size}x${size}/$color/FFFFFF?text=$shortName';
   }
 
   // Generate retailer logo URLs
