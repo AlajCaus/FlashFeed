@@ -315,7 +315,7 @@ class _OffersScreenState extends State<OffersScreen> {
             sliver: SliverGrid(
               gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: isMobile ? 200 : (isTablet ? 220 : 250),
-                childAspectRatio: isMobile ? 0.75 : 0.85,
+                childAspectRatio: isMobile ? 0.65 : 0.72,
                 crossAxisSpacing: isMobile ? 8 : 12,
                 mainAxisSpacing: isMobile ? 8 : 12,
               ),

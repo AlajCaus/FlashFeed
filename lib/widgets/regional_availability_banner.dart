@@ -299,8 +299,8 @@ class RegionalAvailabilityBanner extends StatelessWidget {
           const SizedBox(height: 4),
           TextButton(
             onPressed: () async {
-              // requestUserPLZ method not available - using ensureLocationData
-              await locationProvider.ensureLocationData();
+              // Show PLZ input dialog
+              await _showPLZDialog(context, locationProvider);
             },
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,

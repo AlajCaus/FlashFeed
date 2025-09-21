@@ -294,7 +294,8 @@ class OfferComparisonCard extends StatelessWidget {
                     
                     // Product image
                     Container(
-                      height: isMobile ? 80 : 100,
+                      height: isMobile ? 120 : 140,
+                      width: double.infinity,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F5F5),
                         borderRadius: BorderRadius.circular(8),
@@ -304,9 +305,12 @@ class OfferComparisonCard extends StatelessWidget {
                         child: primaryOffer.thumbnailUrl != null
                             ? Image.network(
                                 primaryOffer.thumbnailUrl!,
+                                width: double.infinity,
+                                height: double.infinity,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   // Fallback to icon if image fails
+                                  print('Image failed to load: ${primaryOffer.thumbnailUrl}');
                                   return Center(
                                     child: Icon(
                                       _getCategoryIcon(primaryOffer.flashFeedCategory),
