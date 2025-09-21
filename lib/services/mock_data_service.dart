@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
@@ -916,55 +917,80 @@ class MockDataService {
 
   // Generate product image URLs using placeholder services
   String _generateProductImageUrl(String productName, String category, {int size = 400}) {
-    // Use placeholder service that works better with CORS
-    // We'll use via.placeholder.com with category-based colors
+    // Use local asset images for product categories
 
-    // Map categories to colors for placeholder images
-    final categoryColorMap = {
-      'Frisches Obst & Gemüse': '8BC34A',  // Light Green
-      'Backwaren': 'FFA726',               // Orange
-      'Fleisch & Wurst': 'EF5350',         // Red
-      'Milchprodukte': '42A5F5',           // Blue
-      'Getränke': '26C6DA',                // Cyan
-      'Süßwaren & Snacks': 'AB47BC',       // Purple
-      'Tiefkühlprodukte': '5C6BC0',        // Indigo
-      'Drogerie & Kosmetik': 'EC407A',     // Pink
-      'Haushaltswaren': '78909C',          // Blue Grey
+    // Map categories to local asset images
+    final categoryAssetMap = {
+      'Obst & Gemüse': 'assets/images/products/fruits.jpg',
+      'Frisches Obst & Gemüse': 'assets/images/products/fruits.jpg',
+      'Backwaren': 'assets/images/products/bread.jpg',
+      'Brot & Backwaren': 'assets/images/products/bread.jpg',
+      'Fleisch & Wurst': 'assets/images/products/meat.jpg',
+      'Milchprodukte': 'assets/images/products/dairy.jpg',
+      'Getränke': 'assets/images/products/drinks.jpg',
+      'Süßwaren & Snacks': 'assets/images/products/bread.jpg',  // Reuse bread for snacks
+      'Tiefkühlprodukte': 'assets/images/products/dairy.jpg',   // Reuse dairy for frozen
+      'Drogerie & Kosmetik': 'assets/images/products/drinks.jpg', // Reuse drinks for cosmetics
+      'Haushaltswaren': 'assets/images/products/drinks.jpg',    // Reuse drinks for household
     };
 
-    final color = categoryColorMap[category] ?? '66BB6A';
-
-    // Create short product name for display (first 3 letters)
-    final shortName = productName.length > 3
-        ? productName.substring(0, 3).toUpperCase()
-        : productName.toUpperCase();
-
-    // Use via.placeholder.com which has better CORS support
-    return 'https://via.placeholder.com/${size}x${size}/$color/FFFFFF?text=$shortName';
+    // Return local asset path if category matches
+    return categoryAssetMap[category] ?? 'assets/images/products/fruits.jpg';
   }
 
-  // Generate retailer logo URLs
+  // Generate retailer logo URLs - Use PNG assets created by generate_retailer_logos.py
   String _generateRetailerLogoUrl(String retailerName) {
-    // Map retailer names to logo placeholder with brand colors
-    final retailerColors = {
-      'EDEKA': '005CA9',      // EDEKA Blue
-      'REWE': 'CC071E',       // REWE Red
-      'ALDI': '00549F',       // ALDI Blue
-      'LIDL': '0050AA',       // LIDL Blue
-      'Netto': 'FFD100',      // Netto Yellow
-      'Penny': 'E30613',      // Penny Red
-      'Kaufland': 'E10915',   // Kaufland Red
-      'Real': '004B93',       // Real Blue
-      'Globus': '009EE0',     // Globus Light Blue
-      'Marktkauf': '1B5E20',  // Marktkauf Green
-      'BioCompany': '7CB342', // BioCompany Light Green
+    // Map retailer names to actual PNG asset paths
+    final retailerAssetPaths = {
+      'EDEKA': 'assets/images/retailers/edeka.png',
+      'rewe': 'assets/images/retailers/rewe.png',
+      'aldi': 'assets/images/retailers/aldi.png',
+      'lidl': 'assets/images/retailers/lidl.png',
+      'Netto': 'assets/images/retailers/netto.png',
+      'Penny': 'assets/images/retailers/penny.png',
+      'Kaufland': 'assets/images/retailers/kaufland.png',
+      'Real': 'assets/images/retailers/real.png',
+      'Globus': 'assets/images/retailers/globus.png',
+      'Marktkauf': 'assets/images/retailers/marktkauf.png',
+      'BioCompany': 'assets/images/retailers/biocompany.png',
     };
 
-    final color = retailerColors[retailerName] ?? '2E8B57';
-    final letter = retailerName.isNotEmpty ? retailerName[0] : 'R';
+    // Return PNG asset path if available, fallback to generated SVG for unknown retailers
+    if (retailerAssetPaths.containsKey(retailerName)) {
+      return retailerAssetPaths[retailerName]!;
+    }
 
-    // Use placeholder service for logo generation
-    return 'https://via.placeholder.com/150/$color/FFFFFF?text=$letter';
+    // Fallback: Generate SVG logo for unknown retailers (preserved original logic)
+    final retailerColors = {
+      'EDEKA': '#005CA9',      // EDEKA Blue
+      'REWE': '#CC071E',       // REWE Red
+      'ALDI': '#00549F',       // ALDI Blue
+      'LIDL': '#0050AA',       // LIDL Blue
+      'Netto': '#FFD100',      // Netto Yellow
+      'Penny': '#E30613',      // Penny Red
+      'Kaufland': '#E10915',   // Kaufland Red
+      'Real': '#004B93',       // Real Blue
+      'Globus': '#009EE0',     // Globus Light Blue
+      'Marktkauf': '#1B5E20',  // Marktkauf Green
+      'BioCompany': '#7CB342', // BioCompany Light Green
+    };
+
+    final color = retailerColors[retailerName] ?? '#2E8B57';
+    final letter = retailerName.isNotEmpty ? retailerName[0] : 'R';
+    final size = 150;
+
+    // Generate SVG logo
+    final svg = '''
+<svg width="$size" height="$size" xmlns="http://www.w3.org/2000/svg">
+  <rect width="$size" height="$size" fill="$color" rx="8"/>
+  <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">$letter</text>
+</svg>
+''';
+
+    // Convert to base64 data URL
+    final bytes = utf8.encode(svg);
+    final base64Str = base64.encode(bytes);
+    return 'data:image/svg+xml;base64,$base64Str';
   }
 
 

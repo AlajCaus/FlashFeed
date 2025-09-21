@@ -227,7 +227,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
               padding: ResponsiveHelper.getScreenPadding(context),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: ResponsiveHelper.isTablet(context) ? 2 : 3,
-                childAspectRatio: 2.5,
+                childAspectRatio: 0.85,
                 crossAxisSpacing: ResponsiveHelper.space4,
                 mainAxisSpacing: ResponsiveHelper.space4,
               ),

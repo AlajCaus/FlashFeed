@@ -119,8 +119,17 @@ class RetailerLogo extends StatelessWidget {
           );
         },
       );
+    } else if (logoUrl.startsWith('assets/')) {
+      // Local asset (path already correct)
+      return Image.asset(
+        logoUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildFallbackLogo(displayName, primaryColor);
+        },
+      );
     } else if (logoUrl.startsWith('/assets/')) {
-      // Local asset
+      // Local asset with leading slash
       return Image.asset(
         logoUrl.substring(1), // Remove leading /
         fit: BoxFit.contain,

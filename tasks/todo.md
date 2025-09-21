@@ -854,3 +854,76 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - Performance Tests: 54/54 ✅
 - Widget Tests: 68/68 ✅
 - Unit Tests: 308/308 ✅
+
+---
+
+## ✅ **ABGESCHLOSSENER TASK: 96px OVERFLOW-FEHLER IN ANGEBOTE-ANSICHT**
+
+### **PROBLEM:**
+Bottom Overflow von 96px in den OfferComparisonCard Widgets der Angebote-Ansicht.
+
+### **LÖSUNG IMPLEMENTIERT:**
+1. ✅ SingleChildScrollView aus OfferComparisonCard entfernt (Hauptursache)
+2. ✅ Layout-Struktur mit Expanded/Column optimiert
+3. ✅ Padding reduziert (von 10/12 auf 8/10)
+4. ✅ Bildhöhe angepasst (von 100/120 auf 95/115)
+5. ✅ SizedBox-Abstände verkleinert (von 8px auf 6px)
+
+### **ERGEBNIS:**
+- Overflow von 96px auf 8px reduziert, dann vollständig behoben
+- Cards nutzen jetzt proper Flutter Layout ohne internen Scroll
+- Layout responsive und grid-konform
+
+## 🎯 **AKTUELLER TASK: FLUTTER WEB PRODUKTBILDER-PROBLEM**
+
+### **PROBLEM:**
+Produktbilder werden in Flutter Web nicht angezeigt. Aktuelle `dummyimage.com` Implementation hat CORS-Probleme.
+
+### **PLAN ERSTELLT:**
+
+#### **✅ ANALYSE PHASE**
+- [x] Aktuelle `_generateProductImageUrl` Funktion analysiert (Zeile 918-945)
+- [x] Problem identifiziert: `dummyimage.com` CORS-Issues in Flutter Web
+- [x] Auswirkungsanalyse durchgeführt
+- [x] Bestätigung: Nur URL-Generierung ändern, Interface bleibt gleich
+
+#### **🔄 IMPLEMENTIERUNG PHASE**
+- [ ] **Task 1**: Funktion `_generateProductImageUrl` auf `picsum.photos` umstellen
+  - Zuverlässiger Service mit besserer CORS-Unterstützung
+  - Kategoriebasierte Bilder durch Seed-Werte
+  - Fallback für dummyimage.com wenn picsum nicht verfügbar
+- [ ] **Task 2**: Browser-Test der neuen URLs durchführen
+  - Manueller Test der generierten URLs im Browser
+  - CORS-Verhalten prüfen
+  - Loading-Performance vergleichen
+
+#### **🧪 VERIFIKATION PHASE**
+- [ ] **Task 3**: Integration testen
+  - App starten und Produktbilder prüfen
+  - Offers-Seite: thumbnailUrl anzeigen
+  - Loading-Verhalten bei fehlgeschlagenen Bildern
+
+### **TECHNISCHE DETAILS:**
+
+**Betroffene Dateien:**
+- `lib/services/mock_data_service.dart` (Zeile 918-945)
+
+**Aktuelle Implementierung:**
+```dart
+// Problematisch: dummyimage.com CORS issues
+return 'https://dummyimage.com/${size}x$size/$color/ffffff.png?text=$shortName';
+```
+
+**Geplante Lösung:**
+```dart
+// Zuverlässiger: picsum.photos mit Fallback
+return 'https://picsum.photos/seed/$productSeed/$size/$size';
+```
+
+### **AUSWIRKUNGSANALYSE:**
+- **Provider-Änderungen:** Keine (nur URL-Generierung)
+- **Breaking Changes:** Keine (Interface bleibt gleich)
+- **Tests:** Möglicherweise URL-Format-Tests anpassen
+- **Abhängigkeiten:** Flutter Web CORS-Kompatibilität
+
+**STATUS:** Warte auf Freigabe zur Implementierung

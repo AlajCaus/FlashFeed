@@ -18,7 +18,16 @@
       "Bash(dart test:*)",
       "Bash(grep:*)",
       "Read(//c/Users/Sell-IT/Downloads/**)",
-      "Bash(flutter:*)"
+      "Bash(flutter:*)",
+      "Bash(nc localhost 53181)",
+      "Bash(curl:*)",
+      "Bash(python generate_retailer_logos.py:*)",
+      "Bash(pip install:*)",
+      "Bash(nc localhost 55837)",
+      "Bash(start chrome http://localhost:55837)",
+      "Bash(start chrome http://localhost:8080)",
+      "Bash(nc localhost 57966)",
+      "Bash(del nul)"
     ],
     "deny": [],
     "ask": []

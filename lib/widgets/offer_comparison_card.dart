@@ -127,12 +127,16 @@ class OfferComparisonCard extends StatelessWidget {
         children: [
           Icon(Icons.savings, color: savingsText, size: 14),
           const SizedBox(width: 4),
-          Text(
-            'Sie sparen €${savings.toStringAsFixed(2)} vs. $vsRetailer',
-            style: TextStyle(
-              color: savingsText,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
+          Flexible(
+            child: Text(
+              'Sie sparen €${savings.toStringAsFixed(2)} vs. $vsRetailer',
+              style: TextStyle(
+                color: savingsText,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
         ],
@@ -277,143 +281,134 @@ class OfferComparisonCard extends StatelessWidget {
               : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
           child: Stack(
             children: [
-              Padding(
-                padding: EdgeInsets.all(isMobile ? 10 : 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with retailer and discount
-                    Row(
-                      children: [
-                        _buildRetailerBadge(primaryOffer.retailer),
-                        const Spacer(),
-                        _buildDiscountBadge(primaryOffer.discountPercent),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // Product image
-                    Container(
-                      height: isMobile ? 120 : 140,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F5),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: primaryOffer.thumbnailUrl != null
-                            ? Image.network(
-                                primaryOffer.thumbnailUrl!,
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  // Fallback to icon if image fails
-                                  print('Image failed to load: ${primaryOffer.thumbnailUrl}');
-                                  return Center(
-                                    child: Icon(
-                                      _getCategoryIcon(primaryOffer.flashFeedCategory),
-                                      size: isMobile ? 32 : 40,
-                                      color: primaryGreen.withAlpha(153),
-                                    ),
-                                  );
-                                },
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded /
-                                              loadingProgress.expectedTotalBytes!
-                                          : null,
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(primaryGreen),
-                                    ),
-                                  );
-                                },
-                              )
-                            : Center(
-                                child: Icon(
-                                  _getCategoryIcon(primaryOffer.flashFeedCategory),
-                                  size: isMobile ? 32 : 40,
-                                  color: primaryGreen.withAlpha(153),
-                                ),
-                              ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // Product name
-                    Text(
-                      primaryOffer.productName,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    
-                    // Category
-                    Text(
-                      primaryOffer.flashFeedCategory,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // Price
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '€${primaryOffer.price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: primaryGreen,
+              Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(isMobile ? 8 : 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Header with retailer and discount
+                          Row(
+                            children: [
+                              _buildRetailerBadge(primaryOffer.retailer),
+                              const Spacer(),
+                              _buildDiscountBadge(primaryOffer.discountPercent),
+                            ],
                           ),
-                        ),
-                        if (primaryOffer.originalPrice != null) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '€${primaryOffer.originalPrice!.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: textSecondary,
-                              decoration: TextDecoration.lineThrough,
+                          const SizedBox(height: 6),
+
+                          // Product image
+                          Container(
+                            height: isMobile ? 95 : 115,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: primaryOffer.thumbnailUrl != null
+                                  ? Image.asset(
+                                      primaryOffer.thumbnailUrl!,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        // Fallback to icon if image fails
+                                        print('Image failed to load: ${primaryOffer.thumbnailUrl}');
+                                        return Center(
+                                          child: Icon(
+                                            _getCategoryIcon(primaryOffer.flashFeedCategory),
+                                            size: isMobile ? 32 : 40,
+                                            color: primaryGreen.withAlpha(153),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Center(
+                                      child: Icon(
+                                        _getCategoryIcon(primaryOffer.flashFeedCategory),
+                                        size: isMobile ? 32 : 40,
+                                        color: primaryGreen.withAlpha(153),
+                                      ),
+                                    ),
                             ),
                           ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // Price comparison
-                    _buildPriceComparison(),
+                          const SizedBox(height: 6),
 
-                    const SizedBox(height: 8),
-
-                    // Valid until
-                    Row(
-                      children: [
-                        Icon(Icons.schedule, size: 12, color: textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Gültig bis ${_formatDate(primaryOffer.validUntil)}',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: textSecondary,
+                          // Product name
+                          Text(
+                            primaryOffer.productName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+
+                          // Category
+                          Text(
+                            primaryOffer.flashFeedCategory,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: textSecondary,
+                            ),
+                          ),
+                          const Spacer(),
+
+                          // Price
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '€${primaryOffer.price.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryGreen,
+                                ),
+                              ),
+                              if (primaryOffer.originalPrice != null) ...[
+                                const SizedBox(width: 6),
+                                Text(
+                                  '€${primaryOffer.originalPrice!.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: textSecondary,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+
+                          // Valid until
+                          Row(
+                            children: [
+                              Icon(Icons.schedule, size: 11, color: textSecondary),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  'Gültig bis ${_formatDate(primaryOffer.validUntil)}',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: textSecondary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               
               // Lock overlay

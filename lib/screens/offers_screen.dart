@@ -315,7 +315,7 @@ class _OffersScreenState extends State<OffersScreen> {
             sliver: SliverGrid(
               gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: isMobile ? 200 : (isTablet ? 220 : 250),
-                childAspectRatio: isMobile ? 0.65 : 0.72,
+                childAspectRatio: isMobile ? 0.65 : 0.68,
                 crossAxisSpacing: isMobile ? 8 : 12,
                 mainAxisSpacing: isMobile ? 8 : 12,
               ),
@@ -402,7 +402,7 @@ class _OffersScreenState extends State<OffersScreen> {
           ),
         ),
         SizedBox(
-          height: 180,
+          height: 280,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
