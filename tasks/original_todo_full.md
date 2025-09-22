@@ -1517,12 +1517,12 @@ git commit -m "feat: complete Task 5a - implement PLZ-based retailer availabilit
 - Nationwide: EDEKA, REWE, ALDI, Lidl, Penny, Kaufland, Marktkauf
 - Nord/Ost: Netto (01000-39999)
 - Süd/West: Globus (50000-99999)
-- Selective: Real (Berlin/Brandenburg + NRW)
+- Selective: nahkauf (Berlin/Brandenburg + NRW)
 - Regional: BioCompany (Berlin/Brandenburg only)
 
 ✅ Complete Testing:
 - 100% pass rate for all PLZ validation functions
-- Multi-range retailer support verified (Real)
+- Multi-range retailer support verified (nahkauf)
 - Edge cases handled correctly (invalid PLZ, empty strings)
 - Regional statistics: Berlin 80%, München 40% retailer availability
 

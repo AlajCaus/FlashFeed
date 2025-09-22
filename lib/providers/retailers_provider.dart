@@ -48,17 +48,19 @@ class RetailersProvider extends ChangeNotifier {
   
   // Händler-Logos (Placeholder URLs für MVP)
   static const Map<String, String> _retailerLogos = {
-    'EDEKA': 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Logo_Edeka.svg',
-    'REWE': 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Logo_REWE.svg',
-    'ALDI': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Aldi_Nord_201x_logo.svg',
-    'LIDL': 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Lidl_logo.png',
-    'NETTO': 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Logo_Netto_Marken-Discount.svg',
-    'PENNY': 'https://upload.wikimedia.org/wikipedia/commons/d/d1/Penny-Logo.svg',
-    'KAUFLAND': 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Kaufland_201x_logo.svg',
-    'REAL': 'https://upload.wikimedia.org/wikipedia/de/8/86/Real-logo.svg',
-    'GLOBUS': 'https://upload.wikimedia.org/wikipedia/de/e/e0/Globus_Hypermarkt_Logo_2020.svg',
-    'MARKTKAUF': 'https://upload.wikimedia.org/wikipedia/commons/f/fb/Marktkauf_Logo.svg',
-    'BIOCOMPANY': '/assets/images/biocompany_logo.png', // Local asset fallback
+    'EDEKA': '/assets/images/retailers/edeka.jpg',
+    'REWE': '/assets/images/retailers/rewe.png',
+    'ALDI': '/assets/images/retailers/Aldi.png',
+    'ALDI SÜD': '/assets/images/retailers/Aldi_Sued.jpg',
+    'LIDL': '/assets/images/retailers/lidl.png',
+    'NETTO': '/assets/images/retailers/netto.png',
+    'netto Scottie': '/assets/images/retailers/Scottie.png',
+    'PENNY': '/assets/images/retailers/Penny-Logo.svg',
+    'KAUFLAND': '/assets/images/retailers/Kaufland_201x_logo.svg',
+    'nahkauf': '/assets/images/retailers/Real-logo.svg',
+    'GLOBUS': '/assets/images/retailers/Globus_Hypermarkt_Logo_2020.svg',
+    'MARKTKAUF': '/assets/images/retailers/Marktkauf_Logo.svg',
+    'BIOCOMPANY': '/assets/images/retailers/biocompany.png', // Local asset fallback
   };
   
   // Händler Brand-Farben (offizielle Markenfarben)
@@ -75,6 +77,10 @@ class RetailersProvider extends ChangeNotifier {
       'primary': Color(0xFF00549F),  // ALDI Blau
       'accent': Color(0xFFE30613),   // ALDI Rot
     },
+    'ALDI SÜD': {
+      'primary': Color(0xFF00549F),  // ALDI SÜD Blau
+      'accent': Color(0xFFE30613),   // ALDI SÜD Rot
+    },
     'LIDL': {
       'primary': Color(0xFF0050AA),  // LIDL Blau
       'accent': Color(0xFFFFE500),   // LIDL Gelb
@@ -82,6 +88,10 @@ class RetailersProvider extends ChangeNotifier {
     'NETTO': {
       'primary': Color(0xFFFFCC00),  // NETTO Gelb
       'accent': Color(0xFFE4003A),   // NETTO Rot
+    },
+    'netto scottie': {
+      'primary': Color(0xFFFFCC00),  // netto scottie Gelb
+      'accent': Color(0xFFE4003A),   // netto scottie Rot
     },
     'PENNY': {
       'primary': Color(0xFFE40521),  // PENNY Rot
@@ -91,17 +101,17 @@ class RetailersProvider extends ChangeNotifier {
       'primary': Color(0xFFE10915),  // KAUFLAND Rot
       'accent': Color(0xFF002F6C),   // KAUFLAND Blau
     },
-    'REAL': {
-      'primary': Color(0xFF004B93),  // REAL Blau
-      'accent': Color(0xFFE30613),   // REAL Rot
+    'nahkauf': {
+      'primary': Color(0xFF004B93),  // nahkauf Blau
+      'accent': Color(0xFFE30613),   // nahkauf Rot
     },
     'GLOBUS': {
       'primary': Color(0xFF003C78),  // GLOBUS Blau
       'accent': Color(0xFFF39800),   // GLOBUS Orange
     },
-    'MARKTKAUF': {
-      'primary': Color(0xFFE2001A),  // MARKTKAUF Rot
-      'accent': Color(0xFF005AA0),   // MARKTKAUF Blau
+    'norma': {
+      'primary': Color(0xFFE2001A),  // norma Rot
+      'accent': Color(0xFF005AA0),   // norma Blau
     },
     'BIOCOMPANY': {
       'primary': Color(0xFF6B8E23),  // Bio Grün
@@ -113,14 +123,16 @@ class RetailersProvider extends ChangeNotifier {
   static const Map<String, String> _retailerDisplayNames = {
     'EDEKA': 'EDEKA',
     'REWE': 'REWE',
-    'ALDI': 'ALDI SÜD',  // Regional spezifisch
+    'ALDI': 'ALDI',  // Regional spezifisch
+    'ALDI SÜD': 'ALDI SÜD',  // Regional spezifisch
     'LIDL': 'Lidl',
-    'NETTO': 'Netto Marken-Discount',
+    'NETTO': 'Netto',
+    'netto Scottie': 'NETTO',
     'PENNY': 'PENNY',
     'KAUFLAND': 'Kaufland',
-    'REAL': 'real',
+    'nahkauf': 'nahkauf',
     'GLOBUS': 'Globus',
-    'MARKTKAUF': 'Marktkauf',
+    'norma': 'Norma',
     'BIOCOMPANY': 'BioCompany',
   };
   

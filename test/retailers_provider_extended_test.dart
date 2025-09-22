@@ -109,7 +109,7 @@ void main() {
         expect(provider.getRetailerDisplayName('ALDI'), equals('ALDI SÜD'));
         expect(provider.getRetailerDisplayName('NETTO'), equals('Netto Marken-Discount'));
         expect(provider.getRetailerDisplayName('LIDL'), equals('Lidl'));
-        expect(provider.getRetailerDisplayName('REAL'), equals('real'));
+        expect(provider.getRetailerDisplayName('nahkauf'), equals('nahkauf'));
       });
       
       test('should handle unknown retailer gracefully', () {

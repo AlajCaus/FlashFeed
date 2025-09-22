@@ -516,7 +516,7 @@ void main() {
         // If there are non-Berlin retailers, count should be less
         final berlinRetailers = locationProvider.getAvailableRetailersForPLZ('10115');
         final allRetailers = ['EDEKA', 'REWE', 'ALDI SÜD', 'LIDL', 'NETTO', 
-                              'PENNY', 'KAUFLAND', 'REAL', 'GLOBUS', 'MARKTKAUF', 
+                              'PENNY', 'KAUFLAND', 'nahkauf', 'GLOBUS', 'MARKTKAUF', 
                               'BIOCOMPANY'];
         
         // Check if filtering is applied
@@ -531,9 +531,9 @@ void main() {
               reason: 'Offer from ${offer.retailer} should be available in Berlin');
         }
         
-        // Verify REAL is NOT available in Berlin (no stores in Berlin PLZ range)
-        expect(berlinRetailers.contains('REAL'), isFalse,
-            reason: 'REAL should NOT be available in Berlin - stores only in Wuppertal/Düsseldorf');
+        // Verify nahkauf is NOT available in Berlin (no stores in Berlin PLZ range)
+        expect(berlinRetailers.contains('nahkauf'), isFalse,
+            reason: 'nahkauf should NOT be available in Berlin - stores only in Wuppertal/Düsseldorf');
       });
 
       test('emptyStateMessage provides correct feedback', () async {
@@ -600,8 +600,8 @@ void main() {
         expect(berlinRetailers.contains('REWE'), isTrue);
         expect(berlinRetailers.contains('GLOBUS'), isFalse,
             reason: 'Globus should not be available in Berlin');
-        expect(berlinRetailers.contains('REAL'), isFalse,
-            reason: 'REAL should NOT be available in Berlin - stores only in Wuppertal/Düsseldorf');
+        expect(berlinRetailers.contains('nahkauf'), isFalse,
+            reason: 'nahkauf should NOT be available in Berlin - stores only in Wuppertal/Düsseldorf');
         
         // Move to Munich
         await locationProvider.setUserPLZ('80331');

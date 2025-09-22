@@ -114,7 +114,7 @@ class ProductCategoryMapping {
       'Fertiggerichte': 'Fertiggerichte',
     },
     
-    'Netto Marken-Discount': {
+    'netto scottie': {
       // Netto Marken-Discount Kategorien - Discounter mit Marken
       'Getränke': 'Getränke',
       'Konserven': 'Konserven',
@@ -194,8 +194,8 @@ class ProductCategoryMapping {
       'To Go': 'Fertiggerichte',
     },
     
-    'Real': {
-      // Real Kategorien - SB-Warenhaus (historisch, größtenteils geschlossen)
+    'nahkauf': {
+      // nahkauf Kategorien - SB-Warenhaus (historisch, größtenteils geschlossen)
       'Molkereiprodukte': 'Milchprodukte',
       'Fleisch & Geflügel': 'Fleisch & Wurst',
       'Obst & Gemüse': 'Obst & Gemüse',
@@ -226,8 +226,24 @@ class ProductCategoryMapping {
       'Frische Küche': 'Fertiggerichte',
     },
     
-    'Marktkauf': {
-      // Marktkauf Kategorien - EDEKA-Hypermarkt
+    'norma': {
+      // norma Kategorien - EDEKA-Hypermarkt
+      'Molkereiprodukte': 'Milchprodukte',
+      'Fleischwaren': 'Fleisch & Wurst',
+      'Obst & Gemüse': 'Obst & Gemüse',
+      'Backwaren': 'Brot & Backwaren',
+      'Getränke': 'Getränke',
+      'Tiefkühlkost': 'Tiefkühl',
+      'Konserven & Dauerware': 'Konserven',
+      'Süßwaren & Knabberartikel': 'Süßwaren',
+      'Drogerie & Gesundheit': 'Drogerie',
+      'Haushalt & Wohnen': 'Haushalt',
+      'Bio-Sortiment': 'Bio-Produkte',
+      'Convenience': 'Fertiggerichte',
+    },
+
+    'BIOCOMPANY': {
+      // biocompany Kategorien - Bio-Hypermarkt
       'Molkereiprodukte': 'Milchprodukte',
       'Fleischwaren': 'Fleisch & Wurst',
       'Obst & Gemüse': 'Obst & Gemüse',
@@ -265,14 +281,14 @@ class ProductCategoryMapping {
     if (retailer.toUpperCase().contains('KAUFLAND')) {
       return categoryMappings['Kaufland']?[originalCategory] ?? 'Sonstiges';
     }
-    if (retailer.toUpperCase().contains('REAL')) {
-      return categoryMappings['Real']?[originalCategory] ?? 'Sonstiges';
+    if (retailer.toUpperCase().contains('nahkauf')) {
+      return categoryMappings['nahkauf']?[originalCategory] ?? 'Sonstiges';
     }
     if (retailer.toUpperCase().contains('GLOBUS')) {
       return categoryMappings['Globus']?[originalCategory] ?? 'Sonstiges';
     }
-    if (retailer.toUpperCase().contains('MARKTKAUF')) {
-      return categoryMappings['Marktkauf']?[originalCategory] ?? 'Sonstiges';
+    if (retailer.toUpperCase().contains('norma')) {
+      return categoryMappings['norma']?[originalCategory] ?? 'Sonstiges';
     }
     
     return 'Sonstiges';

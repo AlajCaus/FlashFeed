@@ -202,7 +202,7 @@ class MockDataService {
         logoUrl: _generateRetailerLogoUrl('EDEKA'),  // Dynamic logo URL
         primaryColor: '#005CA9',
         secondaryColor: '#FFE500',  // Task 11.2: EDEKA Gelb
-        iconUrl: '/assets/icons/edeka_icon.png',  // Task 11.2: Icon
+        iconUrl: '/assets/images/retailers/edeka.jpg',  // Task 11.2: Icon
         slogan: 'Wir lieben Lebensmittel',  // Task 11.2: Slogan
         description: 'Deutschlands größte Supermarkt-Kooperation',
         categories: ['Molkereiprodukte', 'Frischfleisch', 'Obst', 'Gemüse', 'Backwaren', 'Getränke', 'Tiefkühlprodukte'],
@@ -219,7 +219,7 @@ class MockDataService {
         logoUrl: _generateRetailerLogoUrl('rewe'),  // Dynamic logo URL
         primaryColor: '#CC071E',
         secondaryColor: '#FFF200',  // Task 11.2: REWE Gelb
-        iconUrl: '/assets/icons/rewe_icon.png',  // Task 11.2: Icon
+        iconUrl: '/assets/images/retailers/rewe.png',  // Task 11.2: Icon
         slogan: 'Dein Markt',  // Task 11.2: Slogan
         description: 'Ihr Nahversorger mit nachhaltigen Produkten',
         categories: ['Milch & Käse', 'Fleisch & Geflügel', 'Frisches Obst', 'Frisches Gemüse', 'Brot & Bäckerei', 'Getränke & Alkohol'],
@@ -231,12 +231,29 @@ class MockDataService {
       ),
       Retailer(
         id: 'aldi',
-        name: 'ALDI SÜD',
-        displayName: 'ALDI SÜD',  // Task 11.2: Korrekter Display Name
+        name: 'ALDI',
+        displayName: 'ALDI',  // Task 11.2: Korrekter Display Name
         logoUrl: _generateRetailerLogoUrl('aldi'),  // Dynamic logo URL
         primaryColor: '#00549F',
         secondaryColor: '#FF6600',  // Task 11.2: ALDI Orange
-        iconUrl: '/assets/icons/aldi_icon.png',  // Task 11.2: Icon
+        iconUrl: '/assets/images/retailers/aldi.png',  // Task 11.2: Icon
+        slogan: 'Einfach ist mehr',  // Task 11.2: Slogan
+        description: 'Einfach günstig - Qualität zum besten Preis',
+        categories: ['Milcherzeugnisse', 'Frischfleisch', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Tiefkühl'],
+        isPremiumPartner: false,
+        website: 'https://www.aldi.de',
+        storeCount: 7,
+        // Task 5a: ALDI ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        availablePLZRanges: [], // Bundesweit
+      ),
+      Retailer(
+        id: 'aldi süd',
+        name: 'ALDI SÜD',
+        displayName: 'ALDI SÜD',  // Task 11.2: Korrekter Display Name
+        logoUrl: _generateRetailerLogoUrl('aldi süd'),  // Dynamic logo URL
+        primaryColor: '#00549F',
+        secondaryColor: '#FF6600',  // Task 11.2: ALDI Orange
+        iconUrl: '/assets/images/retailers/Aldi_Sued.jpg',  // Task 11.2: Icon
         slogan: 'Einfach ist mehr',  // Task 11.2: Slogan
         description: 'Einfach günstig - Qualität zum besten Preis',
         categories: ['Milcherzeugnisse', 'Frischfleisch', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Tiefkühl'],
@@ -253,7 +270,7 @@ class MockDataService {
         logoUrl: _generateRetailerLogoUrl('lidl'),  // Dynamic logo URL
         primaryColor: '#0050AA',
         secondaryColor: '#FFE500',  // Task 11.2: Lidl Gelb
-        iconUrl: '/assets/icons/lidl_icon.png',  // Task 11.2: Icon
+        iconUrl: '/assets/images/retailers/lidl.png',  // Task 11.2: Icon
         slogan: 'Lidl lohnt sich',  // Task 11.2: Slogan
         description: 'Mehr frische Ideen - Qualität und Frische',
         categories: ['Backwaren', 'Milchprodukte', 'Obst & Gemüse', 'Fleisch & Geflügel', 'Getränke', 'Tiefkühl'],
@@ -264,13 +281,32 @@ class MockDataService {
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
-        id: 'netto_schwarz',
+        id: 'netto',
         name: 'NETTO',
-        displayName: 'Netto Marken-Discount',  // Task 11.2: Vollständiger Name
-        logoUrl: _generateRetailerLogoUrl('Netto'),  // Dynamic logo URL
+        displayName: 'Netto',  // Task 11.2: Vollständiger Name
+        logoUrl: _generateRetailerLogoUrl('NETTO'),  // Dynamic logo URL
         primaryColor: '#FFD100',
         secondaryColor: '#000000',  // Task 11.2: Netto Schwarz
-        iconUrl: '/assets/icons/netto_icon.png',  // Task 11.2: Scottie Icon
+        iconUrl: '/assets/images/retailers/netto.png',  // Task 11.2: Scottie Icon
+        slogan: 'Dann geh doch zu Netto!',  // Task 11.2: Slogan
+        description: 'Jeden Tag ein bisschen besser',
+        categories: ['Getränke', 'Konserven', 'Molkereiprodukte', 'Fleisch & Wurst', 'Obst & Gemüse', 'Backshop'],
+        isPremiumPartner: false,
+        website: 'https://www.netto-online.de',
+        storeCount: 7,
+        // Task 5a: Netto (schwarz) primär in Nord/Ost-Deutschland
+        availablePLZRanges: [
+          PLZRange(startPLZ: '01000', endPLZ: '39999', regionName: 'Nord/Ost-Deutschland'),
+        ],
+      ),
+      Retailer(
+        id: 'netto_schwarz',
+        name: 'netto scottie',
+        displayName: 'Netto Marken-Discount',  // Task 11.2: Vollständiger Name
+        logoUrl: _generateRetailerLogoUrl('NETTO'),  // Dynamic logo URL
+        primaryColor: '#FFD100',
+        secondaryColor: '#000000',  // Task 11.2: Netto Schwarz
+        iconUrl: '/assets/images/retailers/Scottie.png',  // Task 11.2: Scottie Icon
         slogan: 'Dann geh doch zu Netto!',  // Task 11.2: Slogan
         description: 'Jeden Tag ein bisschen besser',
         categories: ['Getränke', 'Konserven', 'Molkereiprodukte', 'Fleisch & Wurst', 'Obst & Gemüse', 'Backshop'],
@@ -290,7 +326,7 @@ class MockDataService {
         logoUrl: _generateRetailerLogoUrl('Penny'),  // Dynamic logo URL
         primaryColor: '#D4001A',
         secondaryColor: '#FFE500',  // Task 11.2: Penny Gelb
-        iconUrl: '/assets/icons/penny_icon.png',  // Task 11.2: Icon
+        iconUrl: '/assets/images/retailers/penny.png',  // Task 11.2: Icon
         slogan: 'Erstmal zu Penny',  // Task 11.2: Slogan
         description: 'Preise gut, alles gut',
         categories: ['Getränke', 'Süßwaren', 'Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Wurst', 'Backwaren'],
@@ -307,7 +343,7 @@ class MockDataService {
         logoUrl: _generateRetailerLogoUrl('Kaufland'),  // Dynamic logo URL
         primaryColor: '#E40521',  // Task 11.2: Korrigiertes Kaufland Rot
         secondaryColor: '#FFFFFF',  // Task 11.2: Kaufland Weiß
-        iconUrl: '/assets/icons/kaufland_icon.png',  // Task 11.2: K Icon
+        iconUrl: '/assets/images/retailers/kaufland.png',  // Task 11.2: K Icon
         slogan: 'Das ist für alle gut',  // Task 11.2: Slogan
         description: 'Das ist gut für alle',
         categories: ['Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Geflügel', 'Backwaren', 'Getränke', 'Tiefkühl', 'Bio-Produkte'],
@@ -318,20 +354,20 @@ class MockDataService {
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
-        id: 'real',
-        name: 'REAL',
-        displayName: 'real,-',  // Task 11.2: Stylisiert mit Komma
-        logoUrl: _generateRetailerLogoUrl('Real'),  // Dynamic logo URL
-        primaryColor: '#003F74',  // Task 11.2: Real Dunkelblau
-        secondaryColor: '#E30613',  // Task 11.2: Real Rot
-        iconUrl: '/assets/icons/real_icon.png',  // Task 11.2: Icon
+        id: 'nahkauf',
+        name: 'nahkauf',
+        displayName: 'nahkauf',  // Task 11.2: Stylisiert mit Komma
+        logoUrl: _generateRetailerLogoUrl('nahkauf'),  // Dynamic logo URL
+        primaryColor: '#003F74',  // Task 11.2: nahkauf Dunkelblau
+        secondaryColor: '#E30613',  // Task 11.2: nahkauf Rot
+        iconUrl: '/assets/images/retailers/nahkauf.png',  // Task 11.2: Icon
         slogan: 'Einmal hin. Alles drin.',  // Task 11.2: Slogan
         description: 'Einmal hin. Alles drin',
         categories: ['Frische-Theke', 'Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Fisch', 'Backwaren', 'Getränke', 'Bio-Produkte'],
         isPremiumPartner: true,
-        website: 'https://www.real.de',
+        website: 'https://www.nahkauf.de',
         storeCount: 2,
-        // Task 5a: Real nur in NRW (Stores in PLZ 42277, 40249)
+        // Task 5a: nahkauf nur in NRW (Stores in PLZ 42277, 40249)
         availablePLZRanges: [
           PLZRange(startPLZ: '40000', endPLZ: '59999', regionName: 'Nordrhein-Westfalen'),
         ],
@@ -343,7 +379,7 @@ class MockDataService {
         logoUrl: _generateRetailerLogoUrl('Globus'),  // Dynamic logo URL
         primaryColor: '#0033A0',
         secondaryColor: '#FF6600',  // Task 11.2: Globus Orange
-        iconUrl: '/assets/icons/globus_icon.png',  // Task 11.2: Globus Icon
+        iconUrl: '/assets/images/retailers/globus.png',  // Task 11.2: Globus Icon
         slogan: 'Jeder Mensch ist anders',  // Task 11.2: Slogan
         description: 'Meine Zeit. Mein Globus',
         categories: ['Premium-Fleisch', 'Bio-Produkte', 'Molkereiprodukte', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Feinkost'],
@@ -356,20 +392,20 @@ class MockDataService {
         ],
       ),
       Retailer(
-        id: 'marktkauf',
-        name: 'MARKTKAUF',
-        displayName: 'Marktkauf',
-        logoUrl: _generateRetailerLogoUrl('Marktkauf'),  // Dynamic logo URL
+        id: 'norma',
+        name: 'norma',
+        displayName: 'norma',
+        logoUrl: _generateRetailerLogoUrl('norma'),  // Dynamic logo URL
         primaryColor: '#009639',
-        secondaryColor: '#FFE500',  // Task 11.2: Marktkauf Gelb
-        iconUrl: '/assets/icons/marktkauf_icon.png',  // Task 11.2: Icon
+        secondaryColor: '#FFE500',  // Task 11.2: norma Gelb
+        iconUrl: '/assets/images/retailers/norma.png',  // Task 11.2: Icon
         slogan: 'Hier kauf ich gern',  // Task 11.2: Slogan
         description: 'Hier kauf ich gern',
         categories: ['Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Wurst', 'Backwaren', 'Getränke', 'Tiefkühl'],
         isPremiumPartner: false,
-        website: 'https://www.marktkauf.de',
+        website: 'https://www.norma.de',
         storeCount: 1,
-        // Task 5a: Marktkauf in Brandenburg/NRW (Store in PLZ 14503 Teltow)
+        // Task 5a: norma in Brandenburg/NRW (Store in PLZ 14503 Teltow)
         availablePLZRanges: [
           PLZRange(startPLZ: '14500', endPLZ: '59999', regionName: 'Brandenburg bis NRW'),
         ],
@@ -382,7 +418,7 @@ class MockDataService {
         logoUrl: _generateRetailerLogoUrl('BioCompany'),  // Dynamic logo URL
         primaryColor: '#7CB342',
         secondaryColor: '#8BC34A',  // Task 11.2: BioCompany Hellgrün
-        iconUrl: '/assets/icons/biocompany_icon.png',  // Task 11.2: Icon
+        iconUrl: '/assets/images/retailers/biocompany.png',  // Task 11.2: Icon
         slogan: 'Bio für alle',  // Task 11.2: Slogan
         description: 'Bio für die Stadt',
         categories: ['Bio-Obst', 'Bio-Gemüse', 'Bio-Milchprodukte', 'Bio-Backwaren', 'Naturkosmetik'],
@@ -438,7 +474,7 @@ class MockDataService {
         {'name': 'Lidl Zehlendorf', 'street': 'Clayallee 336', 'plz': '14169', 'lat': 52.443123, 'lng': 13.263012},
         {'name': 'Lidl Weißensee', 'street': 'Berliner Allee 260', 'plz': '13088', 'lat': 52.553612, 'lng': 13.453634}
       ],
-      'netto_schwarz': [
+      'netto scottie': [
         {'name': 'Netto Marken-Discount Alt-Moabit', 'street': 'Alt-Moabit 88', 'plz': '10559', 'lat': 52.521934, 'lng': 13.347812},
         {'name': 'Netto Marken-Discount Rudow', 'street': 'Neuköllner Straße 311', 'plz': '12357', 'lat': 52.443123, 'lng': 13.483234},
         {'name': 'Netto Marken-Discount Gesundbrunnen', 'street': 'Gesundbrunnenstraße 61', 'plz': '13357', 'lat': 52.553612, 'lng': 13.389634},
@@ -456,15 +492,15 @@ class MockDataService {
         {'name': 'Kaufland Ostbahnhof', 'street': 'Stralauer Platz 33-34', 'plz': '10243', 'lat': 52.507834, 'lng': 13.434512},
         {'name': 'Kaufland Spandau', 'street': 'Neuendorfer Straße 60', 'plz': '13585', 'lat': 52.537923, 'lng': 13.201234}
       ],
-      'real': [
-        {'name': 'Real Wuppertal', 'street': 'Großbeerenstraße 263', 'plz': '42277', 'lat': 52.418734, 'lng': 13.373912},
-        {'name': 'Real Düsseldorf', 'street': 'Landsberger Allee 563', 'plz': '40249', 'lat': 52.524123, 'lng': 13.491234}
+      'nahkauf': [
+        {'name': 'nahkauf Wuppertal', 'street': 'Großbeerenstraße 263', 'plz': '42277', 'lat': 52.418734, 'lng': 13.373912},
+        {'name': 'nahkauf Düsseldorf', 'street': 'Landsberger Allee 563', 'plz': '40249', 'lat': 52.524123, 'lng': 13.491234}
       ],
       'globus': [
         {'name': 'Globus Neustadt', 'street': 'Lüdenscheider Weg 1', 'plz': '54974', 'lat': 52.367834, 'lng': 13.212345}
       ],
-      'marktkauf': [
-        {'name': 'Marktkauf Teltow', 'street': 'Unter den Eichen 96a', 'plz': '14503', 'lat': 52.436712, 'lng': 13.318456}
+      'norma': [
+        {'name': 'norma Teltow', 'street': 'Unter den Eichen 96a', 'plz': '14503', 'lat': 52.436712, 'lng': 13.318456}
       ]
     };
     
@@ -544,9 +580,9 @@ class MockDataService {
       ],
       'Brot & Backwaren': [
         {'name': 'Vollkornbrot 500g', 'brand': 'Harry', 'price': 189},
-        {'name': 'Brötchen 6 Stück', 'brand': 'Goldähren', 'price': 149},
+        {'name': 'Brötchen 2 Stück', 'brand': 'Goldähren', 'price': 70},
         {'name': 'Milchbrötchen 4 Stück', 'brand': 'Bäckerei', 'price': 179},
-        {'name': 'Croissants 4 Stück', 'brand': 'Coppenrath', 'price': 199},
+        {'name': 'Croissants 2 Stück', 'brand': 'Coppenrath', 'price': 199},
       ],
       'Getränke': [
         {'name': 'Mineralwasser 12x1L', 'brand': 'Volvic', 'price': 399},
@@ -915,11 +951,86 @@ class MockDataService {
     );
   }
 
-  // Generate product image URLs using placeholder services
+  // Generate product image URLs using local assets
   String _generateProductImageUrl(String productName, String category, {int size = 400}) {
-    // Use local asset images for product categories
+    // Use local product images instead of online placeholders
+    final productNameLower = productName.toLowerCase();
 
-    // Map categories to local asset images
+    // Map product names to local image assets
+    if (productNameLower.contains('banane')) {
+      if (productNameLower.contains('bio')) {
+        return 'assets/images/products/bio_bananen.jpg';
+      }
+      return 'assets/images/products/bananen.jpg';
+    }
+    if (productNameLower.contains('tomate')) {
+      return 'assets/images/products/tomaten.jpg';
+    }
+    if (productNameLower.contains('gurke')) {
+      return 'assets/images/products/gurken.jpg';
+    }
+    if (productNameLower.contains('kartoffel')) {
+      return 'assets/images/products/kartoffeln.jpg';
+    }
+    if (productNameLower.contains('vollmilch') || (productNameLower.contains('milch') && productNameLower.contains('voll'))) {
+      if (productNameLower.contains('bio')) {
+        return 'assets/images/products/bio_vollmilch.jpg';
+      }
+      return 'assets/images/products/vollmilch.jpg';
+    }
+    if (productNameLower.contains('joghurt')) {
+      return 'assets/images/products/joghurt.jpg';
+    }
+    if (productNameLower.contains('butter')) {
+      return 'assets/images/products/butter.jpg';
+    }
+    if (productNameLower.contains('gouda') || productNameLower.contains('käse')) {
+      return 'assets/images/products/gouda.jpg';
+    }
+    if (productNameLower.contains('quark')) {
+      return 'assets/images/products/quark.jpg';
+    }
+    if (productNameLower.contains('hähnchen')) {
+      return 'assets/images/products/haehnchen.jpg';
+    }
+    if (productNameLower.contains('rinderhack') || productNameLower.contains('hack')) {
+      return 'assets/images/products/rinderhack.jpg';
+    }
+    if (productNameLower.contains('bratwurst')) {
+      return 'assets/images/products/bratwurst.jpg';
+    }
+    if (productNameLower.contains('schnitzel')) {
+      return 'assets/images/products/schnitzel.jpg';
+    }
+    if (productNameLower.contains('vollkornbrot') || productNameLower.contains('vollkorn')) {
+      return 'assets/images/products/vollkornbrot.jpg';
+    }
+    if (productNameLower.contains('brötchen')) {
+      if (productNameLower.contains('milchbrötchen')) {
+        return 'assets/images/products/milchbroetchen.jpg';
+      }
+      return 'assets/images/products/broetchen.jpg';
+    }
+    if (productNameLower.contains('croissant')) {
+      return 'assets/images/products/croissants.jpg';
+    }
+    if (productNameLower.contains('mineralwasser') || productNameLower.contains('wasser')) {
+      return 'assets/images/products/mineralwasser.jpg';
+    }
+    if (productNameLower.contains('apfel') || productNameLower.contains('äpfel')) {
+      if (productNameLower.contains('bio')) {
+        return 'assets/images/products/bio_apfel.jpg';
+      }
+      if (productNameLower.contains('apfelsaft')) {
+        return 'assets/images/products/apfelsaft.jpg';
+      }
+      return 'assets/images/products/apfel.jpg';
+    }
+    if (productNameLower.contains('cola')) {
+      return 'assets/images/products/cola.jpg';
+    }
+
+    // Fallback to category-based images
     final categoryAssetMap = {
       'Obst & Gemüse': 'assets/images/products/fruits.jpg',
       'Frisches Obst & Gemüse': 'assets/images/products/fruits.jpg',
@@ -928,13 +1039,8 @@ class MockDataService {
       'Fleisch & Wurst': 'assets/images/products/meat.jpg',
       'Milchprodukte': 'assets/images/products/dairy.jpg',
       'Getränke': 'assets/images/products/drinks.jpg',
-      'Süßwaren & Snacks': 'assets/images/products/bread.jpg',  // Reuse bread for snacks
-      'Tiefkühlprodukte': 'assets/images/products/dairy.jpg',   // Reuse dairy for frozen
-      'Drogerie & Kosmetik': 'assets/images/products/drinks.jpg', // Reuse drinks for cosmetics
-      'Haushaltswaren': 'assets/images/products/drinks.jpg',    // Reuse drinks for household
     };
 
-    // Return local asset path if category matches
     return categoryAssetMap[category] ?? 'assets/images/products/fruits.jpg';
   }
 
@@ -943,16 +1049,18 @@ class MockDataService {
     // Map retailer names to actual PNG asset paths
     final retailerAssetPaths = {
       'EDEKA': 'assets/images/retailers/edeka.png',
-      'rewe': 'assets/images/retailers/rewe.png',
-      'aldi': 'assets/images/retailers/aldi.png',
-      'lidl': 'assets/images/retailers/lidl.png',
-      'Netto': 'assets/images/retailers/netto.png',
-      'Penny': 'assets/images/retailers/penny.png',
-      'Kaufland': 'assets/images/retailers/kaufland.png',
-      'Real': 'assets/images/retailers/real.png',
-      'Globus': 'assets/images/retailers/globus.png',
-      'Marktkauf': 'assets/images/retailers/marktkauf.png',
-      'BioCompany': 'assets/images/retailers/biocompany.png',
+      'REWE': 'assets/images/retailers/rewe.png',
+      'ALDI': 'assets/images/retailers/aldi.png',
+      'ALDI SÜD': 'assets/images/retailers/aldi.png',
+      'LIDL': 'assets/images/retailers/lidl.png',
+      'NETTO': 'assets/images/retailers/netto.png',
+      'netto scottie': 'assets/images/retailers/Scottie.png',
+      'PENNY': 'assets/images/retailers/penny.png',
+      'KAUFLAND': 'assets/images/retailers/kaufland.png',
+      'nahkauf': 'assets/images/retailers/nahkauf.png',
+      'GLOBUS': 'assets/images/retailers/globus.png',
+      'norma': 'assets/images/retailers/norma.png',
+      'BIOCOMPANY': 'assets/images/retailers/biocompany.png',
     };
 
     // Return PNG asset path if available, fallback to generated SVG for unknown retailers
@@ -965,13 +1073,15 @@ class MockDataService {
       'EDEKA': '#005CA9',      // EDEKA Blue
       'REWE': '#CC071E',       // REWE Red
       'ALDI': '#00549F',       // ALDI Blue
+      'ALDI SÜD': '#00549F',       // ALDI Blue
       'LIDL': '#0050AA',       // LIDL Blue
-      'Netto': '#FFD100',      // Netto Yellow
+      'NETTO': '#FFD100',      // Netto Yellow
+      'netto scottie': '#FFD100',      // Netto Yellow
       'Penny': '#E30613',      // Penny Red
       'Kaufland': '#E10915',   // Kaufland Red
-      'Real': '#004B93',       // Real Blue
+      'nahkauf': '#004B93',       // Real Blue
       'Globus': '#009EE0',     // Globus Light Blue
-      'Marktkauf': '#1B5E20',  // Marktkauf Green
+      'norma': '#1B5E20',  // Marktkauf Green
       'BioCompany': '#7CB342', // BioCompany Light Green
     };
 

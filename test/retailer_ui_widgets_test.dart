@@ -70,7 +70,7 @@ void main() {
     test('getRetailerDisplayName returns correct display names', () {
       expect(retailersProvider.getRetailerDisplayName('ALDI'), 'ALDI SÜD');
       expect(retailersProvider.getRetailerDisplayName('NETTO'), 'Netto Marken-Discount');
-      expect(retailersProvider.getRetailerDisplayName('REAL'), 'real');
+      expect(retailersProvider.getRetailerDisplayName('nahkauf'), 'nahkauf');
       
       // Test fallback
       expect(retailersProvider.getRetailerDisplayName('UNKNOWN'), 'UNKNOWN');
@@ -236,7 +236,7 @@ void main() {
     test('All retailers have valid brand colors', () {
       final retailers = [
         'EDEKA', 'REWE', 'ALDI', 'LIDL', 'NETTO', 
-        'PENNY', 'KAUFLAND', 'REAL', 'GLOBUS', 'MARKTKAUF', 'BIOCOMPANY'
+        'PENNY', 'KAUFLAND', 'nahkauf', 'GLOBUS', 'MARKTKAUF', 'BIOCOMPANY'
       ];
       
       for (final retailer in retailers) {
@@ -253,7 +253,7 @@ void main() {
     test('All retailers have logo URLs', () {
       final retailers = [
         'EDEKA', 'REWE', 'ALDI', 'LIDL', 'NETTO', 
-        'PENNY', 'KAUFLAND', 'REAL', 'GLOBUS', 'MARKTKAUF', 'BIOCOMPANY'
+        'PENNY', 'KAUFLAND', 'nahkauf', 'GLOBUS', 'MARKTKAUF', 'BIOCOMPANY'
       ];
       
       for (final retailer in retailers) {
@@ -272,7 +272,7 @@ void main() {
     test('All retailers have display names', () {
       final retailers = [
         'EDEKA', 'REWE', 'ALDI', 'LIDL', 'NETTO', 
-        'PENNY', 'KAUFLAND', 'REAL', 'GLOBUS', 'MARKTKAUF', 'BIOCOMPANY'
+        'PENNY', 'KAUFLAND', 'nahkauf', 'GLOBUS', 'MARKTKAUF', 'BIOCOMPANY'
       ];
       
       for (final retailer in retailers) {

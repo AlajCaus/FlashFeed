@@ -135,13 +135,22 @@ class MockOffersRepository implements OffersRepository {
   Future<List<Offer>> getAllOffers() async {
     // Simuliere Netzwerk-Delay
     await Future.delayed(Duration(milliseconds: 300));
-    
-    // Use correct service (test or global)
-    if (_dataService.isInitialized) {
+
+    // Debug output to understand the issue
+    print('DEBUG MockOffersRepository.getAllOffers():');
+    print('  - _dataService.isInitialized: ${_dataService.isInitialized}');
+    print('  - _dataService.offers.length: ${_dataService.offers.length}');
+    print('  - _dataService.offers.isEmpty: ${_dataService.offers.isEmpty}');
+
+    // ALWAYS use data from MockDataService when available
+    // The service generates offers with thumbnailUrl
+    if (_dataService.isInitialized && _dataService.offers.isNotEmpty) {
+      print('MockOffersRepository: Returning ${_dataService.offers.length} offers from MockDataService (with images)');
       return List.from(_dataService.offers);
     }
-    
-    // Fallback to static data if service not initialized
+
+    // Only use hardcoded _mockOffers as last resort (these have no thumbnailUrl!)
+    print('WARNING: MockOffersRepository using hardcoded offers without images!');
     return List.from(_mockOffers);
   }
 

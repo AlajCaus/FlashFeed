@@ -27,7 +27,10 @@
       "Bash(start chrome http://localhost:55837)",
       "Bash(start chrome http://localhost:8080)",
       "Bash(nc localhost 57966)",
-      "Bash(del nul)"
+      "Bash(del nul)",
+      "Bash(nc localhost 60226)",
+      "Bash(python:*)",
+      "Bash(nc localhost 50348)"
     ],
     "deny": [],
     "ask": []

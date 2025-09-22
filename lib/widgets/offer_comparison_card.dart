@@ -38,13 +38,15 @@ class OfferComparisonCard extends StatelessWidget {
     'EDEKA': Color(0xFF005CA9),
     'REWE': Color(0xFFCC071E),
     'ALDI': Color(0xFF00549F),
+    'ALDI SÜD': Color(0xFF00549F),
     'LIDL': Color(0xFF0050AA),
-    'Netto': Color(0xFFFFD100),
+    'NETTO': Color(0xFFFFD100),
+    'netto scottie': Color(0xFFFFD100),
     'Penny': Color(0xFFE30613),
     'Kaufland': Color(0xFFE10915),
-    'Real': Color(0xFF004B93),
+    'nahkauf': Color(0xFF004B93),
     'Globus': Color(0xFF009EE0),
-    'Marktkauf': Color(0xFF1B5E20),
+    'norma': Color(0xFF1B5E20),
     'BioCompany': Color(0xFF7CB342),
   };
   
@@ -310,23 +312,29 @@ class OfferComparisonCard extends StatelessWidget {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: primaryOffer.thumbnailUrl != null
-                                  ? Image.asset(
-                                      primaryOffer.thumbnailUrl!,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        // Fallback to icon if image fails
-                                        print('Image failed to load: ${primaryOffer.thumbnailUrl}');
-                                        return Center(
-                                          child: Icon(
-                                            _getCategoryIcon(primaryOffer.flashFeedCategory),
-                                            size: isMobile ? 32 : 40,
-                                            color: primaryGreen.withAlpha(153),
-                                          ),
+                                  ? Builder(
+                                      builder: (context) {
+                                        print('DEBUG: Loading image URL: ${primaryOffer.thumbnailUrl}');
+                                        return Image.asset(
+                                          primaryOffer.thumbnailUrl!,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            // Fallback to icon if image fails
+                                            print('Image failed to load: ${primaryOffer.thumbnailUrl}');
+                                            print('Error: $error');
+                                            return Center(
+                                              child: Icon(
+                                                _getCategoryIcon(primaryOffer.flashFeedCategory),
+                                                size: isMobile ? 32 : 40,
+                                                color: primaryGreen.withAlpha(153),
+                                              ),
+                                            );
+                                          },
                                         );
-                                      },
-                                    )
+                                    },
+                                  )
                                   : Center(
                                       child: Icon(
                                         _getCategoryIcon(primaryOffer.flashFeedCategory),

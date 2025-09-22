@@ -89,9 +89,9 @@ class FlashFeedApp extends StatelessWidget {
           create: (context) => AppProvider(),
         ),
         
-        // Offers Provider - Angebote & Preisvergleich  
+        // Offers Provider - Angebote & Preisvergleich
         ChangeNotifierProvider<OffersProvider>(
-          create: (context) => OffersProvider.mock(), // Mock repository for MVP
+          create: (context) => OffersProvider.mock(testService: mockDataService), // Use global mockDataService
         ),
         
         // Flash Deals Provider - Echtzeit Rabatte

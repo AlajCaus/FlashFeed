@@ -265,6 +265,10 @@ class _OffersScreenState extends State<OffersScreen> {
 
   Widget _buildOffersGrid(OffersProvider offersProvider, UserProvider userProvider) {
     var offers = offersProvider.displayedOffers;
+    print('DEBUG: Total offers to display: ${offers.length}');
+    if (offers.isNotEmpty) {
+      print('DEBUG: First offer thumbnailUrl: ${offers.first.thumbnailUrl}');
+    }
 
     // Task 16: No limits for free users - they see ALL offers from their selected retailer
     // Premium users see offers from ALL retailers
@@ -277,18 +281,31 @@ class _OffersScreenState extends State<OffersScreen> {
       );
     }
 
-    // Group offers by product for price comparison
+    // Get featured offer IDs for badge display
+    final featuredOffers = offersProvider.getFeaturedOffers().toList();
+    final featuredIds = featuredOffers.map((o) => o.id).toSet();
+
+    // Sort offers: Featured offers first, then regular offers
+    offers = List<Offer>.from(offers)..sort((a, b) {
+      final aIsFeatured = featuredIds.contains(a.id);
+      final bIsFeatured = featuredIds.contains(b.id);
+      if (aIsFeatured && !bIsFeatured) return -1;
+      if (!aIsFeatured && bIsFeatured) return 1;
+      return 0;
+    });
+
+    // Group offers by product for price comparison (use original offers list)
     final Map<String, List<Offer>> offersByProduct = {};
     for (final offer in offers) {
       final key = '${offer.productName}_${offer.flashFeedCategory}';
       offersByProduct.putIfAbsent(key, () => []).add(offer);
     }
-    
+
     // Dynamic responsive sizing
     final screenWidth = MediaQuery.of(context).size.width;
     final bool isMobile = screenWidth < 768;
     final bool isTablet = screenWidth >= 768 && screenWidth < 1024;
-    
+
     return RefreshIndicator(
       onRefresh: () => offersProvider.loadOffers(forceRefresh: true),
       color: primaryGreen,
@@ -302,12 +319,6 @@ class _OffersScreenState extends State<OffersScreen> {
               showAlternatives: true,
             ),
           ),
-          
-          // Featured offers section
-          if (offersProvider.getFeaturedOffers().isNotEmpty)
-            SliverToBoxAdapter(
-              child: _buildFeaturedSection(offersProvider),
-            ),
           
           // Main offers grid - Responsive with minimum card width
           SliverPadding(
@@ -324,31 +335,71 @@ class _OffersScreenState extends State<OffersScreen> {
                   if (index >= offers.length) {
                     return null;
                   }
-                  
+
                   final offer = offers[index];
+                  final isFeatured = featuredIds.contains(offer.id);
                   final comparableOffers = offersByProduct[
                     '${offer.productName}_${offer.flashFeedCategory}'
                   ]?.where((o) => o.id != offer.id).toList() ?? [];
-                  
+
                   // Check if offer is locked (Freemium logic)
-                  final isLocked = userProvider.isFree && 
+                  final isLocked = userProvider.isFree &&
                                   offersProvider.isOfferLocked(index);
-                  
-                  return OfferComparisonCard(
-                    primaryOffer: offer,
-                    comparableOffers: comparableOffers,
-                    isLocked: isLocked,
-                    onTap: () {
-                      if (isLocked) {
-                        _showPremiumDialog(context);
-                      } else {
-                        OfferDetailModal.show(
-                          context,
-                          offer,
-                          comparableOffers: comparableOffers,
-                        );
-                      }
-                    },
+
+                  return Stack(
+                    children: [
+                      OfferComparisonCard(
+                        primaryOffer: offer,
+                        comparableOffers: comparableOffers,
+                        isLocked: isLocked,
+                        onTap: () {
+                          if (isLocked) {
+                            _showPremiumDialog(context);
+                          } else {
+                            OfferDetailModal.show(
+                              context,
+                              offer,
+                              comparableOffers: comparableOffers,
+                            );
+                          }
+                        },
+                      ),
+                      // Top Angebot Badge - positioned below retailer logo
+                      if (isFeatured)
+                        Positioned(
+                          top: 40,  // Below retailer badge (which is at top: 8)
+                          left: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: secondaryOrange,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(51),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.star, color: Colors.white, size: 12),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'TOP',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   );
                 },
                 childCount: offers.length,
@@ -371,63 +422,6 @@ class _OffersScreenState extends State<OffersScreen> {
     );
   }
   
-  Widget _buildFeaturedSection(OffersProvider offersProvider) {
-    final featuredOffers = offersProvider.getFeaturedOffers().take(5).toList();
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(Icons.star, color: secondaryOrange, size: 20),
-              const SizedBox(width: 8),
-              const Text(
-                'Top Angebote',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '${featuredOffers.length} Deals',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: 320,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: featuredOffers.length,
-            itemBuilder: (context, index) {
-              final offer = featuredOffers[index];
-
-              return Container(
-                width: 200,
-                margin: const EdgeInsets.only(right: 12),
-                child: OfferComparisonCard(
-                  primaryOffer: offer,
-                  isLocked: false,
-                  onTap: () {
-                    OfferDetailModal.show(context, offer);
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
   
   void _showPremiumDialog(BuildContext context) {
     showDialog(

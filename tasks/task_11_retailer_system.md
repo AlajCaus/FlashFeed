@@ -45,13 +45,15 @@
 **Unterstützte Händler mit offiziellen Brand-Farben:**
 - EDEKA (Blau/Gelb)
 - REWE (Rot/Weiß)
-- ALDI (Blau/Orange)
+- ALDI (Blau/Weiß)
+- ALDI SÜD (Blau/Orange)
 - LIDL (Blau/Gelb/Rot)
 - KAUFLAND (Rot/Blau)
 - NETTO (Gelb/Rot)
-- PENNY (Orange/Schwarz)
+- netto scottie (Gelb/Schwarz)
+- PENNY (Rot/Weiß)
 - NORMA (Rot/Weiß)
-- REAL (Blau/Weiß)
+- nahkauf (Rot/Weiß)
 - GLOBUS (Grün/Weiß)
 - BIOCOMPANY (Grün/Weiß)
 

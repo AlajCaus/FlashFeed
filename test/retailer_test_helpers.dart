@@ -51,7 +51,7 @@ class RetailerTestHelpers {
   /// Test-Händler-Namen
   static const List<String> allRetailerNames = [
     'EDEKA', 'REWE', 'ALDI', 'LIDL', 'NETTO', 
-    'PENNY', 'KAUFLAND', 'REAL', 'GLOBUS', 'MARKTKAUF', 'BIOCOMPANY'
+    'PENNY', 'KAUFLAND', 'nahkauf', 'GLOBUS', 'MARKTKAUF', 'BIOCOMPANY'
   ];
   
   /// Erstellt Test-Stores mit verschiedenen Eigenschaften
