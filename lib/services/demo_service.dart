@@ -92,16 +92,7 @@ class DemoService {
     bool includeGuidedTour = false,
     bool includeMetrics = false,
   }) {
-    // Prüfe ob wir in Entwicklung oder Produktion sind
-    if (kDebugMode) {
-      // Für lokale Entwicklung - zeige auf lokalen Server
-      // Dies kann für Tests mit lokalem Webserver genutzt werden
-      return 'http://localhost:8000/docs/';
-    }
-
-    // Für Produktion: GitHub Pages Landing Page
-    // WICHTIG: Die index.html muss im docs/ Ordner liegen
-    // GitHub Pages muss in den Repository-Einstellungen auf /docs konfiguriert sein
+    // Immer GitHub Pages URL verwenden
     String landingPageUrl = 'https://alajcaus.github.io/FlashFeed/';
 
     // Füge Query-Parameter für Demo-Features hinzu
