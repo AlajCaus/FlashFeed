@@ -479,40 +479,75 @@ class _OffersScreenState extends State<OffersScreen> {
             onFilterTap: _showFilterModal,
           ),
           
-          // Task 16: Freemium Limit Display
-          if (!userProvider.isPremium)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade50,
-                border: Border(
-                  bottom: BorderSide(color: Colors.orange.shade200),
+          // Demo Mode Status Bar - Always visible
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: userProvider.isPremium ? Colors.green.shade50 : Colors.orange.shade50,
+              border: Border(
+                bottom: BorderSide(
+                  color: userProvider.isPremium ? Colors.green.shade200 : Colors.orange.shade200,
                 ),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.orange.shade700),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      userProvider.getRemainingLimitText('offers'),
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.orange.shade700,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => _showUpgradeDialog(context),
-                    child: const Text('Premium'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.orange.shade700,
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
             ),
+            child: Row(
+              children: [
+                Icon(
+                  userProvider.isPremium ? Icons.star : Icons.info_outline,
+                  size: 16,
+                  color: userProvider.isPremium ? Colors.green.shade700 : Colors.orange.shade700,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    userProvider.isPremium
+                      ? 'Premium aktiv - Alle Händler verfügbar'
+                      : userProvider.getRemainingLimitText('offers'),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: userProvider.isPremium ? Colors.green.shade700 : Colors.orange.shade700,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (userProvider.isPremium) {
+                      // Deactivate Premium
+                      userProvider.resetToFreeMode();
+                      // Force reload offers with new retailers
+                      context.read<OffersProvider>().loadOffers();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Premium deaktiviert. Nur EDEKA verfügbar.'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    } else {
+                      // Activate Premium
+                      userProvider.enableDemoMode();
+                      // Force reload offers with new retailers
+                      context.read<OffersProvider>().loadOffers();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Premium aktiviert! Alle Angebote freigeschaltet.'),
+                          backgroundColor: Color(0xFF2E8B57),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: userProvider.isPremium ? Colors.orange : primaryGreen,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    minimumSize: const Size(0, 32),
+                  ),
+                  child: Text(
+                    userProvider.isPremium ? 'Zu Free wechseln' : 'Premium aktivieren',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
           // Filter Statistics Bar
           if (offersProvider.hasActiveFilters)
