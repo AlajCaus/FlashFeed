@@ -85,25 +85,36 @@ class DemoService {
   }
 
   /// Demo-URL generieren
+  /// Generiert eine URL die zur Landing Page oder App Stores führt
   String generateDemoUrl({
     String baseUrl = 'https://flashfeed.app',
     bool includePremium = true,
     bool includeGuidedTour = false,
     bool includeMetrics = false,
   }) {
-    final params = <String, String>{
-      'demo': 'true',
-    };
+    // Prüfe ob wir in Entwicklung oder Produktion sind
+    if (kDebugMode) {
+      // Für lokale Entwicklung - zeige auf lokalen Server
+      // Dies kann für Tests mit lokalem Webserver genutzt werden
+      return 'http://localhost:8000/docs/';
+    }
 
-    if (includePremium) params['premium'] = 'true';
-    if (includeGuidedTour) params['tour'] = 'true';
-    if (includeMetrics) params['metrics'] = 'true';
+    // Für Produktion: GitHub Pages Landing Page
+    // WICHTIG: Die index.html muss im docs/ Ordner liegen
+    // GitHub Pages muss in den Repository-Einstellungen auf /docs konfiguriert sein
+    String landingPageUrl = 'https://alajcaus.github.io/FlashFeed/';
 
-    final queryString = params.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
+    // Füge Query-Parameter für Demo-Features hinzu
+    List<String> params = [];
+    if (includePremium) params.add('premium=true');
+    if (includeGuidedTour) params.add('tour=true');
+    if (includeMetrics) params.add('metrics=true');
 
-    return '$baseUrl${queryString.isNotEmpty ? '?$queryString' : ''}';
+    if (params.isNotEmpty) {
+      landingPageUrl += '?' + params.join('&');
+    }
+
+    return landingPageUrl;
   }
 
   /// URL-Parameter parsen und Demo-Modus aktivieren wenn nötig
