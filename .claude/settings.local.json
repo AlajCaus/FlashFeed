@@ -30,7 +30,8 @@
       "Bash(del nul)",
       "Bash(nc localhost 60226)",
       "Bash(python:*)",
-      "Bash(nc localhost 50348)"
+      "Bash(nc localhost 50348)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
