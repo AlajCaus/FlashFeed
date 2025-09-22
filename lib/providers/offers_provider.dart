@@ -12,6 +12,7 @@ import '../services/offline_service.dart';
 import '../main.dart'; // Access to global mockDataService
 import '../services/mock_data_service.dart'; // For test service parameter
 import '../providers/location_provider.dart'; // Task 5b.5: Provider-Callbacks
+import '../providers/user_provider.dart'; // For demo retailer filtering
 import '../services/search_service.dart'; // Task 9.3: Advanced Search
 
 // Task 9.4.1: Cache Entry for filter results
@@ -36,7 +37,10 @@ class OffersProvider extends ChangeNotifier {
   
   // NEW: Reference to LocationProvider for regional data (Task 5c.2)
   LocationProvider? _locationProvider;
-  
+
+  // Reference to UserProvider for demo retailer filtering
+  UserProvider? _userProvider;
+
   // State
   List<Offer> _allOffers = [];
   List<Offer> _unfilteredOffers = []; // Keep ALL offers before regional filtering
@@ -152,6 +156,38 @@ class OffersProvider extends ChangeNotifier {
     locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
     _locationProvider = null; // Clear reference
     debugPrint('OffersProvider: Unregistered from LocationProvider');
+  }
+
+  // Register UserProvider for demo retailer filtering
+  void registerWithUserProvider(UserProvider userProvider) {
+    _userProvider = userProvider;
+
+    // Listen to UserProvider changes (for premium status changes)
+    userProvider.addListener(_onUserProviderChanged);
+
+    debugPrint('OffersProvider: Registered with UserProvider');
+  }
+
+  void unregisterFromUserProvider() {
+    if (_userProvider != null) {
+      _userProvider!.removeListener(_onUserProviderChanged);
+    }
+    _userProvider = null;
+    debugPrint('OffersProvider: Unregistered from UserProvider');
+  }
+
+  // Callback when UserProvider changes (e.g., premium status)
+  void _onUserProviderChanged() {
+    if (_disposed) return;
+
+    debugPrint('OffersProvider: UserProvider changed, reloading offers with new retailer selection');
+
+    // Clear cache when user status changes (important for premium upgrade)
+    _filterCache.clear();
+    debugPrint('OffersProvider: Cache cleared due to user status change');
+
+    // Reload offers with new retailer selection
+    loadOffers(applyRegionalFilter: false);
   }
   
   // Task 5c.5: Callback handlers
@@ -392,7 +428,7 @@ class OffersProvider extends ChangeNotifier {
         if (_userPLZ == null && _locationProvider != null) {
           _userPLZ = _locationProvider!.postalCode;
         }
-        
+
         // Apply regional filtering if PLZ is available
         if (_userPLZ != null && _userPLZ!.isNotEmpty) {
           // Use already set _availableRetailers if available (from callback)
@@ -400,10 +436,10 @@ class OffersProvider extends ChangeNotifier {
           if (_availableRetailers.isEmpty && _locationProvider != null) {
             _availableRetailers = _locationProvider!.getAvailableRetailersForPLZ(_userPLZ!);
           }
-          
+
           // Filter offers to only show regionally available
           if (_availableRetailers.isNotEmpty) {
-            _allOffers = _allOffers.where((offer) => 
+            _allOffers = _allOffers.where((offer) =>
                 _availableRetailers.contains(offer.retailer)
             ).toList();
             
@@ -429,7 +465,18 @@ class OffersProvider extends ChangeNotifier {
             .toSet()
             .toList();
       }
-      
+
+      // Apply Demo User retailer filtering (overrides regional filtering)
+      if (_userProvider != null && _userProvider!.selectedRetailers.isNotEmpty) {
+        final selectedRetailers = _userProvider!.selectedRetailers;
+        _allOffers = _allOffers.where((offer) =>
+            selectedRetailers.contains(offer.retailer)
+        ).toList();
+
+        debugPrint('OffersProvider: Demo retailer filtering applied - Selected: $selectedRetailers');
+        debugPrint('OffersProvider: Filtered to ${_allOffers.length} offers for demo retailers');
+      }
+
       _applyFilters();
       
     } catch (e) {
@@ -1552,9 +1599,9 @@ class OffersProvider extends ChangeNotifier {
   
   // Freemium Logic
   bool isOfferLocked(int index) {
-    // Import UserProvider if needed
-    // For now, first 3 offers are free, rest locked
-    return index >= 3;
+    // No offers should be locked for selected retailers
+    // User can see ALL offers from their selected retailers
+    return false;
   }
   
   // Convert sort options map to list for UI
@@ -1586,6 +1633,9 @@ class OffersProvider extends ChangeNotifier {
     // Task 9.4.3: Cancel debounce timer
     _searchDebounceTimer?.cancel();
     _searchDebounceTimer = null;
+
+    // Unregister from UserProvider
+    unregisterFromUserProvider();
 
     // Task 9.4.1: Clear cache
     _filterCache.clear();

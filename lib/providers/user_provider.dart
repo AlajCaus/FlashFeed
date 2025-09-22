@@ -45,6 +45,10 @@ class UserProvider extends ChangeNotifier {
   // Selected retailer for free users
   String? _selectedRetailer;
 
+  // Demo Mode: Selected retailers list
+  List<String> _selectedRetailers = ['EDEKA']; // Default: EDEKA for free users
+  static const List<String> _premiumDemoRetailers = ['EDEKA', 'REWE', 'ALDI', 'LIDL'];
+
   // Task 16: Provider References for Freemium Enforcement
   OffersProvider? _offersProvider;
   FlashDealsProvider? _flashDealsProvider;
@@ -83,6 +87,7 @@ class UserProvider extends ChangeNotifier {
   double get maxDistanceKm => _maxDistanceKm;
   List<String> get favoriteRetailers => List.unmodifiable(_favoriteRetailers);
   String? get selectedRetailer => _selectedRetailer;
+  List<String> get selectedRetailers => List.unmodifiable(_selectedRetailers);
   
   // Getters - Premium Features
   bool get hasUnlimitedOffers => _hasUnlimitedOffers;
@@ -112,6 +117,7 @@ class UserProvider extends ChangeNotifier {
   
   void upgradeToPremium() {
     _userTier = UserTier.premium;
+    _selectedRetailers = List.from(_premiumDemoRetailers); // Set all 4 retailers for premium
     _updatePremiumFeatures();
     notifyListeners();
   }
@@ -298,6 +304,7 @@ class UserProvider extends ChangeNotifier {
   // Professor Demo Methods
   void enableDemoMode() {
     _userTier = UserTier.premium;
+    _selectedRetailers = List.from(_premiumDemoRetailers); // Set all 4 retailers for demo
     _updatePremiumFeatures();
     _resetUsage();
     notifyListeners();
@@ -310,6 +317,7 @@ class UserProvider extends ChangeNotifier {
 
   void resetToFreeMode() {
     _userTier = UserTier.free;
+    _selectedRetailers = ['EDEKA']; // Reset to only EDEKA for free users
     _updatePremiumFeatures();
     _resetUsage();
     notifyListeners();

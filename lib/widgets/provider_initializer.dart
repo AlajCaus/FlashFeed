@@ -56,6 +56,15 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
         tier: UserTier.premium,
       );
       userProvider.upgradeToPremium();
+    } else {
+      // Default Demo setup: Free user with only EDEKA
+      debugPrint('🛒 Demo Mode: Starting as Free user with EDEKA');
+      userProvider.loginUser(
+        'demo-user',
+        'Demo User',
+        tier: UserTier.free,
+      );
+      // selectedRetailers is already set to ['EDEKA'] by default
     }
 
     // Register cross-provider callbacks for location-based updates
@@ -63,6 +72,9 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
     offersProvider.registerWithLocationProvider(locationProvider);
     flashDealsProvider.registerWithLocationProvider(locationProvider);
     retailersProvider.registerWithLocationProvider(locationProvider);
+
+    // Register OffersProvider with UserProvider for demo retailer filtering
+    offersProvider.registerWithUserProvider(userProvider);
 
     // Task 16: Register UserProvider with all providers for freemium enforcement
     userProvider.registerWithProviders(

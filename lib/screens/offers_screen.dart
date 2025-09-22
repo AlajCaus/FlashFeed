@@ -141,6 +141,8 @@ class _OffersScreenState extends State<OffersScreen> {
           ElevatedButton(
             onPressed: () {
               context.read<UserProvider>().enableDemoMode();
+              // Force reload offers with new retailers
+              context.read<OffersProvider>().loadOffers();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -440,6 +442,8 @@ class _OffersScreenState extends State<OffersScreen> {
           ElevatedButton(
             onPressed: () {
               context.read<UserProvider>().enableDemoMode();
+              // Force reload offers with new retailers
+              context.read<OffersProvider>().loadOffers();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
