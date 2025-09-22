@@ -1,0 +1,26 @@
+SORTIERUNGS-PROBLEM ANALYSE
+===========================
+
+AKTUELLER ABLAUF:
+1. loadOffers() wird aufgerufen
+2. Lädt alle Offers von Repository
+3. Filtert nach Demo-Retailern (EDEKA, etc)
+4. Ruft _applyFilters() auf
+5. _applyFilters macht:
+   - Filtert nach Kategorie, Retailer, Preis, etc
+   - Setzt _filteredOffers = filtered
+   - Ruft am Ende _applySorting() auf
+6. _applySorting macht:
+   - Prüft if (_filteredOffers.isNotEmpty)
+   - Wenn ja: Sortiert die Liste
+   - Updated display
+
+PROBLEM:
+Die Sortierung wird NICHT angewendet! Warum?
+
+VERMUTUNG:
+Der MockOffersRepository gibt die Offers bereits in einer bestimmten Reihenfolge zurück.
+Aber getSortedOffers() funktioniert vielleicht nicht richtig?
+
+NÄCHSTER SCHRITT:
+Schaue dir getSortedOffers im MockOffersRepository an!

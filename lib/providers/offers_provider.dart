@@ -477,8 +477,9 @@ class OffersProvider extends ChangeNotifier {
         debugPrint('OffersProvider: Filtered to ${_allOffers.length} offers for demo retailers');
       }
 
-      _applyFilters();
-      
+      // CRITICAL: Must await _applyFilters to ensure sorting completes
+      await _applyFilters();
+
     } catch (e) {
       _setError('Fehler beim Laden der Angebote: ${e.toString()}');
     } finally {
@@ -517,7 +518,7 @@ class OffersProvider extends ChangeNotifier {
   Future<void> filterByCategory(String? category) async {
     if (_selectedCategory != category) {
       _selectedCategory = category;
-      _applyFilters();
+      await _applyFilters();
     }
   }
   
@@ -529,7 +530,7 @@ class OffersProvider extends ChangeNotifier {
   Future<void> filterByRetailer(String? retailer) async {
     if (_selectedRetailer != retailer) {
       _selectedRetailer = retailer;
-      _applyFilters();
+      await _applyFilters();
     }
   }
   
@@ -538,10 +539,10 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Price Filter
-  void setMaxPrice(double? price) {
+  Future<void> setMaxPrice(double? price) async {
     if (_maxPrice != price) {
       _maxPrice = price;
-      _applyFilters();
+      await _applyFilters();
     }
   }
   
@@ -550,10 +551,10 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Discount Filter
-  void setShowOnlyWithDiscount(bool showOnly) {
+  Future<void> setShowOnlyWithDiscount(bool showOnly) async {
     if (_showOnlyWithDiscount != showOnly) {
       _showOnlyWithDiscount = showOnly;
-      _applyFilters();
+      await _applyFilters();
     }
   }
   
@@ -582,33 +583,33 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  void _performSearch(String query) {
+  Future<void> _performSearch(String query) async {
     _searchQuery = query;
     _isSearchPending = false;
     _pendingSearchQuery = '';
-    _applyFilters();
+    await _applyFilters();
   }
   
   // Task 9.3.1: Multi-Term Search
-  void searchWithMultipleTerms(String query) {
+  Future<void> searchWithMultipleTerms(String query) async {
     _searchQuery = query;
-    _applyFilters();
+    await _applyFilters();
   }
   
   // Task 9.3.2: Fuzzy Search
-  void searchWithFuzzyMatching(String query, {int tolerance = 2}) {
+  Future<void> searchWithFuzzyMatching(String query, {int tolerance = 2}) async {
     _searchQuery = query;
     _fuzzySearchTolerance = tolerance;
     _useFuzzySearch = true;
-    _applyFilters();
+    await _applyFilters();
   }
   
   // Task 9.3.3: Category-Aware Search
-  void searchWithCategoryAwareness(String query) {
+  Future<void> searchWithCategoryAwareness(String query) async {
     _searchQuery = query;
     _useCategoryAwareSearch = true;
     _useFuzzySearch = false; // Reset other search modes
-    _applyFilters();
+    await _applyFilters();
   }
   
   // Task 9.3: Search mode flags
@@ -624,13 +625,13 @@ class OffersProvider extends ChangeNotifier {
   Future<void> setSortType(OfferSortType sortType) async {
     if (_sortType != sortType) {
       _sortType = sortType;
-      
+
       _setLoading(true);
       try {
         // Task 9.1: Pass user coordinates for distance sorting
         if (sortType == OfferSortType.distanceAsc) {
           _filteredOffers = await _offersRepository.getSortedOffers(
-            _filteredOffers, 
+            _filteredOffers,
             sortType,
             userLat: currentLatitude,  // Uses getter with fallback
             userLng: currentLongitude
@@ -638,6 +639,15 @@ class OffersProvider extends ChangeNotifier {
           debugPrint('OffersProvider: Distance sorting applied with coordinates: $currentLatitude, $currentLongitude ($locationSource)');
         } else {
           _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, sortType);
+        }
+
+        // Update displayed offers with the sorted data
+        _resetPagination();
+        _updateDisplayedOffers();
+
+        // Notify listeners after successful sorting
+        if (!_disposed) {
+          notifyListeners();
         }
       } catch (e) {
         _setError('Fehler beim Sortieren: ${e.toString()}');
@@ -648,7 +658,7 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Apply All Filters with caching and regional awareness (Task 5c.2 & 9.4.1)
-  void _applyFilters() {
+  Future<void> _applyFilters() async {
     // Generate cache key
     final cacheKey = _generateCacheKey(
       _selectedCategory,
@@ -749,50 +759,67 @@ class OffersProvider extends ChangeNotifier {
       debugPrint('Available retailers: $_availableRetailers');
     }
     
-    // Task 9.4.2: Reset pagination when filters change
-    _resetPagination();
-    _updateDisplayedOffers();
-
-    // Task 18.3: Only notify once after all updates complete
-    // Apply sorting (async) - will notify listeners after completion
-    if (filtered.isNotEmpty) {
-      _applySorting();
-    } else {
-      // Only notify if not sorting (sorting will notify)
-      if (_disposed) return;
-      notifyListeners();
-    }
+    // Task 9.4.2: Apply sorting BEFORE updating display
+    // This ensures sorted order is visible immediately
+    await _applySorting();
   }
   
   Future<void> _applySorting() async {
+    debugPrint('_applySorting called: sortType=$_sortType, offers=${_filteredOffers.length}');
     try {
-      // Task 9.1: Pass user coordinates for distance sorting
-      if (_sortType == OfferSortType.distanceAsc) {
-        _filteredOffers = await _offersRepository.getSortedOffers(
-          _filteredOffers, 
-          _sortType,
-          userLat: currentLatitude,  // Uses getter with fallback
-          userLng: currentLongitude
-        );
-      } else {
-        _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, _sortType);
+      // Always apply sorting if we have a sort type set
+      // Don't skip sorting even if list is empty - it needs to be ready when filled
+      if (_filteredOffers.isNotEmpty) {
+        debugPrint('Applying sort type: $_sortType to ${_filteredOffers.length} offers');
+        // Task 9.1: Pass user coordinates for distance sorting
+        if (_sortType == OfferSortType.distanceAsc) {
+          _filteredOffers = await _offersRepository.getSortedOffers(
+            _filteredOffers,
+            _sortType,
+            userLat: currentLatitude,  // Uses getter with fallback
+            userLng: currentLongitude
+          );
+        } else {
+          _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, _sortType);
+        }
+
+        // Debug output to verify sorting
+        if (_filteredOffers.isNotEmpty) {
+          debugPrint('Sorting applied: ${_sortType.toString()} - First offer price: ${_filteredOffers.first.price}€');
+          // Print first 5 prices to see sorting order
+          debugPrint('First 5 sorted prices:');
+          for (int i = 0; i < _filteredOffers.length && i < 5; i++) {
+            debugPrint('  ${i+1}. ${_filteredOffers[i].productName}: ${_filteredOffers[i].price}€');
+          }
+        }
       }
+
+      // Always update displayed offers after sorting
+      _resetPagination();
+      _updateDisplayedOffers();
+
       if (_disposed) return; // Defensive check against disposed provider
       notifyListeners();
     } catch (e) {
       // Sorting errors are non-critical, just log
       debugPrint('Sorting error: $e');
+      // Still update UI even if sorting fails
+      _resetPagination();
+      _updateDisplayedOffers();
+      if (!_disposed) {
+        notifyListeners();
+      }
     }
   }
   
   // Clear All Filters
-  void clearAllFilters() {
+  Future<void> clearAllFilters() async {
     _selectedCategory = null;
     _selectedRetailer = null;
     _maxPrice = null;
     _showOnlyWithDiscount = false;
     _searchQuery = '';
-    _applyFilters();
+    await _applyFilters();
   }
   
   // Task 9.4.1: Cache Management Methods
@@ -880,15 +907,24 @@ class OffersProvider extends ChangeNotifier {
   void _updateDisplayedOffers() {
     final startIndex = _currentPage * _pageSize;
     final endIndex = (startIndex + _pageSize).clamp(0, _filteredOffers.length);
-    
+
+    debugPrint('DEBUG _updateDisplayedOffers: page=$_currentPage, startIndex=$startIndex, endIndex=$endIndex');
+    debugPrint('DEBUG _updateDisplayedOffers: _filteredOffers.length=${_filteredOffers.length}');
+
     if (_currentPage == 0) {
       // First page - replace all
       _displayedOffers = _filteredOffers.sublist(0, endIndex);
+
+      // Debug: Show first 10 items being set
+      debugPrint('DEBUG _updateDisplayedOffers: Setting displayedOffers (first 10):');
+      for (int i = 0; i < _displayedOffers.length && i < 10; i++) {
+        debugPrint('  Display ${i+1}. ${_displayedOffers[i].productName}: ${_displayedOffers[i].price}€');
+      }
     } else {
       // Additional pages - append
       _displayedOffers.addAll(_filteredOffers.sublist(startIndex, endIndex));
     }
-    
+
     _hasMoreOffers = endIndex < _filteredOffers.length;
   }
   
@@ -956,17 +992,17 @@ class OffersProvider extends ChangeNotifier {
   // Task 9.2: Smart Filter Management
   
   /// Clear only active user filters, keep regional filtering
-  void clearActiveFilters() {
+  Future<void> clearActiveFilters() async {
     final hadFilters = hasActiveFilters;
-    
+
     _selectedCategory = null;
     _selectedRetailer = null;
     _maxPrice = null;
     _showOnlyWithDiscount = false;
     _searchQuery = '';
-    
+
     if (hadFilters) {
-      _applyFilters();
+      await _applyFilters();
       debugPrint('OffersProvider: Cleared active filters, keeping regional filtering');
     }
   }
@@ -1475,69 +1511,69 @@ class OffersProvider extends ChangeNotifier {
   }
   
   // Filter Methods (for tests and UI)
-  void clearFilters() {
+  Future<void> clearFilters() async {
     _selectedCategory = null;
     _selectedRetailer = null;
     _sortType = OfferSortType.priceAsc;
     _searchQuery = '';
     _maxPrice = null;
     _showOnlyWithDiscount = false;
-    _applyFilters();
+    await _applyFilters();
   }
   
   // Task 10: Enhanced Filter Methods for UI
-  void filterByCategories(List<String> categories) {
+  Future<void> filterByCategories(List<String> categories) async {
     // For MVP, we only support single category
     // Could be extended to support multiple categories
     _selectedCategory = categories.isNotEmpty ? categories.first : null;
-    _applyFilters();
+    await _applyFilters();
   }
   
-  void filterByRetailers(List<String> retailers) {
+  Future<void> filterByRetailers(List<String> retailers) async {
     // For MVP, we only support single retailer
     // Could be extended to support multiple retailers
     _selectedRetailer = retailers.isNotEmpty ? retailers.first : null;
-    _applyFilters();
+    await _applyFilters();
   }
   
-  void filterByPriceRange(double min, double max) {
+  Future<void> filterByPriceRange(double min, double max) async {
     _maxPrice = max;
     // Could add _minPrice if needed
-    _applyFilters();
+    await _applyFilters();
   }
   
-  void filterByMinDiscount(double minDiscount) {
+  Future<void> filterByMinDiscount(double minDiscount) async {
     _showOnlyWithDiscount = minDiscount > 0;
     // Could add _minDiscountPercent field for more precision
-    _applyFilters();
+    await _applyFilters();
   }
   
-  void setRegionalFilter(bool onlyAvailable) {
+  Future<void> setRegionalFilter(bool onlyAvailable) async {
     // This is already handled by regional filtering
     // Could add a flag to show/hide unavailable offers
-    _applyFilters();
+    await _applyFilters();
   }
   
-  void applyFilters({
+  Future<void> applyFilters({
     String? category,
     String? retailer,
     OfferSortType? sortType,
     String? searchQuery,
     double? maxPrice,
     bool? showOnlyWithDiscount,
-  }) {
+  }) async {
     if (category != null) { _selectedCategory = category; }
     if (retailer != null) { _selectedRetailer = retailer; }
     if (sortType != null) { _sortType = sortType; }
     if (searchQuery != null) { _searchQuery = searchQuery; }
     if (maxPrice != null) { _maxPrice = maxPrice; }
     if (showOnlyWithDiscount != null) { _showOnlyWithDiscount = showOnlyWithDiscount; }
-    _applyFilters();
+    await _applyFilters();
   }
   
-  void setSelectedCategory(String? category) {
+  Future<void> setSelectedCategory(String? category) async {
     _selectedCategory = category;
-    _applyFilters();
+    await _applyFilters();
   }
   
   // Helper Methods

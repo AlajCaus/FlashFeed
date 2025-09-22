@@ -211,12 +211,17 @@ class MockOffersRepository implements OffersRepository {
   @override
   Future<List<Offer>> getSortedOffers(List<Offer> offers, OfferSortType sortType, {double? userLat, double? userLng}) async {
     await Future.delayed(Duration(milliseconds: 50));
-    
+
     List<Offer> sortedOffers = List.from(offers);
-    
+
     switch (sortType) {
       case OfferSortType.priceAsc:
         sortedOffers.sort((a, b) => a.price.compareTo(b.price));
+        // Debug: Print first 10 sorted prices
+        print('DEBUG: Sorted prices (first 10):');
+        for (int i = 0; i < sortedOffers.length && i < 10; i++) {
+          print('  ${i+1}. ${sortedOffers[i].productName}: ${sortedOffers[i].price}€');
+        }
         break;
       case OfferSortType.priceDesc:
         sortedOffers.sort((a, b) => b.price.compareTo(a.price));
