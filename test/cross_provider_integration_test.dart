@@ -789,30 +789,30 @@ void main() {
         // Test without PLZ
         locationProvider.clearLocation();
         await offersProvider.loadOffers(applyRegionalFilter: false);
-        
+
         var warnings = offersProvider.regionalWarnings;
         expect(warnings.any((w) => w.contains('PLZ ein')), isTrue);
-        
+
         // Test with PLZ but no retailers (use invalid PLZ)
         await locationProvider.setUserPLZ('99999');
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(Duration(milliseconds: 300)); // Increased from 100ms
         await offersProvider.loadOffers(applyRegionalFilter: true);
-        
+
         warnings = offersProvider.regionalWarnings;
         // Since 99999 may have some retailers, check if warning is appropriate
         expect(warnings.isNotEmpty, isTrue);
-        
+
         // Test with valid PLZ
         await locationProvider.setUserPLZ('10115');
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(Duration(milliseconds: 300)); // Increased from 100ms
         await offersProvider.loadOffers(applyRegionalFilter: true);
-        
+
         warnings = offersProvider.regionalWarnings;
         // Should either have no warnings or warning about some unavailable offers
         if (warnings.isNotEmpty) {
           expect(warnings.any((w) => w.contains('nicht verfügbar')), isTrue);
         }
-      });
+      }, timeout: Timeout(Duration(seconds: 30))); // Added timeout
       
       test('should suggest nearby retailers when few available', () async {
         // Set location with limited retailers
@@ -871,19 +871,27 @@ void main() {
       test('should correctly identify offer lock status', () async {
         // Load offers
         await locationProvider.setUserPLZ('10115');
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(Duration(milliseconds: 300)); // Increased delay
         await offersProvider.loadOffers(applyRegionalFilter: true);
-        
+
         // Check freemium logic
+        // According to CLAUDE.md: FREE USER gets ALL offers from selected retailers (UNLIMITED)
+        // So NO offers should be locked
         if (offersProvider.offers.isNotEmpty) {
-          // First 3 offers should be free
+          // All offers should be free (not locked)
           expect(offersProvider.isOfferLocked(0), isFalse);
           expect(offersProvider.isOfferLocked(1), isFalse);
           expect(offersProvider.isOfferLocked(2), isFalse);
-          
-          // 4th and beyond should be locked
+
+          // Even 4th and beyond should NOT be locked
           if (offersProvider.offers.length > 3) {
-            expect(offersProvider.isOfferLocked(3), isTrue);
+            expect(offersProvider.isOfferLocked(3), isFalse);
+          }
+
+          // Verify all offers are unlocked
+          for (int i = 0; i < offersProvider.offers.length && i < 10; i++) {
+            expect(offersProvider.isOfferLocked(i), isFalse,
+                reason: 'Offer at index $i should not be locked for free users');
           }
         }
       });

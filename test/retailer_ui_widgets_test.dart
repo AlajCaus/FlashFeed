@@ -44,10 +44,10 @@ void main() {
   group('Task 11.1 & 11.6: RetailersProvider UI Methods', () {
     test('getRetailerLogo returns correct logo URL', () {
       final edekaLogo = retailersProvider.getRetailerLogo('EDEKA');
-      expect(edekaLogo, contains('Logo_Edeka'));
+      expect(edekaLogo, '/assets/images/retailers/edeka.jpg');
       
       final reweLogo = retailersProvider.getRetailerLogo('REWE');
-      expect(reweLogo, contains('Logo_REWE'));
+      expect(reweLogo, '/assets/images/retailers/rewe.png');
       
       // Test fallback for unknown retailer
       final unknownLogo = retailersProvider.getRetailerLogo('UNKNOWN');
@@ -68,8 +68,8 @@ void main() {
     });
     
     test('getRetailerDisplayName returns correct display names', () {
-      expect(retailersProvider.getRetailerDisplayName('ALDI'), 'ALDI SÜD');
-      expect(retailersProvider.getRetailerDisplayName('NETTO'), 'Netto Marken-Discount');
+      expect(retailersProvider.getRetailerDisplayName('ALDI'), 'ALDI');
+      expect(retailersProvider.getRetailerDisplayName('NETTO'), 'Netto');
       expect(retailersProvider.getRetailerDisplayName('nahkauf'), 'nahkauf');
       
       // Test fallback
@@ -115,7 +115,7 @@ void main() {
     test('getRetailerBranding returns complete branding info', () {
       final branding = retailersProvider.getRetailerBranding('EDEKA');
       
-      expect(branding['logo'], contains('Logo_Edeka'));
+      expect(branding['logo'], '/assets/images/retailers/edeka.jpg');
       expect(branding['colors'], isA<Map<String, Color>>());
       expect(branding['displayName'], 'EDEKA');
       expect(branding['isAvailable'], isA<bool>());

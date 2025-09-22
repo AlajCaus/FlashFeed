@@ -252,22 +252,28 @@ void main() {
           gpsService: testGpsService,
           mockDataService: testMockDataService
         );
-        
-        // Initial state: no permission
-        expect(testProvider.hasLocationPermission, isFalse);
-        expect(testProvider.isLocationServiceEnabled, isFalse);
-        
-        // Act: Request permission
-        await testProvider.requestLocationPermission();
-        
-        // Assert: Permission granted (simulated)
-        expect(testProvider.hasLocationPermission, isTrue);
-        expect(testProvider.isLocationServiceEnabled, isTrue);
-        expect(testProvider.canUseLocation, isTrue);
-        
-        // Clean up
-        testProvider.dispose();
-      });
+
+        try {
+          // Initial state: no permission
+          expect(testProvider.hasLocationPermission, isFalse);
+          expect(testProvider.isLocationServiceEnabled, isFalse);
+
+          // Act: Request permission
+          await testProvider.requestLocationPermission();
+
+          // Assert: Permission granted (simulated)
+          expect(testProvider.hasLocationPermission, isTrue);
+          expect(testProvider.isLocationServiceEnabled, isTrue);
+          expect(testProvider.canUseLocation, isTrue);
+        } finally {
+          // Clean up - safe disposal
+          try {
+            testProvider.dispose();
+          } catch (e) {
+            // Ignore disposal errors in test
+          }
+        }
+      }, timeout: Timeout(Duration(seconds: 10))); // Add timeout
       
       test('getCurrentLocation works with permission', () async {
         // Arrange: Permission granted

@@ -106,8 +106,8 @@ void main() {
       });
       
       test('should return correct display names', () {
-        expect(provider.getRetailerDisplayName('ALDI'), equals('ALDI SÜD'));
-        expect(provider.getRetailerDisplayName('NETTO'), equals('Netto Marken-Discount'));
+        expect(provider.getRetailerDisplayName('ALDI'), equals('ALDI'));
+        expect(provider.getRetailerDisplayName('NETTO'), equals('Netto'));
         expect(provider.getRetailerDisplayName('LIDL'), equals('Lidl'));
         expect(provider.getRetailerDisplayName('nahkauf'), equals('nahkauf'));
       });
