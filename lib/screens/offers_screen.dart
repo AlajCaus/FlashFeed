@@ -423,8 +423,8 @@ class _OffersScreenState extends State<OffersScreen> {
       ),
     );
   }
-  
-  
+
+
   void _showPremiumDialog(BuildContext context) {
     showDialog(
       context: context,

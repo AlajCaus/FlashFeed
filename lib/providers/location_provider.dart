@@ -644,12 +644,12 @@ class LocationProvider extends ChangeNotifier {
     _availableRetailersInRegion.clear();
     _locationError = null;
     _isLoadingLocation = false;
-    
+
     debugPrint('🧹 LocationProvider: Alle Location-Daten gelöscht');
-    
+
     // Notify callbacks so dependent providers can clear their state
     _notifyLocationCallbacks();
-    
+
     notifyListeners();
   }
   

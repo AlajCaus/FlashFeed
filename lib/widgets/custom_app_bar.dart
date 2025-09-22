@@ -123,19 +123,43 @@ class _SettingsOverlay extends StatelessWidget {
             ),
           ),
           
-          // PLZ Input
+          // PLZ Input mit sichtbaren Buttons
           ListTile(
             leading: const Icon(Icons.location_on),
-            title: const Text('PLZ ändern'),
+            title: const Text('PLZ-Filter'),
             subtitle: Text(
-              locationProvider.postalCode ?? 
-              locationProvider.userPLZ ?? 
+              locationProvider.postalCode ??
+              locationProvider.userPLZ ??
               'Nicht gesetzt'
             ),
-            onTap: () {
-              Navigator.pop(context);
-              _showPLZDialog(context);
-            },
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // PLZ ändern Button
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showPLZDialog(context);
+                  },
+                  child: const Text('Ändern'),
+                ),
+                // PLZ löschen Button (nur wenn PLZ gesetzt)
+                if (locationProvider.postalCode != null || locationProvider.userPLZ != null)
+                  TextButton(
+                    onPressed: () {
+                      locationProvider.clearLocation();
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('PLZ-Filter entfernt'),
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text('Löschen'),
+                  ),
+              ],
+            ),
           ),
           
           // Settings

@@ -264,57 +264,99 @@ class RegionalAvailabilityBanner extends StatelessWidget {
     final retailersProvider = context.watch<RetailersProvider>();
     final offersProvider = context.watch<OffersProvider>();
     final locationProvider = context.watch<LocationProvider>();
-    
+
     if (locationProvider.postalCode == null) {
       return const SizedBox.shrink();
     }
-    
+
     final availableCount = retailersProvider.availableRetailers.length;
     final totalCount = 11; // Total number of retailers in system
     final percentage = ((availableCount / totalCount) * 100).round();
-    
-    return _buildWarningBanner(
-      icon: Icons.info_outline,
-      title: 'Regionale Verfügbarkeit',
-      message: '$availableCount von $totalCount Händlern in PLZ ${locationProvider.postalCode} verfügbar ($percentage%)',
-      bgColor: infoBg,
-      borderColor: infoBorder,
-      textColor: infoText,
-      action: Column(
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: infoBg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: infoBorder, width: 1),
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.local_offer, size: 14, color: infoText),
-              const SizedBox(width: 4),
-              Text(
-                '${offersProvider.filteredOffers.length} regionale Angebote verfügbar',
-                style: TextStyle(
-                  color: infoText,
-                  fontSize: 12,
+              Icon(Icons.info_outline, color: infoText, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'PLZ ${locationProvider.postalCode} - $availableCount von $totalCount Händlern verfügbar',
+                            style: TextStyle(
+                              color: infoText,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        // PLZ löschen Kreuz
+                        IconButton(
+                          onPressed: () {
+                            locationProvider.clearLocation();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('PLZ-Filter entfernt'),
+                                backgroundColor: Color(0xFF2E8B57),
+                              ),
+                            );
+                          },
+                          icon: Icon(Icons.close, color: infoText),
+                          iconSize: 18,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 24,
+                            minHeight: 24,
+                          ),
+                          tooltip: 'PLZ löschen',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${offersProvider.filteredOffers.length} regionale Angebote verfügbar',
+                      style: TextStyle(
+                        color: infoText.withAlpha(204),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          TextButton(
-            onPressed: () async {
-              // Show PLZ input dialog
-              await _showPLZDialog(context, locationProvider);
-            },
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Text(
-              'PLZ ändern',
-              style: TextStyle(
-                color: infoText,
-                fontSize: 12,
-                decoration: TextDecoration.underline,
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: () async {
+                  await _showPLZDialog(context, locationProvider);
+                },
+                icon: const Icon(Icons.edit_location, size: 14),
+                label: const Text('PLZ ändern'),
+                style: TextButton.styleFrom(
+                  foregroundColor: infoText,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

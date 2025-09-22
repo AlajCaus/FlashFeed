@@ -314,7 +314,6 @@ class OfferComparisonCard extends StatelessWidget {
                               child: primaryOffer.thumbnailUrl != null
                                   ? Builder(
                                       builder: (context) {
-                                        print('DEBUG: Loading image URL: ${primaryOffer.thumbnailUrl}');
                                         return Image.asset(
                                           primaryOffer.thumbnailUrl!,
                                           width: double.infinity,
@@ -322,8 +321,6 @@ class OfferComparisonCard extends StatelessWidget {
                                           fit: BoxFit.cover,
                                           errorBuilder: (context, error, stackTrace) {
                                             // Fallback to icon if image fails
-                                            print('Image failed to load: ${primaryOffer.thumbnailUrl}');
-                                            print('Error: $error');
                                             return Center(
                                               child: Icon(
                                                 _getCategoryIcon(primaryOffer.flashFeedCategory),
