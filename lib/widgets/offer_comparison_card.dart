@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:math' as math;
 import '../models/models.dart';
 import '../utils/responsive_helper.dart';
 import '../providers/retailers_provider.dart';
+import '../providers/offers_provider.dart';
+import '../providers/location_provider.dart';
 import 'retailer_logo.dart';
 
 /// OfferComparisonCard - Preisvergleich-Karte für Angebote
@@ -434,16 +437,6 @@ class OfferComparisonCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-
-                          // Category
-                          Text(
-                            primaryOffer.flashFeedCategory,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: textSecondary,
-                            ),
-                          ),
                           const Spacer(),
 
                           // Price
@@ -473,9 +466,53 @@ class OfferComparisonCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
 
-                          // Valid until
+                          // Valid until and Distance (when sorted by distance)
                           Row(
                             children: [
+                              // Distance indicator (only when sorted by distance)
+                              Consumer2<OffersProvider, LocationProvider>(
+                                builder: (context, offersProvider, locationProvider, child) {
+                                  if (offersProvider.sortType == OfferSortType.distanceAsc) {
+                                    // Calculate distance to store
+                                    final userLat = locationProvider.latitude ?? 52.5200;
+                                    final userLon = locationProvider.longitude ?? 13.4050;
+
+                                    // Generate store coordinates based on retailer (same logic as OfferDetailModal)
+                                    final retailerHash = primaryOffer.retailer.hashCode;
+                                    final latOffset = ((retailerHash % 100) - 50) * 0.002;
+                                    final lonOffset = ((retailerHash % 200) - 100) * 0.002;
+                                    final storeLat = userLat + latOffset;
+                                    final storeLon = userLon + lonOffset;
+
+                                    final distance = _calculateDistance(
+                                      userLat, userLon, storeLat, storeLon
+                                    );
+
+                                    return Row(
+                                      children: [
+                                        Icon(Icons.location_on, size: 11, color: primaryGreen),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          '${distance.toStringAsFixed(1)} km',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            color: primaryGreen,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          width: 1,
+                                          height: 10,
+                                          color: borderColor,
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
                               Icon(Icons.schedule, size: 11, color: textSecondary),
                               const SizedBox(width: 4),
                               Expanded(
@@ -521,39 +558,27 @@ class OfferComparisonCard extends StatelessWidget {
       ),
     );
   }
-  
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Obst & Gemüse':
-        return Icons.eco;
-      case 'Milchprodukte':
-        return Icons.egg;
-      case 'Fleisch & Wurst':
-        return Icons.restaurant;
-      case 'Brot & Backwaren':
-        return Icons.bakery_dining;
-      case 'Getränke':
-        return Icons.local_drink;
-      case 'Süßwaren':
-        return Icons.cookie;
-      case 'Tiefkühl':
-        return Icons.ac_unit;
-      case 'Konserven':
-        return Icons.kitchen;
-      case 'Drogerie':
-        return Icons.favorite;
-      case 'Haushalt':
-        return Icons.cleaning_services;
-      case 'Bio-Produkte':
-        return Icons.spa;
-      case 'Fertiggerichte':
-        return Icons.microwave;
-      default:
-        return Icons.category;
-    }
-  }
-  
+
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+  }
+
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    // Haversine formula for distance calculation
+    const R = 6371; // Earth's radius in kilometers
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_toRadians(lat1)) * math.cos(_toRadians(lat2)) *
+        math.sin(dLon / 2) * math.sin(dLon / 2);
+
+    final c = 2 * math.asin(math.sqrt(a));
+    return R * c;
+  }
+
+  double _toRadians(double degrees) {
+    return degrees * (math.pi / 180);
   }
 }

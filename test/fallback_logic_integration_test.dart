@@ -1,5 +1,5 @@
 // FlashFeed Fallback Logic Integration Tests
-// Task 5c.4: Test regional unavailability fallback chain
+// Test regional unavailability fallback chain
 
 
 import 'package:flutter_test/flutter_test.dart';

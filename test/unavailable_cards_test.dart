@@ -1,5 +1,5 @@
 // FlashFeed Unavailable Cards Widget Tests
-// Task 5c.4: Test coverage for regional unavailability UI components
+// Test coverage for regional unavailability UI components
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

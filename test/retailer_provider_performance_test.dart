@@ -1,4 +1,4 @@
-// Performance Tests für Task 11.7.4: Retailer Provider Performance
+// Performance Tests für Retailer Provider Performance
 // Testet Performance, Scalability und Memory Management
 
 import 'package:flutter_test/flutter_test.dart';
@@ -11,7 +11,7 @@ import 'package:flashfeed/repositories/mock_retailers_repository.dart';
 import 'retailer_test_helpers.dart';
 
 void main() {
-  group('Task 11.7.4: RetailersProvider Performance Tests', () {
+  group('RetailersProvider Performance Tests', () {
     late MockDataService testMockDataService;
     late RetailersProvider retailersProvider;
     late LocationProvider locationProvider;

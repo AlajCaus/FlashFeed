@@ -1,4 +1,4 @@
-// Test für Task 11.6: UI Widgets für Retailer Management
+// Test für UI Widgets für Retailer Management
 // Testet die Integration der neuen RetailersProvider Methoden mit den UI Widgets
 
 import 'package:flutter_test/flutter_test.dart';
@@ -41,7 +41,7 @@ void main() {
     retailersProvider.dispose();
   });
   
-  group('Task 11.1 & 11.6: RetailersProvider UI Methods', () {
+  group('RetailersProvider UI Methods', () {
     test('getRetailerLogo returns correct logo URL', () {
       final edekaLogo = retailersProvider.getRetailerLogo('EDEKA');
       expect(edekaLogo, '/assets/images/retailers/edeka.jpg');

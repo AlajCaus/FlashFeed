@@ -1,4 +1,4 @@
-// Task 9.3: Advanced Search Features Test Suite
+// Advanced Search Features Test Suite
 // Tests for multi-term search, fuzzy search, category-aware search,
 // and enhanced search suggestions
 
@@ -22,7 +22,7 @@ int _countActualBioObstOffers(OffersProvider provider) {
 }
 
 void main() {
-  group('Task 9.3: Advanced Search Features', () {
+  group('Advanced Search Features', () {
     // Shared test setup
     group('with random data (original tests)', () {
       late SearchService searchService;
@@ -47,7 +47,7 @@ void main() {
       offersProvider.dispose();
     });
     
-    group('Task 9.3.1: Multi-Term Search', () {
+    group('Multi-Term Search', () {
       test('should find products containing ALL search terms', () {
         // Now that pagination uses 1000 page size, offersProvider.offers returns all offers
         final offers = offersProvider.offers;
@@ -113,7 +113,7 @@ void main() {
       });
     });
     
-    group('Task 9.3.2: Fuzzy Search', () {
+    group('Fuzzy Search', () {
       test('should find "Joghurt" when searching for "Joghrt" (typo)', () {
         final offers = offersProvider.offers;
         final results = searchService.fuzzySearch(offers, 'Joghrt', maxDistance: 2);
@@ -181,7 +181,7 @@ void main() {
       });
     });
     
-    group('Task 9.3.3: Category-Aware Search', () {
+    group('Category-Aware Search', () {
       test('should filter by category when category is in search query', () {
         final offers = offersProvider.offers;
         final results = searchService.categoryAwareSearch(offers, 'Obst Banane');
@@ -260,7 +260,7 @@ void main() {
       });
     });
     
-    group('Task 9.3.4: Enhanced Search Suggestions', () {
+    group('Enhanced Search Suggestions', () {
       test('should provide category suggestions', () {
         final offers = offersProvider.offers;
         final suggestions = searchService.getEnhancedSuggestions(
@@ -579,5 +579,5 @@ void main() {
         expect(results.any((o) => o.productName.contains('Milch')), isTrue);
       });
     });
-  }); // Ende von 'Task 9.3: Advanced Search Features'
+  }); // Ende von 'Advanced Search Features'
 }

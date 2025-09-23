@@ -161,7 +161,7 @@ class _OffersScreenState extends State<OffersScreen> {
   Widget _buildSortOptions() {
     final offersProvider = context.watch<OffersProvider>();
     final sortOptions = offersProvider.getSortOptions();
-    
+
     return Container(
       padding: EdgeInsets.only(
         top: 16,
@@ -171,14 +171,27 @@ class _OffersScreenState extends State<OffersScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Sortieren nach',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Sortieren nach',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  iconSize: 24,
+                  color: textSecondary,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),

@@ -171,7 +171,7 @@ final locationProvider = LocationProvider(
 - [x] Caching für Performance
 - [x] Fallback für fehlende Location-Permission
 
-#### **Task 10: Advanced Search Features** ✅ **ABGESCHLOSSEN**
+#### **Advanced Search Features** ✅ **ABGESCHLOSSEN**
 - [x] Fuzzy-Search mit Levenshtein-Distanz
 - [x] Filter nach Kategorien, Preisbereich, Entfernung
 - [x] Sortierung nach Relevanz, Preis, Entfernung

@@ -1,4 +1,4 @@
-// Widget Tests für StoreOpeningHours Widget (Task 11.7.2)
+// Widget Tests für StoreOpeningHours Widget 
 // Testet das Öffnungszeiten-Widget und dessen Integration
 
 import 'package:flutter_test/flutter_test.dart';

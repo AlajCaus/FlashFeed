@@ -764,7 +764,7 @@ void main() {
       });
     });
     
-    // Task 5c.5: Additional Cross-Provider Integration Tests
+    // Additional Cross-Provider Integration Tests
     group('Task 5c.5 - Regional State Synchronization', () {
       test('should detect and report unavailable offers', () async {
         // Set location to Berlin (BioCompany available)

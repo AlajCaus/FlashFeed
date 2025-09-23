@@ -285,7 +285,7 @@ class OffersProvider extends ChangeNotifier {
   
   // Getters
   List<Offer> get offers => _displayedOffers.isNotEmpty ? _displayedOffers : _filteredOffers;
-  List<Offer> get displayedOffers => _displayedOffers.isNotEmpty ? _displayedOffers : _filteredOffers; // Task 10: For pagination
+  List<Offer> get displayedOffers => _displayedOffers.isNotEmpty ? _displayedOffers : _filteredOffers; // For pagination
   List<Offer> get allOffers => _allOffers;
   List<Offer> get filteredOffers => _filteredOffers; // For UI components
   int get totalOffers => _allOffers.length; // Total count for statistics
@@ -336,7 +336,7 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // NEW: Task 5c.2 - Get regional availability message
+  //  - Get regional availability message
   String getRegionalAvailabilityMessage(String retailerName) {
     if (_userPLZ == null) {
       return '$retailerName - Verfügbarkeit unbekannt';
@@ -349,7 +349,7 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // NEW: Task 5c.2 - Empty state message
+  //  - Empty state message
   String get emptyStateMessage {
     if (_filteredOffers.isEmpty && _userPLZ != null) {
       if (_allOffers.isEmpty) {
@@ -373,7 +373,7 @@ class OffersProvider extends ChangeNotifier {
       .map((o) => o.savings)
       .fold(0.0, (sum, savings) => sum + savings);
   
-  // Task 9.2: Enhanced UI State Management
+  // Enhanced UI State Management
   bool get hasActiveFilters => 
     _selectedCategory != null || 
     _selectedRetailer != null || 
@@ -409,7 +409,7 @@ class OffersProvider extends ChangeNotifier {
     };
   }
   
-  // Load Offers with regional filtering support (Task 5c.2)
+  // Load Offers with regional filtering support 
   Future<void> loadOffers({bool applyRegionalFilter = true, bool forceRefresh = false}) async {
     if (_isLoading) return;
     
@@ -495,7 +495,7 @@ class OffersProvider extends ChangeNotifier {
     await loadOffers(applyRegionalFilter: true);
   }
   
-  // NEW: Task 5c.2 - Public method for regional offers
+  //  - Public method for regional offers
   List<Offer> getRegionalOffers([String? plz]) {
     final targetPLZ = plz ?? _userPLZ;
     
@@ -557,7 +557,7 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Task 9.3 & 9.4.3: Enhanced Search with debouncing
+  // 9.4.3: Enhanced Search with debouncing
   void searchOffers(String query, {bool immediate = false}) {
     if (_searchQuery == query) return;
     
@@ -589,13 +589,13 @@ class OffersProvider extends ChangeNotifier {
     await _applyFilters();
   }
   
-  // Task 9.3.1: Multi-Term Search
+  // Multi-Term Search
   Future<void> searchWithMultipleTerms(String query) async {
     _searchQuery = query;
     await _applyFilters();
   }
   
-  // Task 9.3.2: Fuzzy Search
+  // Fuzzy Search
   Future<void> searchWithFuzzyMatching(String query, {int tolerance = 2}) async {
     _searchQuery = query;
     _fuzzySearchTolerance = tolerance;
@@ -603,7 +603,7 @@ class OffersProvider extends ChangeNotifier {
     await _applyFilters();
   }
   
-  // Task 9.3.3: Category-Aware Search
+  // Category-Aware Search
   Future<void> searchWithCategoryAwareness(String query) async {
     _searchQuery = query;
     _useCategoryAwareSearch = true;
@@ -611,7 +611,7 @@ class OffersProvider extends ChangeNotifier {
     await _applyFilters();
   }
   
-  // Task 9.3: Search mode flags
+  // Search mode flags
   bool _useFuzzySearch = false;
   bool _useCategoryAwareSearch = false;
   int _fuzzySearchTolerance = 2;
@@ -656,7 +656,7 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Apply All Filters with caching and regional awareness (Task 5c.2 & 9.4.1)
+  // Apply All Filters with caching and regional awareness ( & 9.4.1)
   Future<void> _applyFilters() async {
     // Generate cache key
     final cacheKey = _generateCacheKey(
@@ -713,13 +713,13 @@ class OffersProvider extends ChangeNotifier {
       filtered = filtered.where((offer) => offer.hasDiscount).toList();
     }
     
-    // Task 9.4.3: Check for pending search
+    // Check for pending search
     if (_isSearchPending) {
       // Skip applying filters while search is pending
       return;
     }
     
-    // Task 9.3: Advanced Search Implementation
+    // Advanced Search Implementation
     if (_searchQuery.isNotEmpty) {
       if (_useCategoryAwareSearch) {
         // Category-aware search (e.g., "Obst Banane")
@@ -749,16 +749,16 @@ class OffersProvider extends ChangeNotifier {
     
     _filteredOffers = filtered;
     
-    // Task 9.4.1: Add to cache
+    // Add to cache
     _addToCache(cacheKey, filtered);
     
-    // NEW: Track empty results for UI feedback (Task 5c.2)
+    // NEW: Track empty results for UI feedback 
     if (hasRegionalFiltering && filtered.isEmpty && _allOffers.isNotEmpty) {
       debugPrint('⚠️ Regional filtering active: No offers available in PLZ $_userPLZ');
       debugPrint('Available retailers: $_availableRetailers');
     }
     
-    // Task 9.4.2: Apply sorting BEFORE updating display
+    // Apply sorting BEFORE updating display
     // This ensures sorted order is visible immediately
     await _applySorting();
   }
@@ -821,7 +821,7 @@ class OffersProvider extends ChangeNotifier {
     await _applyFilters();
   }
   
-  // Task 9.4.1: Cache Management Methods
+  // Cache Management Methods
   String _generateCacheKey(
     String? category,
     String? retailer,
@@ -856,7 +856,7 @@ class OffersProvider extends ChangeNotifier {
   }
   
   void _addToCache(String key, List<Offer> offers) {
-    // Task 9.4.4: LRU eviction if cache is full
+    // LRU eviction if cache is full
     if (_filterCache.length >= _maxCacheEntries) {
       _evictOldestCacheEntry();
     }
@@ -896,7 +896,7 @@ class OffersProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  // Task 9.4.2: Pagination Methods
+  // Pagination Methods
   void _resetPagination() {
     _currentPage = 0;
     _hasMoreOffers = _filteredOffers.length > _pageSize;
@@ -950,7 +950,7 @@ class OffersProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  // Task 9.4.4: Memory Management
+  // Memory Management
   String _estimateCacheMemoryUsage() {
     // Rough estimation: each offer ~500 bytes
     int totalOffers = 0;
@@ -988,7 +988,7 @@ class OffersProvider extends ChangeNotifier {
     debugPrint('OffersProvider: Memory pressure - cleared ${keysToRemove.length} cache entries');
   }
   
-  // Task 9.2: Smart Filter Management
+  // Smart Filter Management
   
   /// Clear only active user filters, keep regional filtering
   Future<void> clearActiveFilters() async {
@@ -1129,7 +1129,7 @@ class OffersProvider extends ChangeNotifier {
     return _filteredOffers.where((offer) => offer.hasDiscount).toList();
   }
   
-  // Task 9.2: UI-Ready Data Methods for Offers Panel
+  // UI-Ready Data Methods for Offers Panel
   
   /// Group offers by retailer for UI sections
   Map<String, List<Offer>> getOffersGroupedByRetailer() {
@@ -1256,7 +1256,7 @@ class OffersProvider extends ChangeNotifier {
     };
   }
   
-  /// Task 9.3.4: Enhanced search suggestions with categories
+  /// Enhanced search suggestions with categories
   List<SearchSuggestion> getEnhancedSearchSuggestions(String query, {int limit = 8}) {
     return _searchService.getEnhancedSuggestions(_allOffers, query, maxSuggestions: limit);
   }
@@ -1267,12 +1267,12 @@ class OffersProvider extends ChangeNotifier {
     return enhanced.map((s) => s.text).toList();
   }
   
-  // Task 9.3: Advanced search using all features
+  // Advanced search using all features
   List<Offer> performAdvancedSearch(String query) {
     return _searchService.advancedSearch(_allOffers, query);
   }
   
-  // Task 9.3: Reset search mode flags
+  // Reset search mode flags
   void resetSearchMode() {
     _useFuzzySearch = false;
     _useCategoryAwareSearch = false;
@@ -1318,7 +1318,7 @@ class OffersProvider extends ChangeNotifier {
       ..sort();
   }
   
-  // Task 9.2: Enhanced UI Filter Methods
+  // Enhanced UI Filter Methods
   
   /// Get available categories from all offers (before filtering) for dropdown
   List<String> getFilteredCategories({bool includeAll = false}) {
@@ -1438,7 +1438,7 @@ class OffersProvider extends ChangeNotifier {
     };
   }
   
-  // Task 5c.4: Regional unavailability fallback methods
+  // Regional unavailability fallback methods
   
   // Get offers that are not available in user's region
   List<Offer> get unavailableOffers {
@@ -1528,7 +1528,7 @@ class OffersProvider extends ChangeNotifier {
     await _applyFilters();
   }
   
-  // Task 10: Enhanced Filter Methods for UI
+  // Enhanced Filter Methods for UI
   Future<void> filterByCategories(List<String> categories) async {
     // For MVP, we only support single category
     // Could be extended to support multiple categories
@@ -1601,7 +1601,7 @@ class OffersProvider extends ChangeNotifier {
     _errorMessage = null;
   }
   
-  // Task 5c.4: UI-Logic for Regional Availability
+  // UI-Logic for Regional Availability
   // (Moved to line 440 to avoid duplication)
   
   List<String> get regionalWarnings {
@@ -1673,14 +1673,14 @@ class OffersProvider extends ChangeNotifier {
     // Prevent double disposal
     if (_disposed) return;
 
-    // Task 9.4.3: Cancel debounce timer
+    // Cancel debounce timer
     _searchDebounceTimer?.cancel();
     _searchDebounceTimer = null;
 
     // Unregister from UserProvider
     unregisterFromUserProvider();
 
-    // Task 9.4.1: Clear cache
+    // Clear cache
     _filterCache.clear();
 
     // CRITICAL FIX: Unregister callback BEFORE marking as disposed

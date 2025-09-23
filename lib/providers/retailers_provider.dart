@@ -44,7 +44,7 @@ class RetailersProvider extends ChangeNotifier {
   @visibleForTesting
   bool get isDisposed => _disposed;
   
-  // ============ Task 11.1 & 11.6: Branding & UI Support ============
+  // ============ Branding & UI Support ============
   
   // Händler-Logos (korrigierte Asset-Pfade)
   static const Map<String, String> _retailerLogos = {
@@ -153,11 +153,11 @@ class RetailersProvider extends ChangeNotifier {
   
   // Performance Cache
   final Map<String, List<Retailer>> _plzRetailerCache = {};
-  final Map<String, Retailer> _retailerDetailsCache = {}; // Task 11.1: Cache für Details
-  final Map<String, StoreSearchCacheEntry> _storeSearchCache = {}; // Task 11.4: Store-Search Cache
+  final Map<String, Retailer> _retailerDetailsCache = {}; // Cache für Details
+  final Map<String, StoreSearchCacheEntry> _storeSearchCache = {}; // Store-Search Cache
   static const int _maxCacheSize = 100; // PERFORMANCE: Cache-Limit für Memory-Effizienz
   
-  // Task 11.4: Store-Search State
+  // Store-Search State
   List<Store> _allStores = [];
   List<Store> _searchResults = [];
   bool _isSearching = false;
@@ -214,7 +214,7 @@ class RetailersProvider extends ChangeNotifier {
     return (_availableRetailers.length / _allRetailers.length) * 100;
   }
   
-  // ============ Task 11.1 & 11.6: UI Support Methods ============
+  // ============ UI Support Methods ============
   
   /// Gibt Details zu einem Händler zurück
   Retailer? getRetailerDetails(String retailerName) {
@@ -457,7 +457,7 @@ class RetailersProvider extends ChangeNotifier {
            'Verfügbar in: $regions';
   }
   
-  // ============ TASK 11.5: Erweiterte regionale Verfügbarkeitsprüfung ============
+  // ============ Erweiterte regionale Verfügbarkeitsprüfung ============
   
   /// Findet Händler in der Nähe basierend auf PLZ und Radius
   /// Erweiterte Version mit echter Umkreissuche
@@ -689,7 +689,7 @@ class RetailersProvider extends ChangeNotifier {
     return alternatives;
   }
   
-  // ============ Helper Methods for Task 11.5 ============
+  // ============ Helper Methods for ============
   
   /// Cache for nearby retailers
   final Map<String, NearbyRetailersCacheEntry> _nearbyRetailersCache = {};
@@ -831,9 +831,9 @@ class RetailersProvider extends ChangeNotifier {
   // They handle regional variations in retailer names (e.g., EDEKA Nord vs EDEKA Südbayern)
   // TODO: Integrate into store search and matching logic when needed
   
-  // ============ Ende Task 11.5 ============
+  // ============ Ende ============
   
-  /// Task 5c.5: Cross-Provider Integration Methods
+  /// Cross-Provider Integration Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
     // Store reference for auto-cleanup during disposal
     _locationProvider = locationProvider;
@@ -857,7 +857,7 @@ class RetailersProvider extends ChangeNotifier {
     debugPrint('RetailersProvider: Unregistered from LocationProvider');
   }
   
-  // Task 5c.5: Callback handlers
+  // Callback handlers
   void _onLocationChanged() {
     if (_disposed) return;
     debugPrint('RetailersProvider: Location changed, updating retailer availability');
@@ -880,7 +880,7 @@ class RetailersProvider extends ChangeNotifier {
     }
   }
   
-  // Task 5c.5: Additional convenience methods for tests
+  // Additional convenience methods for tests
   List<String> getAvailableRetailersForPLZ(String plz) {
     return getAvailableRetailers(plz).map((r) => r.name).toList();
   }
@@ -898,7 +898,7 @@ class RetailersProvider extends ChangeNotifier {
     }
   }
   
-  // ============ TASK 11.1: Additional Retailer Methods ============
+  // ============ Additional Retailer Methods ============
   
   /// Findet den Händler zu einer bestimmten Filiale
   Retailer? getRetailerByStore(Store store) {
@@ -941,7 +941,7 @@ class RetailersProvider extends ChangeNotifier {
     return retailer?.slogan;
   }
   
-  // ============ Ende TASK 11.1 ============
+  // ============ Ende ============
   
   /// Sucht Händler nach Namen
   Future<Retailer?> getRetailerByName(String name) async {
@@ -966,8 +966,8 @@ class RetailersProvider extends ChangeNotifier {
   /// Cache-Management
   void clearCache() {
     _plzRetailerCache.clear();
-    _retailerDetailsCache.clear(); // Task 11.1: Details-Cache auch leeren
-    _storeSearchCache.clear(); // Task 11.4: Store-Search Cache leeren
+    _retailerDetailsCache.clear(); // Details-Cache auch leeren
+    _storeSearchCache.clear(); // Store-Search Cache leeren
     debugPrint('🧹 RetailersProvider: Cache geleert');
   }
   
@@ -1011,7 +1011,7 @@ class RetailersProvider extends ChangeNotifier {
     }
   }
   
-  // Task 5c.4: Regional unavailability fallback methods
+  // Regional unavailability fallback methods
   
   /// Get suggested alternative retailers for an unavailable one
   List<Retailer> getSuggestedRetailers(String unavailableRetailerName) {
@@ -1140,7 +1140,7 @@ class RetailersProvider extends ChangeNotifier {
     }
   }
   
-  // ============ TASK 11.4: Store Search Funktionalität ============
+  // ============ Store Search Funktionalität ============
   
   /// Haupt-Suchmethode für Filialen
   Future<List<Store>> searchStores(
@@ -1304,7 +1304,7 @@ class RetailersProvider extends ChangeNotifier {
   /// Lädt alle Stores von allen Händlern
   Future<void> _loadAllStores() async {
     try {
-      // Task 11.4: Verwende neue getAllStores() Repository-Methode
+      // Verwende neue getAllStores() Repository-Methode
       // Dies lädt effizient alle 35+ Berlin-Stores aus MockDataService
       _allStores = await _repository.getAllStores();
       debugPrint('✅ Loaded ${_allStores.length} stores total');
@@ -1623,7 +1623,7 @@ class RetailersProvider extends ChangeNotifier {
     return stores.take(limit).toList();
   }
   
-  // ============ Ende TASK 11.4 ============
+  // ============ Ende ============
   
   @override
   void dispose() {
@@ -1686,7 +1686,7 @@ class SearchResult {
   SearchResult(this.store, this.score);
 }
 
-/// Helper class for scored retailers (Task 11.5)
+/// Helper class for scored retailers 
 class ScoredRetailer {
   final Retailer retailer;
   final int score;
@@ -1694,7 +1694,7 @@ class ScoredRetailer {
   ScoredRetailer(this.retailer, this.score);
 }
 
-/// Cache entry for nearby retailers (Task 11.5)
+/// Cache entry for nearby retailers 
 class NearbyRetailersCacheEntry {
   final List<Retailer> retailers;
   final DateTime timestamp;

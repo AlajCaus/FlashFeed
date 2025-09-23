@@ -1,4 +1,4 @@
-# Task 11.7: Callback-Leak Analysis & Fix
+# Callback-Leak Analysis & Fix
 
 ## Problem Identifiziert:
 Der Memory leak prevention Test in `cross_provider_integration_test.dart` zeigt 103 Regional-Data-Callbacks beim ersten Location-Update, obwohl nur 3 erwartet werden.

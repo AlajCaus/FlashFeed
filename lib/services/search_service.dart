@@ -1,4 +1,4 @@
-// Task 9.3: Advanced Search Service for FlashFeed
+// Advanced Search Service for FlashFeed
 // Implements multi-term search, fuzzy matching, category-aware search
 // und enhanced search suggestions
 
@@ -12,7 +12,7 @@ class SearchService {
   factory SearchService() => _instance;
   SearchService._internal();
 
-  // Task 9.3.1: Multi-Term Search
+  // Multi-Term Search
   // "Bio Milch" findet Produkte mit BEIDEN Keywords
   // FIX: Handle hyphens intelligently - "Bio Milch" finds "Bio-Milch" and vice versa
   List<Offer> multiTermSearch(List<Offer> offers, String searchQuery) {
@@ -42,7 +42,7 @@ class SearchService {
     }).toList();
   }
 
-  // Task 9.3.2: Fuzzy Search with Levenshtein Distance
+  // Fuzzy Search with Levenshtein Distance
   // "Joghrt" findet "Joghurt"
   // FIX: Handle hyphens - normalize for better fuzzy matching
   List<Offer> fuzzySearch(List<Offer> offers, String searchQuery, {int maxDistance = 2}) {
@@ -114,7 +114,7 @@ class SearchService {
     return results.map((r) => r.offer).toList();
   }
 
-  // Task 9.3.3: Category-Aware Search
+  // Category-Aware Search
   // "Obst Banane" sucht nur in Obst-Kategorie  
   List<Offer> categoryAwareSearch(List<Offer> offers, String searchQuery) {
     if (searchQuery.isEmpty) return offers;
@@ -224,7 +224,7 @@ class SearchService {
     return result;
   }
 
-  // Task 9.3.4: Enhanced Search Suggestions with Categories
+  // Enhanced Search Suggestions with Categories
   List<SearchSuggestion> getEnhancedSuggestions(
     List<Offer> offers,
     String query, {

@@ -1,5 +1,5 @@
 // Konsolidierte Test-Suite für RetailersProvider
-// Enthält Basic Tests + Task 11.5 erweiterte Tests
+// Enthält Basic Tests + erweiterte Tests
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/providers/retailers_provider.dart';
@@ -105,8 +105,8 @@ void main() {
       });
     });
     
-    // ========== TASK 11.1: RETAILER DETAILS TESTS ==========
-    group('Task 11.1: Retailer Details Management', () {
+    // ========== RETAILER DETAILS TESTS ==========
+    group('Retailer Details Management', () {
       test('should get retailer details with cache', () {
         final edeka = provider.getRetailerDetails('EDEKA');
         
@@ -150,8 +150,8 @@ void main() {
       });
     });
     
-    // ========== TASK 11.5: ERWEITERTE REGIONALE TESTS ==========
-    group('Task 11.5: getNearbyRetailers', () {
+    // ========== ERWEITERTE REGIONALE TESTS ==========
+    group('getNearbyRetailers', () {
       test('should return retailers within specified radius', () async {
         final retailers = await provider.getNearbyRetailers('10115', 5.0);
         
@@ -205,7 +205,7 @@ void main() {
       });
     });
 
-    group('Task 11.5: getRetailerCoverage', () {
+    group('getRetailerCoverage', () {
       test('should return coverage statistics for existing retailer', () {
         final coverage = provider.getRetailerCoverage('EDEKA');
         
@@ -273,7 +273,7 @@ void main() {
       });
     });
 
-    group('Task 11.5: findAlternativeRetailers', () {
+    group('findAlternativeRetailers', () {
       test('should return empty list if preferred retailer is available', () {
         // Set PLZ where EDEKA is available
         provider.updateUserLocation('10115');
@@ -335,7 +335,7 @@ void main() {
       });
     });
 
-    group('Task 11.5: Helper Methods', () {
+    group('Helper Methods', () {
       test('retailer categorization should work correctly', () {
         // Test through findAlternativeRetailers behavior
         // Categories: Discount, Premium, Bio, Regional
@@ -372,7 +372,7 @@ void main() {
       });
     });
 
-    group('Task 11.5: Regional Variations', () {
+    group('Regional Variations', () {
       test('should handle EDEKA regional variations', () {
         // EDEKA has regional cooperatives
         final coverage = provider.getRetailerCoverage('EDEKA');
@@ -393,7 +393,7 @@ void main() {
       });
     });
 
-    group('Task 11.5: Performance Tests', () {
+    group('Performance Tests', () {
       test('getNearbyRetailers should complete within reasonable time', () async {
         final stopwatch = Stopwatch()..start();
         
@@ -438,7 +438,7 @@ void main() {
       });
     });
 
-    group('Task 11.5: Integration Tests', () {
+    group('Integration Tests', () {
       test('should work with LocationProvider PLZ updates', () async {
         // Simulate PLZ change in Berlin (all mock stores are in Berlin)
         provider.updateUserLocation('10115'); // Berlin Mitte

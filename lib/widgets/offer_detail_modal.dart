@@ -106,12 +106,12 @@ Gefunden mit FlashFeed!
   Widget _buildStoreInfo() {
     final locationProvider = context.watch<LocationProvider>();
     final retailersProvider = context.watch<RetailersProvider>();
-    
+
     // Get nearest store for this retailer
     final availableRetailers = retailersProvider.availableRetailers
         .where((r) => r.name == widget.offer.retailer)
         .toList();
-    
+
     if (availableRetailers.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(12),
@@ -134,19 +134,27 @@ Gefunden mit FlashFeed!
         ),
       );
     }
-    
-    // Note: store property not directly on Offer model
-    // Using mock Store data for MVP
+
+    // Create a mock store with realistic coordinates for different retailers
+    // Using random offset from user location for realistic distances
+    final userLat = locationProvider.latitude ?? 52.5200;
+    final userLon = locationProvider.longitude ?? 13.4050;
+
+    // Generate offset for realistic distance (2-15 km range)
+    final retailerHash = widget.offer.retailer.hashCode;
+    final latOffset = ((retailerHash % 100) - 50) * 0.002; // ~0.1 to 0.2 degree offset
+    final lonOffset = ((retailerHash % 200) - 100) * 0.002;
+
     final store = Store(
       id: 'store-${widget.offer.retailer}-1',
       chainId: 'chain-${widget.offer.retailer}',
       retailerName: widget.offer.retailer,
       name: '${widget.offer.retailer} Filiale',
-      street: 'Beispielstraße 1',
+      street: 'Hauptstraße ${(retailerHash % 200) + 1}',
       zipCode: locationProvider.postalCode ?? '10115',
-      city: 'Berlin',
-      latitude: 52.5200,
-      longitude: 13.4050,
+      city: locationProvider.city ?? 'Berlin',
+      latitude: userLat + latOffset,
+      longitude: userLon + lonOffset,
       phoneNumber: '030-12345678',
       openingHours: {
         'Montag': OpeningHours.custom(8, 0, 20, 0),
@@ -159,6 +167,7 @@ Gefunden mit FlashFeed!
       },
       services: ['Bäckerei', 'Metzgerei'],
     );
+
     final distance = locationProvider.latitude != null && locationProvider.longitude != null
         ? _calculateDistance(
             locationProvider.latitude!,

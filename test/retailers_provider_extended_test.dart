@@ -9,7 +9,7 @@ import 'package:flashfeed/models/models.dart';
 import 'retailer_test_helpers.dart';
 
 void main() {
-  group('Task 11.7.1: RetailersProvider UI Methods Tests', () {
+  group('RetailersProvider UI Methods Tests', () {
     late MockDataService testMockDataService;
     late RetailersProvider provider;
     
@@ -273,7 +273,7 @@ void main() {
     });
   });
   
-  group('Task 11.5: Extended Regional Availability Tests', () {
+  group('Extended Regional Availability Tests', () {
     late RetailersProvider provider;
     late MockDataService testMockDataService;
     

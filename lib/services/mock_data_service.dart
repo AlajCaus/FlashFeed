@@ -201,15 +201,15 @@ class MockDataService {
 
         logoUrl: _generateRetailerLogoUrl('EDEKA'),  // Dynamic logo URL
         primaryColor: '#005CA9',
-        secondaryColor: '#FFE500',  // Task 11.2: EDEKA Gelb
-        iconUrl: '/assets/images/retailers/edeka.jpg',  // Task 11.2: Icon
-        slogan: 'Wir lieben Lebensmittel',  // Task 11.2: Slogan
+        secondaryColor: '#FFE500',  // EDEKA Gelb
+        iconUrl: '/assets/images/retailers/edeka.jpg',  // Icon
+        slogan: 'Wir lieben Lebensmittel',  // Slogan
         description: 'Deutschlands größte Supermarkt-Kooperation',
         categories: ['Molkereiprodukte', 'Frischfleisch', 'Obst', 'Gemüse', 'Backwaren', 'Getränke', 'Tiefkühlprodukte'],
         isPremiumPartner: true,
         website: 'https://www.edeka.de',
         storeCount: 7,
-        // Task 5a: EDEKA ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        // EDEKA ist bundesweit verfügbar (keine PLZ-Beschränkungen)
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
@@ -218,83 +218,83 @@ class MockDataService {
         displayName: 'REWE',
         logoUrl: _generateRetailerLogoUrl('rewe'),  // Dynamic logo URL
         primaryColor: '#CC071E',
-        secondaryColor: '#FFF200',  // Task 11.2: REWE Gelb
-        iconUrl: '/assets/images/retailers/rewe.png',  // Task 11.2: Icon
-        slogan: 'Dein Markt',  // Task 11.2: Slogan
+        secondaryColor: '#FFF200',  // REWE Gelb
+        iconUrl: '/assets/images/retailers/rewe.png',  // Icon
+        slogan: 'Dein Markt',  // Slogan
         description: 'Ihr Nahversorger mit nachhaltigen Produkten',
         categories: ['Milch & Käse', 'Fleisch & Geflügel', 'Frisches Obst', 'Frisches Gemüse', 'Brot & Bäckerei', 'Getränke & Alkohol'],
         isPremiumPartner: true,
         website: 'https://www.rewe.de',
         storeCount: 7,
-        // Task 5a: REWE ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        // REWE ist bundesweit verfügbar (keine PLZ-Beschränkungen)
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'aldi',
         name: 'ALDI',
-        displayName: 'ALDI',  // Task 11.2: Korrekter Display Name
+        displayName: 'ALDI',  // Korrekter Display Name
         logoUrl: _generateRetailerLogoUrl('aldi'),  // Dynamic logo URL
         primaryColor: '#00549F',
-        secondaryColor: '#FF6600',  // Task 11.2: ALDI Orange
-        iconUrl: '/assets/images/retailers/aldi.png',  // Task 11.2: Icon
-        slogan: 'Einfach ist mehr',  // Task 11.2: Slogan
+        secondaryColor: '#FF6600',  // ALDI Orange
+        iconUrl: '/assets/images/retailers/aldi.png',  // Icon
+        slogan: 'Einfach ist mehr',  // Slogan
         description: 'Einfach günstig - Qualität zum besten Preis',
         categories: ['Milcherzeugnisse', 'Frischfleisch', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Tiefkühl'],
         isPremiumPartner: false,
         website: 'https://www.aldi.de',
         storeCount: 7,
-        // Task 5a: ALDI ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        // ALDI ist bundesweit verfügbar (keine PLZ-Beschränkungen)
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'aldi süd',
         name: 'ALDI SÜD',
-        displayName: 'ALDI SÜD',  // Task 11.2: Korrekter Display Name
+        displayName: 'ALDI SÜD',  // Korrekter Display Name
         logoUrl: _generateRetailerLogoUrl('aldi süd'),  // Dynamic logo URL
         primaryColor: '#00549F',
-        secondaryColor: '#FF6600',  // Task 11.2: ALDI Orange
-        iconUrl: '/assets/images/retailers/Aldi_Sued.jpg',  // Task 11.2: Icon
-        slogan: 'Einfach ist mehr',  // Task 11.2: Slogan
+        secondaryColor: '#FF6600',  // ALDI Orange
+        iconUrl: '/assets/images/retailers/Aldi_Sued.jpg',  // Icon
+        slogan: 'Einfach ist mehr',  // Slogan
         description: 'Einfach günstig - Qualität zum besten Preis',
         categories: ['Milcherzeugnisse', 'Frischfleisch', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Tiefkühl'],
         isPremiumPartner: false,
         website: 'https://www.aldi-sued.de',
         storeCount: 7,
-        // Task 5a: ALDI SÜD ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        // ALDI SÜD ist bundesweit verfügbar (keine PLZ-Beschränkungen)
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'lidl',
         name: 'LIDL',
-        displayName: 'Lidl',  // Task 11.2: Korrekter Display Name
+        displayName: 'Lidl',  // Korrekter Display Name
         logoUrl: _generateRetailerLogoUrl('lidl'),  // Dynamic logo URL
         primaryColor: '#0050AA',
-        secondaryColor: '#FFE500',  // Task 11.2: Lidl Gelb
-        iconUrl: '/assets/images/retailers/lidl.png',  // Task 11.2: Icon
-        slogan: 'Lidl lohnt sich',  // Task 11.2: Slogan
+        secondaryColor: '#FFE500',  // Lidl Gelb
+        iconUrl: '/assets/images/retailers/lidl.png',  // Icon
+        slogan: 'Lidl lohnt sich',  // Slogan
         description: 'Mehr frische Ideen - Qualität und Frische',
         categories: ['Backwaren', 'Milchprodukte', 'Obst & Gemüse', 'Fleisch & Geflügel', 'Getränke', 'Tiefkühl'],
         isPremiumPartner: false,
         website: 'https://www.lidl.de',
         storeCount: 7,
-        // Task 5a: LIDL ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        // LIDL ist bundesweit verfügbar (keine PLZ-Beschränkungen)
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'netto',
         name: 'NETTO',
-        displayName: 'Netto',  // Task 11.2: Vollständiger Name
+        displayName: 'Netto',  // Vollständiger Name
         logoUrl: _generateRetailerLogoUrl('NETTO'),  // Dynamic logo URL
         primaryColor: '#FFD100',
-        secondaryColor: '#000000',  // Task 11.2: Netto Schwarz
-        iconUrl: '/assets/images/retailers/netto.png',  // Task 11.2: Scottie Icon
-        slogan: 'Dann geh doch zu Netto!',  // Task 11.2: Slogan
+        secondaryColor: '#000000',  // Netto Schwarz
+        iconUrl: '/assets/images/retailers/netto.png',  // Scottie Icon
+        slogan: 'Dann geh doch zu Netto!',  // Slogan
         description: 'Jeden Tag ein bisschen besser',
         categories: ['Getränke', 'Konserven', 'Molkereiprodukte', 'Fleisch & Wurst', 'Obst & Gemüse', 'Backshop'],
         isPremiumPartner: false,
         website: 'https://www.netto-online.de',
         storeCount: 7,
-        // Task 5a: Netto (schwarz) primär in Nord/Ost-Deutschland
+        // Netto (schwarz) primär in Nord/Ost-Deutschland
         availablePLZRanges: [
           PLZRange(startPLZ: '01000', endPLZ: '39999', regionName: 'Nord/Ost-Deutschland'),
         ],
@@ -302,38 +302,38 @@ class MockDataService {
       Retailer(
         id: 'netto_schwarz',
         name: 'netto scottie',
-        displayName: 'Netto Marken-Discount',  // Task 11.2: Vollständiger Name
+        displayName: 'Netto Marken-Discount',  // Vollständiger Name
         logoUrl: _generateRetailerLogoUrl('NETTO'),  // Dynamic logo URL
         primaryColor: '#FFD100',
-        secondaryColor: '#000000',  // Task 11.2: Netto Schwarz
-        iconUrl: '/assets/images/retailers/Scottie.png',  // Task 11.2: Scottie Icon
-        slogan: 'Dann geh doch zu Netto!',  // Task 11.2: Slogan
+        secondaryColor: '#000000',  // Netto Schwarz
+        iconUrl: '/assets/images/retailers/Scottie.png',  // Scottie Icon
+        slogan: 'Dann geh doch zu Netto!',  // Slogan
         description: 'Jeden Tag ein bisschen besser',
         categories: ['Getränke', 'Konserven', 'Molkereiprodukte', 'Fleisch & Wurst', 'Obst & Gemüse', 'Backshop'],
         isPremiumPartner: false,
         website: 'https://www.netto-online.de',
         storeCount: 7,
-        // Task 5a: Netto (schwarz) primär in Nord/Ost-Deutschland
+        // Netto (schwarz) primär in Nord/Ost-Deutschland
         availablePLZRanges: [
           PLZRange(startPLZ: '01000', endPLZ: '39999', regionName: 'Nord/Ost-Deutschland'),
         ],
       ),
-      // Task 5.6: Erweiterte Händler für vollständige deutsche LEH-Landschaft
+      // Erweiterte Händler für vollständige deutsche LEH-Landschaft
       Retailer(
         id: 'penny',
         name: 'PENNY',
         displayName: 'Penny',
         logoUrl: _generateRetailerLogoUrl('Penny'),  // Dynamic logo URL
         primaryColor: '#D4001A',
-        secondaryColor: '#FFE500',  // Task 11.2: Penny Gelb
-        iconUrl: '/assets/images/retailers/penny.png',  // Task 11.2: Icon
-        slogan: 'Erstmal zu Penny',  // Task 11.2: Slogan
+        secondaryColor: '#FFE500',  // Penny Gelb
+        iconUrl: '/assets/images/retailers/penny.png',  // Icon
+        slogan: 'Erstmal zu Penny',  // Slogan
         description: 'Preise gut, alles gut',
         categories: ['Getränke', 'Süßwaren', 'Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Wurst', 'Backwaren'],
         isPremiumPartner: false,
         website: 'https://www.penny.de',
         storeCount: 3,
-        // Task 5a: Penny ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        // Penny ist bundesweit verfügbar (keine PLZ-Beschränkungen)
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
@@ -341,33 +341,33 @@ class MockDataService {
         name: 'KAUFLAND',
         displayName: 'Kaufland',
         logoUrl: _generateRetailerLogoUrl('Kaufland'),  // Dynamic logo URL
-        primaryColor: '#E40521',  // Task 11.2: Korrigiertes Kaufland Rot
-        secondaryColor: '#FFFFFF',  // Task 11.2: Kaufland Weiß
-        iconUrl: '/assets/images/retailers/kaufland.png',  // Task 11.2: K Icon
-        slogan: 'Das ist für alle gut',  // Task 11.2: Slogan
+        primaryColor: '#E40521',  // Korrigiertes Kaufland Rot
+        secondaryColor: '#FFFFFF',  // Kaufland Weiß
+        iconUrl: '/assets/images/retailers/kaufland.png',  // K Icon
+        slogan: 'Das ist für alle gut',  // Slogan
         description: 'Das ist gut für alle',
         categories: ['Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Geflügel', 'Backwaren', 'Getränke', 'Tiefkühl', 'Bio-Produkte'],
         isPremiumPartner: true,
         website: 'https://www.kaufland.de',
         storeCount: 2,
-        // Task 5a: Kaufland ist bundesweit verfügbar (keine PLZ-Beschränkungen)
+        // Kaufland ist bundesweit verfügbar (keine PLZ-Beschränkungen)
         availablePLZRanges: [], // Bundesweit
       ),
       Retailer(
         id: 'nahkauf',
         name: 'nahkauf',
-        displayName: 'nahkauf',  // Task 11.2: Stylisiert mit Komma
+        displayName: 'nahkauf',  // Stylisiert mit Komma
         logoUrl: _generateRetailerLogoUrl('nahkauf'),  // Dynamic logo URL
-        primaryColor: '#003F74',  // Task 11.2: nahkauf Dunkelblau
-        secondaryColor: '#E30613',  // Task 11.2: nahkauf Rot
-        iconUrl: '/assets/images/retailers/nahkauf.png',  // Task 11.2: Icon
-        slogan: 'Einmal hin. Alles drin.',  // Task 11.2: Slogan
+        primaryColor: '#003F74',  // nahkauf Dunkelblau
+        secondaryColor: '#E30613',  // nahkauf Rot
+        iconUrl: '/assets/images/retailers/nahkauf.png',  // Icon
+        slogan: 'Einmal hin. Alles drin.',  // Slogan
         description: 'Einmal hin. Alles drin',
         categories: ['Frische-Theke', 'Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Fisch', 'Backwaren', 'Getränke', 'Bio-Produkte'],
         isPremiumPartner: true,
         website: 'https://www.nahkauf.de',
         storeCount: 2,
-        // Task 5a: nahkauf nur in NRW (Stores in PLZ 42277, 40249)
+        // nahkauf nur in NRW (Stores in PLZ 42277, 40249)
         availablePLZRanges: [
           PLZRange(startPLZ: '40000', endPLZ: '59999', regionName: 'Nordrhein-Westfalen'),
         ],
@@ -378,15 +378,15 @@ class MockDataService {
         displayName: 'Globus',
         logoUrl: _generateRetailerLogoUrl('Globus'),  // Dynamic logo URL
         primaryColor: '#0033A0',
-        secondaryColor: '#FF6600',  // Task 11.2: Globus Orange
-        iconUrl: '/assets/images/retailers/globus.png',  // Task 11.2: Globus Icon
-        slogan: 'Jeder Mensch ist anders',  // Task 11.2: Slogan
+        secondaryColor: '#FF6600',  // Globus Orange
+        iconUrl: '/assets/images/retailers/globus.png',  // Globus Icon
+        slogan: 'Jeder Mensch ist anders',  // Slogan
         description: 'Meine Zeit. Mein Globus',
         categories: ['Premium-Fleisch', 'Bio-Produkte', 'Molkereiprodukte', 'Obst & Gemüse', 'Backwaren', 'Getränke', 'Feinkost'],
         isPremiumPartner: true,
         website: 'https://www.globus.de',
         storeCount: 1,
-        // Task 5a: Globus in Süd/West-Deutschland (Store in PLZ 54974)
+        // Globus in Süd/West-Deutschland (Store in PLZ 54974)
         availablePLZRanges: [
           PLZRange(startPLZ: '50000', endPLZ: '99999', regionName: 'Süd/West-Deutschland'),
         ],
@@ -397,35 +397,35 @@ class MockDataService {
         displayName: 'norma',
         logoUrl: _generateRetailerLogoUrl('norma'),  // Dynamic logo URL
         primaryColor: '#009639',
-        secondaryColor: '#FFE500',  // Task 11.2: norma Gelb
-        iconUrl: '/assets/images/retailers/norma.png',  // Task 11.2: Icon
-        slogan: 'Hier kauf ich gern',  // Task 11.2: Slogan
+        secondaryColor: '#FFE500',  // norma Gelb
+        iconUrl: '/assets/images/retailers/norma.png',  // Icon
+        slogan: 'Hier kauf ich gern',  // Slogan
         description: 'Hier kauf ich gern',
         categories: ['Molkereiprodukte', 'Obst & Gemüse', 'Fleisch & Wurst', 'Backwaren', 'Getränke', 'Tiefkühl'],
         isPremiumPartner: false,
         website: 'https://www.norma.de',
         storeCount: 1,
-        // Task 5a: norma in Brandenburg/NRW (Store in PLZ 14503 Teltow)
+        // norma in Brandenburg/NRW (Store in PLZ 14503 Teltow)
         availablePLZRanges: [
           PLZRange(startPLZ: '14500', endPLZ: '59999', regionName: 'Brandenburg bis NRW'),
         ],
       ),
-      // Task 5a: Beispiel für regionalen Händler (BioCompany)
+      // Beispiel für regionalen Händler (BioCompany)
       Retailer(
         id: 'biocompany',
         name: 'BIOCOMPANY',
-        displayName: 'Bio Company',  // Task 11.2: Mit Space
+        displayName: 'Bio Company',  // Mit Space
         logoUrl: _generateRetailerLogoUrl('BioCompany'),  // Dynamic logo URL
         primaryColor: '#7CB342',
-        secondaryColor: '#8BC34A',  // Task 11.2: BioCompany Hellgrün
-        iconUrl: '/assets/images/retailers/biocompany.png',  // Task 11.2: Icon
-        slogan: 'Bio für alle',  // Task 11.2: Slogan
+        secondaryColor: '#8BC34A',  // BioCompany Hellgrün
+        iconUrl: '/assets/images/retailers/biocompany.png',  // Icon
+        slogan: 'Bio für alle',  // Slogan
         description: 'Bio für die Stadt',
         categories: ['Bio-Obst', 'Bio-Gemüse', 'Bio-Milchprodukte', 'Bio-Backwaren', 'Naturkosmetik'],
         isPremiumPartner: true,
         website: 'https://www.biocompany.de',
         storeCount: 0, // Keine Mock-Filialen für Demo
-        // Task 5a: BioCompany nur in Berlin/Brandenburg
+        // BioCompany nur in Berlin/Brandenburg
         availablePLZRanges: [
           PLZRange(startPLZ: '10000', endPLZ: '16999', regionName: 'Berlin/Brandenburg'),
         ],
@@ -435,7 +435,7 @@ class MockDataService {
 
 
   Future<void> _generateStores() async {
-    // Task 5.6: Realistische Berliner Standorte für alle 10 deutschen LEH-Händler
+    // Realistische Berliner Standorte für alle 10 deutschen LEH-Händler
     // 35+ Filialen mit präzisen GPS-Koordinaten für Demo
     final realisticStoreLocations = {
       'edeka': [

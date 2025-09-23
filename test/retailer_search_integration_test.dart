@@ -1,4 +1,4 @@
-// Integration Tests für Task 11.7.3: End-to-End Retailer-Suche
+// Integration Tests für End-to-End Retailer-Suche
 // Testet vollständige Integration zwischen RetailersProvider, LocationProvider und UI
 
 import 'package:flutter_test/flutter_test.dart';
@@ -9,7 +9,7 @@ import 'package:flashfeed/services/gps/test_gps_service.dart';
 import 'package:flashfeed/repositories/mock_retailers_repository.dart';
 
 void main() {
-  group('Task 11.7.3: End-to-End Retailer Search Integration', () {
+  group('End-to-End Retailer Search Integration', () {
     late MockDataService testMockDataService;
     late RetailersProvider retailersProvider;
     late LocationProvider locationProvider;

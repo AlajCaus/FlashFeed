@@ -124,7 +124,7 @@ lib/
 - 150+ Kategorien-Mappings ✅
 **Status:** ✅ IMPLEMENTIERT
 
-#### Task 5.6: GPS-Koordinaten & Standorte
+#### GPS-Koordinaten & Standorte
 - 35+ Berliner Filialen implementiert ✅
 - 6 Dezimalstellen GPS-Präzision ✅
 - Alle 10 Händler mit realistischen Standorten ✅
@@ -141,7 +141,7 @@ lib/
 
 ---
 
-## ✅ Task 5a: PLZ-basierte Retailer-Verfügbarkeit
+## ✅ PLZ-basierte Retailer-Verfügbarkeit
 **Status in todo.md:** [x] Abgeschlossen
 
 ### Verifizierung:
@@ -225,7 +225,7 @@ lib/
 - Test-Datei erstellt ✅
 **Status:** ✅ IMPLEMENTIERT
 
-#### Task 5c.4: UI-Logic
+#### UI-Logic
 - unavailableOffers getter implementiert ✅
 - hasUnavailableOffers Property hinzugefügt ✅
 - regionalWarnings mit passenden Meldungen ✅
@@ -233,7 +233,7 @@ lib/
 - isOfferLocked() Freemium-Logic implementiert ✅
 **Status:** ✅ IMPLEMENTIERT
 
-#### Task 5c.5: Cross-Provider Integration & Testing
+#### Cross-Provider Integration & Testing
 - 7 neue Tests in cross_provider_integration_test.dart ✅
 - Unavailable Offers Detection Tests ✅
 - Regional Warnings Generation Tests ✅
@@ -327,7 +327,7 @@ lib/
 - ✅ Task 4b: Deployment Setup
 - ✅ Task 4c-4e: Compiler Fixes
 - ✅ Task 5: Mock-Daten-Service (alle 7 Subtasks)
-- ✅ Task 5a: PLZ-basierte Verfügbarkeit
+- ✅ PLZ-basierte Verfügbarkeit
 - ✅ Task 6: UI Framework (alle 6 Subtasks)
 - ✅ Task 7: App Provider Integration
 - ✅ Task 8: Theme & Responsive Design

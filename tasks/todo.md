@@ -38,7 +38,7 @@
 
 ## 🎯 **AKTUELLE PRIORITÄTEN**
 
-### **Task 11.7: Testing** ✅ **ABGESCHLOSSEN (100%)**
+### **Testing** ✅ **ABGESCHLOSSEN (100%)**
 
 **11.7.1: Erweiterte RetailersProvider Tests** ✅ **ABGESCHLOSSEN**
 - [x] Unit Tests für alle UI-Helper-Methoden erstellt
@@ -745,11 +745,11 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 ## 🎯 **AKTIONSPLAN: LOSE ENDEN BESEITIGEN**
 
 ### **✅ ABGESCHLOSSENE FIXES:**
-1. **Task 11.8: Timer-Leak** - KEIN echter Timer-Leak, war disposed-after-use Problem
+1. **Timer-Leak** - KEIN echter Timer-Leak, war disposed-after-use Problem
 2. **Integration Test Fehler** - Double-disposal in Test behoben
 3. **Test Cleanup** - Invalid location Test resettet jetzt korrekt
 
-### **✅ TASK 11.8: TIMER-LEAK FIX** ✅ **ABGESCHLOSSEN**
+### **✅ TIMER-LEAK FIX** ✅ **ABGESCHLOSSEN**
 
 **PROBLEM IDENTIFIZIERT:**
 - KEIN Timer-Leak! Timer-Cleanup war bereits korrekt implementiert
@@ -775,7 +775,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ---
 
-### **✅ TASK 11.9: PERFORMANCE TESTS** ✅ **ABGESCHLOSSEN**
+### **✅ PERFORMANCE TESTS** ✅ **ABGESCHLOSSEN**
 
 **STATUS:** ALLE TESTS BESTEHEN!
 - retailer_provider_performance_test.dart: 17/17 ✅
@@ -789,7 +789,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ---
 
-### **✅ TASK 11.10: WIDGET-TESTS** ✅ **AUTOMATISCH GELÖST**
+### **✅ WIDGET-TESTS** ✅ **AUTOMATISCH GELÖST**
 
 **PROBLEM:** Consumer-Widgets verursachen Deadlocks in Tests
 
