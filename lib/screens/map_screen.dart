@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -31,7 +31,7 @@ class _MapScreenState extends State<MapScreen> {
   static const Color textSecondary = Color(0xFF666666);
   static const Color userLocationColor = Color(0xFF4285F4);
 
-  // Händler-Farben
+  // Händler-Farben (Fallback wenn kein Logo vorhanden)
   static const Map<String, Color> retailerColors = {
     'EDEKA': Color(0xFF005CA9),
     'REWE': Color(0xFFCC071E),
@@ -42,6 +42,7 @@ class _MapScreenState extends State<MapScreen> {
     'netto scottie': Color(0xFFFFD100),
     'Penny': Color(0xFFD91F26),
     'Kaufland': Color(0xFFE10915),
+    'KAUFLAND': Color(0xFFE10915),
     'nahkauf': Color(0xFF004B93),
     'Metro': Color(0xFF003D7D),
     'Norma': Color(0xFFE30613),
@@ -50,10 +51,35 @@ class _MapScreenState extends State<MapScreen> {
     'Müller': Color(0xFFFF6900),
   };
 
+  // Händler-Logos Mapping
+  static const Map<String, String> retailerLogos = {
+    'EDEKA': 'assets/images/retailers/edeka.jpg',
+    'Edeka': 'assets/images/retailers/edeka.jpg',
+    'edeka': 'assets/images/retailers/edeka.jpg',
+    'REWE': 'assets/images/retailers/rewe.png',
+    'ALDI': 'assets/images/retailers/Aldi.png',
+    'ALDI SÜD': 'assets/images/retailers/Aldi_Sued.jpg',
+    'LIDL': 'assets/images/retailers/lidl.png',
+    'NETTO': 'assets/images/retailers/netto.png',
+    'netto scottie': 'assets/images/retailers/Scottie.png',
+    'Penny': 'assets/images/retailers/penny.png',
+    'PENNY': 'assets/images/retailers/penny.png',
+    'Kaufland': 'assets/images/retailers/kaufland.png',
+    'KAUFLAND': 'assets/images/retailers/kaufland.png',
+    'nahkauf': 'assets/images/retailers/nahkauf.png',
+    'Norma': 'assets/images/retailers/norma.png',
+    'NORMA': 'assets/images/retailers/norma.png',
+    'Globus': 'assets/images/retailers/globus.png',
+    'BioCompany': 'assets/images/retailers/biocompany.png',
+    'Marktkauf': 'assets/images/retailers/marktkauf.png',
+    'real': 'assets/images/retailers/real.png',
+  };
+
   double _radiusKm = 10.0;
   Store? _selectedStore;
   final MapController _mapController = MapController();
   bool _isMapReady = false;
+  double _currentZoom = 13.0;
 
   // Default center (Berlin Mitte)
   static const LatLng _defaultCenter = LatLng(52.520008, 13.404954);
@@ -61,9 +87,25 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    // Ensure location data is loaded
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LocationProvider>().ensureLocationData();
+    // Ensure location data is loaded and initialize stores
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      final locationProvider = context.read<LocationProvider>();
+      final retailersProvider = context.read<RetailersProvider>();
+
+      // Ensure location data is loaded
+      await locationProvider.ensureLocationData();
+
+      if (!mounted) return;
+
+      // Initialize all stores for the map with a small delay to avoid build conflicts
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (!mounted) return;
+
+      // Initialize all stores for the map
+      await retailersProvider.initializeStores();
     });
   }
 
@@ -88,13 +130,24 @@ class _MapScreenState extends State<MapScreen> {
             mapController: _mapController,
             options: MapOptions(
               initialCenter: mapCenter,
-              initialZoom: 13.0,
+              initialZoom: _currentZoom,
               minZoom: 10.0,
               maxZoom: 18.0,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all,
+                scrollWheelVelocity: 0.005,
+              ),
               onMapReady: () {
                 setState(() {
                   _isMapReady = true;
                 });
+              },
+              onPositionChanged: (position, hasGesture) {
+                if (position.zoom != null) {
+                  setState(() {
+                    _currentZoom = position.zoom!;
+                  });
+                }
               },
               onTap: (_, __) {
                 // Deselect store when tapping on map
@@ -111,20 +164,21 @@ class _MapScreenState extends State<MapScreen> {
                 maxZoom: 18,
               ),
 
-              // Radius Circle around user location
-              if (hasLocation)
-                CircleLayer(
-                  circles: [
-                    CircleMarker(
-                      point: LatLng(locationProvider.latitude!, locationProvider.longitude!),
-                      radius: _radiusKm * 1000, // Convert km to meters
-                      useRadiusInMeter: true,
-                      color: primaryBlue.withOpacity(0.1),
-                      borderColor: primaryBlue.withOpacity(0.3),
-                      borderStrokeWidth: 2,
-                    ),
-                  ],
-                ),
+              // Radius Circle around center point
+              CircleLayer(
+                circles: [
+                  CircleMarker(
+                    point: hasLocation
+                        ? LatLng(locationProvider.latitude!, locationProvider.longitude!)
+                        : _defaultCenter,
+                    radius: _radiusKm * 1000, // Convert km to meters
+                    useRadiusInMeter: true,
+                    color: primaryBlue.withOpacity(0.1),
+                    borderColor: primaryBlue.withOpacity(0.3),
+                    borderStrokeWidth: 2,
+                  ),
+                ],
+              ),
 
               // Store Markers
               MarkerLayer(
@@ -173,6 +227,14 @@ class _MapScreenState extends State<MapScreen> {
           child: _buildRadiusFilter(),
         ),
 
+        // Zoom Controls (Right side, above GPS button)
+        if (kIsWeb || !ResponsiveHelper.isMobile(context))
+          Positioned(
+            right: 16,
+            bottom: 160,
+            child: _buildZoomControls(),
+          ),
+
         // GPS Button (Bottom-Right)
         Positioned(
           bottom: 100,
@@ -199,10 +261,16 @@ class _MapScreenState extends State<MapScreen> {
     final markers = <Marker>[];
     final hasLocation = locationProvider.hasLocation;
 
+    // Debug output
+    debugPrint('🗺️ Building store markers:');
+    debugPrint('  - Has location: $hasLocation');
+    debugPrint('  - Radius: $_radiusKm km');
+    debugPrint('  - Total stores available: ${retailersProvider.allStores.length}');
+
     // Get stores near location if available, otherwise use all stores
     List<Store> stores;
     if (hasLocation) {
-      // Use searchStores with location filter
+      // Filter stores by radius from user location
       stores = retailersProvider.allStores.where((store) {
         if (store.longitude == null) return false;
         final distance = _calculateDistance(
@@ -213,12 +281,20 @@ class _MapScreenState extends State<MapScreen> {
         );
         return distance <= _radiusKm;
       }).toList();
+      debugPrint('  - Stores in radius: ${stores.length}');
     } else {
-      // Use default stores for Berlin area
-      stores = retailersProvider.allStores
-          .where((store) => store.city.toLowerCase().contains('berlin'))
-          .take(20) // Limit to 20 stores for performance
-          .toList();
+      // No location available - show stores around default center (Berlin)
+      stores = retailersProvider.allStores.where((store) {
+        if (store.longitude == null) return false;
+        final distance = _calculateDistance(
+          _defaultCenter.latitude,
+          _defaultCenter.longitude,
+          store.latitude,
+          store.longitude,
+        );
+        return distance <= _radiusKm;
+      }).toList();
+      debugPrint('  - Stores in radius (from Berlin center): ${stores.length}');
     }
 
     // Create markers for each store
@@ -292,21 +368,206 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _buildGPSButton(LocationProvider locationProvider) {
-    return FloatingActionButton(
-      backgroundColor: primaryBlue,
-      onPressed: () async {
-        // Request location and center map
-        await locationProvider.ensureLocationData();
+  Widget _buildZoomControls() {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(51),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Zoom In Button
+              Material(
+                color: Colors.transparent,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                child: InkWell(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  onTap: _isMapReady
+                      ? () {
+                          final newZoom = (_currentZoom + 1).clamp(10.0, 18.0);
+                          _mapController.move(
+                            _mapController.camera.center,
+                            newZoom,
+                          );
+                        }
+                      : null,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.add,
+                      color: _currentZoom < 18.0 ? Colors.black87 : Colors.grey,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                height: 1,
+                color: Colors.grey.shade300,
+              ),
+              // Zoom Out Button
+              Material(
+                color: Colors.transparent,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                child: InkWell(
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                  onTap: _isMapReady
+                      ? () {
+                          final newZoom = (_currentZoom - 1).clamp(10.0, 18.0);
+                          _mapController.move(
+                            _mapController.camera.center,
+                            newZoom,
+                          );
+                        }
+                      : null,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.remove,
+                      color: _currentZoom > 10.0 ? Colors.black87 : Colors.grey,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Optional: Zoom level indicator
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(26),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Text(
+            '${_currentZoom.toStringAsFixed(1)}x',
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-        if (locationProvider.hasLocation && _isMapReady) {
-          _mapController.move(
-            LatLng(locationProvider.latitude!, locationProvider.longitude!),
-            14.0,
+  Widget _buildGPSButton(LocationProvider locationProvider) {
+    final hasLocation = locationProvider.hasLocation;
+    final isGPSLocation = locationProvider.currentLocationSource == LocationSource.gps;
+
+    return FloatingActionButton(
+      backgroundColor: isGPSLocation ? primaryGreen : primaryBlue,
+      onPressed: () async {
+        // Show loading indicator
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                SizedBox(width: 16),
+                Text('GPS-Standort wird ermittelt...'),
+              ],
+            ),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        try {
+          // Force GPS location request
+          final success = await locationProvider.getCurrentLocation();
+
+          if (success && locationProvider.hasLocation && _isMapReady) {
+            // Move map to GPS location
+            _mapController.move(
+              LatLng(locationProvider.latitude!, locationProvider.longitude!),
+              15.0,
+            );
+
+            // Reload stores for new location
+            await context.read<RetailersProvider>().initializeStores();
+
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('📍 GPS-Standort gefunden'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          } else {
+            // Try fallback location methods
+            final fallbackSuccess = await locationProvider.ensureLocationData(forceRefresh: true);
+
+            if (fallbackSuccess && locationProvider.hasLocation && _isMapReady) {
+              _mapController.move(
+                LatLng(locationProvider.latitude!, locationProvider.longitude!),
+                14.0,
+              );
+
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('📍 Standort verwendet: ${locationProvider.userPLZ ?? "Berlin"}'),
+                  backgroundColor: Colors.orange,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('❌ GPS nicht verfügbar. Bitte Standort-Berechtigung prüfen.'),
+                  backgroundColor: Colors.red,
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ Fehler: ${e.toString()}'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
           );
         }
       },
-      child: const Icon(Icons.my_location, color: Colors.white),
+      child: Icon(
+        isGPSLocation ? Icons.gps_fixed : Icons.gps_not_fixed,
+        color: Colors.white,
+      ),
     );
   }
 
@@ -330,6 +591,7 @@ class _MapScreenState extends State<MapScreen> {
 
   Widget _buildStorePin(Store store) {
     final isSelected = _selectedStore?.id == store.id;
+    final logoPath = retailerLogos[store.retailerName];
     final color = retailerColors[store.retailerName] ?? primaryGreen;
 
     return AnimatedScale(
@@ -339,31 +601,58 @@ class _MapScreenState extends State<MapScreen> {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-            bottomLeft: Radius.circular(20),
-            bottomRight: Radius.circular(0),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? color : Colors.white,
+            width: isSelected ? 3 : 2,
           ),
-          border: Border.all(color: Colors.white, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(77),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withAlpha(102),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Center(
-          child: Text(
-            store.retailerName.substring(0, 1),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: logoPath != null
+              ? Image.asset(
+                  logoPath,
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback wenn Logo nicht geladen werden kann
+                    return Container(
+                      color: color,
+                      child: Center(
+                        child: Text(
+                          store.retailerName.substring(0, 1),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                )
+              : Container(
+                  color: color,
+                  child: Center(
+                    child: Text(
+                      store.retailerName.substring(0, 1),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
         ),
       ),
     );
@@ -421,18 +710,45 @@ class _MapScreenState extends State<MapScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: retailerColors[store.retailerName] ?? primaryGreen,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Center(
-                  child: Text(
-                    store.retailerName.substring(0, 2).toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: retailerLogos[store.retailerName] != null
+                      ? Image.asset(
+                          retailerLogos[store.retailerName]!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: retailerColors[store.retailerName] ?? primaryGreen,
+                              child: Center(
+                                child: Text(
+                                  store.retailerName.substring(0, 2).toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: retailerColors[store.retailerName] ?? primaryGreen,
+                          child: Center(
+                            child: Text(
+                              store.retailerName.substring(0, 2).toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -505,18 +821,45 @@ class _MapScreenState extends State<MapScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: retailerColors[store.retailerName] ?? primaryGreen,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Center(
-                  child: Text(
-                    store.retailerName.substring(0, 2).toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: retailerLogos[store.retailerName] != null
+                      ? Image.asset(
+                          retailerLogos[store.retailerName]!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: retailerColors[store.retailerName] ?? primaryGreen,
+                              child: Center(
+                                child: Text(
+                                  store.retailerName.substring(0, 2).toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: retailerColors[store.retailerName] ?? primaryGreen,
+                          child: Center(
+                            child: Text(
+                              store.retailerName.substring(0, 2).toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
               ),
               SizedBox(width: ResponsiveHelper.space3),

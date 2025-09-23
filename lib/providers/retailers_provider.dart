@@ -1279,6 +1279,17 @@ class RetailersProvider extends ChangeNotifier {
     }
   }
   
+  /// Öffentliche Methode um Stores zu initialisieren
+  Future<void> initializeStores() async {
+    if (_allStores.isEmpty) {
+      await _loadAllStores();
+      // Nur notifyListeners aufrufen wenn nicht disposed
+      if (!_disposed) {
+        notifyListeners();
+      }
+    }
+  }
+
   /// Lädt alle Stores von allen Händlern
   Future<void> _loadAllStores() async {
     try {
