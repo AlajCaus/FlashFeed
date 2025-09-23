@@ -83,7 +83,7 @@ class MockOffersRepository implements OffersRepository {
       price: 3.49,
       originalPrice: 4.99,
       discountPercent: 30.0,
-      storeAddress: 'ALDI SÜD, Professorweg 1, 10119 Berlin',
+      storeAddress: 'ALDI SÜD, Hauptstraße 1, 10119 Berlin',
       storeId: 'aldi_berlin_demo',
       validUntil: DateTime.now().add(Duration(hours: 8)),
       storeLat: 52.5230,
@@ -95,7 +95,7 @@ class MockOffersRepository implements OffersRepository {
       productName: 'Joghurt 150g Becher',
       originalCategory: 'Milcherzeugnisse', 
       price: 0.35,
-      storeAddress: 'ALDI SÜD, Professorweg 1, 10119 Berlin',
+      storeAddress: 'ALDI SÜD, Hauptstraße 1, 10119 Berlin',
       storeId: 'aldi_berlin_demo',
       validUntil: DateTime.now().add(Duration(days: 5)),
       storeLat: 52.5230,
@@ -286,12 +286,12 @@ class MockOffersRepository implements OffersRepository {
     _mockOffers.clear();
   }
   
-  /// Professor-Demo: Sofortigen Deal hinzufügen
+  /// Demo: Sofortigen Deal hinzufügen
   static void addInstantDemoOffer() {
     final demoOffer = Offer(
       id: 'demo_${DateTime.now().millisecondsSinceEpoch}',
       retailer: 'DEMO',
-      productName: 'Professor Demo Produkt',
+      productName: 'Demo Produkt',
       originalCategory: 'Demo-Kategorie',
       price: 1.99,
       originalPrice: 9.99,

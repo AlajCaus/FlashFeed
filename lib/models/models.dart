@@ -679,7 +679,7 @@ enum OfferSortType {
   nameAsc,         // Produktname A-Z
 }
 
-/// Simulator für Echtzeit-Rabatte (für Professor-Demo)
+/// Simulator für Echtzeit-Rabatte (für Demo)
 class FlashDealSimulator {
   static List<FlashDeal> generateRandomDeals() {
     final random = DateTime.now().millisecondsSinceEpoch;
@@ -724,7 +724,7 @@ class FlashDealSimulator {
     ];
   }
   
-  // Professor-Demo: Sofortige Rabatt-Generierung
+  // Demo: Sofortige Rabatt-Generierung
   static FlashDeal generateInstantDemoDeal() {
     final now = DateTime.now();
     return FlashDeal(
@@ -733,7 +733,7 @@ class FlashDealSimulator {
       brand: 'Landfleisch',
       retailer: 'ALDI',
       storeName: 'ALDI SÜD',
-      storeAddress: 'Professorweg 1, 10115 Berlin',
+      storeAddress: 'Hauptstraße 1, 10115 Berlin',
       originalPriceCents: 499,
       flashPriceCents: 299,
       discountPercentage: 40,

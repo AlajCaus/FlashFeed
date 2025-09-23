@@ -95,7 +95,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              // Activate Premium via Professor Demo
+              // Activate Premium via Demo
               context.read<UserProvider>().activatePremiumDemo();
               // Navigate to Map after activation
               context.read<AppProvider>().navigateToPanel(1);
@@ -104,7 +104,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryGreen,
             ),
-            child: const Text('Professor Demo'),
+            child: const Text('Demo'),
           ),
         ],
       ),

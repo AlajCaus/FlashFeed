@@ -342,7 +342,7 @@ class FlashDealsProvider extends ChangeNotifier {
     }
   }
   
-  // Task 14: Enhanced Professor Demo - Generate Impressive Flash Deals
+  // Task 14: Enhanced Demo - Generate Impressive Flash Deals
   FlashDeal generateInstantFlashDeal() {
     try {
       // Generate impressive deal with short duration (5-15 minutes)
@@ -359,7 +359,7 @@ class FlashDealsProvider extends ChangeNotifier {
         _startCountdownTimer();
       }
 
-      debugPrint('🎓 Professor Demo: Beeindruckender Flash Deal generiert!');
+      debugPrint('🚀 Demo: Beeindruckender Flash Deal generiert!');
       debugPrint('   → ${deal.productName} (-${deal.discountPercentage}%)');
       debugPrint('   → Läuft ab in ${deal.remainingMinutes} Minuten');
 

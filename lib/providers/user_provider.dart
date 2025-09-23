@@ -301,7 +301,7 @@ class UserProvider extends ChangeNotifier {
     _hasMapFeatures = isPremium;
   }
   
-  // Professor Demo Methods
+  // Demo Methods
   void enableDemoMode() {
     _userTier = UserTier.premium;
     _selectedRetailers = List.from(_premiumDemoRetailers); // Set all 4 retailers for demo
@@ -310,7 +310,7 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Task 7: Alias for Professor Demo activation
+  // Task 7: Alias for Demo activation
   void activatePremiumDemo() {
     enableDemoMode();
   }

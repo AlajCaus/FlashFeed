@@ -178,8 +178,8 @@ class AppProvider extends ChangeNotifier {
   
   bool get hasUserLocation => _userPLZ != null && _userPLZ!.isNotEmpty;
   
-  // Professor Demo Helper
-  void triggerProfessorDemo() {
+  // Demo Helper
+  void triggerDemo() {
     setLoading(true);
     // Simulate demo delay
     Future.delayed(Duration(milliseconds: 800), () {
