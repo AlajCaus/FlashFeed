@@ -164,7 +164,7 @@ class FlashDealsProvider extends ChangeNotifier {
     debugPrint('🔄 Timer state reset: ${_flashDeals.length} valid deals remaining');
   }
   
-  // Apply regional filtering based on DISTANCE, not just retailer availability
+  // Apply regional filtering based on DISTANCE AND retailer availability
   void _applyRegionalFiltering() {
     // Get user location from LocationProvider
     final locationProvider = _locationProvider;
@@ -180,7 +180,7 @@ class FlashDealsProvider extends ChangeNotifier {
     // Maximum distance for Flash Deals (in km) - should be reachable quickly
     const double maxDistanceKm = 500.0; // Temporarily increased for demo/testing
 
-    // Filter deals by distance
+    // Filter deals by distance AND retailer availability
     final filteredDeals = <FlashDeal>[];
     for (final deal in _flashDeals) {
       final distance = _calculateDistance(
@@ -188,16 +188,22 @@ class FlashDealsProvider extends ChangeNotifier {
         deal.storeLat, deal.storeLng
       );
 
-      if (distance <= maxDistanceKm) {
+      // Check both distance AND if retailer is available in region
+      final isRetailerAvailable = _availableRetailers.isEmpty ||
+                                  _availableRetailers.contains(deal.retailer);
+
+      if (distance <= maxDistanceKm && isRetailerAvailable) {
         filteredDeals.add(deal);
         debugPrint('✅ Flash Deal included: ${deal.productName} at ${deal.storeName} (${distance.toStringAsFixed(1)}km)');
-      } else {
+      } else if (distance > maxDistanceKm) {
         debugPrint('❌ Flash Deal too far: ${deal.productName} at ${deal.storeName} (${distance.toStringAsFixed(1)}km)');
+      } else {
+        debugPrint('❌ Flash Deal retailer not available: ${deal.retailer} not in region');
       }
     }
 
     _flashDeals = filteredDeals;
-    debugPrint('📍 Regional filtering by distance: $originalCount → ${_flashDeals.length} deals (within ${maxDistanceKm}km)');
+    debugPrint('📍 Regional filtering by distance and retailer: $originalCount → ${_flashDeals.length} deals (within ${maxDistanceKm}km)');
   }
   
   // Initialize Provider-Callbacks
