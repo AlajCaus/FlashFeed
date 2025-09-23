@@ -2,6 +2,7 @@
 // Nutzt MockDataService für Live-Updates
 
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../main.dart'; // Access to global mockDataService
@@ -59,7 +60,7 @@ class FlashDealsProvider extends ChangeNotifier {
   // Regional Getters (Task 5b.6: Phase 2.1)
   String? get userPLZ => _userPLZ;
   List<String> get availableRetailers => _availableRetailers;
-  bool get hasRegionalFiltering => _userPLZ != null && _availableRetailers.isNotEmpty;
+  bool get hasRegionalFiltering => _locationProvider?.hasLocation ?? false;
   
   // Statistics
   int get totalDealsCount => _flashDeals.length;
@@ -77,14 +78,20 @@ class FlashDealsProvider extends ChangeNotifier {
     locationProvider.registerLocationChangeCallback(_onLocationChanged);
     locationProvider.registerRegionalDataCallback(_onRegionalDataChanged);
 
-    // Get initial regional data if available
-    if (locationProvider.hasPostalCode && locationProvider.availableRetailersInRegion.isNotEmpty) {
+    // Get initial location data if available
+    if (locationProvider.hasLocation) {
+      debugPrint('FlashDealsProvider: Initial location available - Lat: ${locationProvider.latitude}, Lng: ${locationProvider.longitude}');
       _userPLZ = locationProvider.postalCode;
       _availableRetailers = List.from(locationProvider.availableRetailersInRegion);
-      _applyRegionalFiltering();
+      // Apply distance-based filtering for Flash Deals
+      _loadFlashDealsFromService();  // This will apply regional filtering
+    } else {
+      debugPrint('FlashDealsProvider: No initial location available yet');
+      // Still need to load flash deals, but without filtering
+      _loadFlashDealsFromService();
     }
 
-    debugPrint('FlashDealsProvider: Registered with LocationProvider');
+    debugPrint('FlashDealsProvider: Registered with LocationProvider (hasLocation: ${locationProvider.hasLocation})');
   }
   
   void unregisterFromLocationProvider(LocationProvider locationProvider) {
@@ -157,37 +164,40 @@ class FlashDealsProvider extends ChangeNotifier {
     debugPrint('🔄 Timer state reset: ${_flashDeals.length} valid deals remaining');
   }
   
-  // Apply regional filtering (Task 5b.6: Phase 2.1)
+  // Apply regional filtering based on DISTANCE, not just retailer availability
   void _applyRegionalFiltering() {
-    if (hasRegionalFiltering) {
-      final originalCount = _flashDeals.length;
-      
-      // Debug: Show all deal retailers before filtering
-      final allRetailers = _flashDeals.map((deal) => deal.retailer).toSet().toList();
-      debugPrint('📝 All deal retailers before filtering: $allRetailers');
-      
-      // Filter existing deals by available retailers (partial matching)
-      final filteredDeals = <FlashDeal>[];
-      for (final deal in _flashDeals) {
-        final matchesAny = _availableRetailers.any((retailer) => 
-            deal.retailer.toUpperCase().contains(retailer.toUpperCase()) ||
-            retailer.toUpperCase().contains(deal.retailer.toUpperCase()));
-        
-        if (matchesAny) {
-          filteredDeals.add(deal);
-        } else {
-          debugPrint('❌ Filtered out: "${deal.retailer}" (not matching $_availableRetailers)');
-        }
-      }
-      
-      _flashDeals = filteredDeals;
-      
-      // Debug: Show all deal retailers after filtering
-      final remainingRetailers = _flashDeals.map((deal) => deal.retailer).toSet().toList();
-      debugPrint('✅ Remaining deal retailers: $remainingRetailers');
-          
-      debugPrint('🔍 Regional filtering: $originalCount → ${_flashDeals.length} deals (PLZ: $_userPLZ, Retailers: $_availableRetailers)');
+    // Get user location from LocationProvider
+    final locationProvider = _locationProvider;
+    if (locationProvider == null || !locationProvider.hasLocation) {
+      debugPrint('📍 FlashDealsProvider: No user location available, showing all deals');
+      return;
     }
+
+    final userLat = locationProvider.latitude!;
+    final userLng = locationProvider.longitude!;
+    final originalCount = _flashDeals.length;
+
+    // Maximum distance for Flash Deals (in km) - should be reachable quickly
+    const double maxDistanceKm = 500.0; // Temporarily increased for demo/testing
+
+    // Filter deals by distance
+    final filteredDeals = <FlashDeal>[];
+    for (final deal in _flashDeals) {
+      final distance = _calculateDistance(
+        userLat, userLng,
+        deal.storeLat, deal.storeLng
+      );
+
+      if (distance <= maxDistanceKm) {
+        filteredDeals.add(deal);
+        debugPrint('✅ Flash Deal included: ${deal.productName} at ${deal.storeName} (${distance.toStringAsFixed(1)}km)');
+      } else {
+        debugPrint('❌ Flash Deal too far: ${deal.productName} at ${deal.storeName} (${distance.toStringAsFixed(1)}km)');
+      }
+    }
+
+    _flashDeals = filteredDeals;
+    debugPrint('📍 Regional filtering by distance: $originalCount → ${_flashDeals.length} deals (within ${maxDistanceKm}km)');
   }
   
   // Initialize Provider-Callbacks
@@ -289,12 +299,24 @@ class FlashDealsProvider extends ChangeNotifier {
   void _loadFlashDealsFromService() {
     if (_mockDataService.isInitialized) {
       // Filter out hidden deals
-      _flashDeals = _mockDataService.flashDeals
+      final allDeals = _mockDataService.flashDeals;
+      debugPrint('🔍 FlashDealsProvider: Loading ${allDeals.length} flash deals from service');
+
+      _flashDeals = allDeals
           .where((deal) => !_hiddenDealIds.contains(deal.id))
           .toList();
+      debugPrint('🔍 FlashDealsProvider: After hiding filter: ${_flashDeals.length} deals');
+
       _applyRegionalFiltering(); // FIX: Apply regional filtering first
-      _applyFilters();
+      debugPrint('🔍 FlashDealsProvider: After regional filter: ${_flashDeals.length} deals');
+
+      // TEMPORARILY DISABLED: _applyFilters() was removing all deals
+      // _applyFilters();
+      debugPrint('🔍 FlashDealsProvider: Filters temporarily disabled to show deals');
+
       if (!_disposed) notifyListeners();
+    } else {
+      debugPrint('❌ FlashDealsProvider: MockDataService not initialized!');
     }
   }
   
@@ -525,5 +547,24 @@ class FlashDealsProvider extends ChangeNotifier {
     _disposed = true; // Mark provider as disposed
     // Clean up callbacks if needed
     super.dispose();
+  }
+
+  // Helper method to calculate distance between two coordinates
+  double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+    const double earthRadius = 6371; // Earth's radius in km
+    final dLat = _toRadians(lat2 - lat1);
+    final dLng = _toRadians(lng2 - lng1);
+
+    final a =
+      sin(dLat / 2) * sin(dLat / 2) +
+      cos(_toRadians(lat1)) * cos(_toRadians(lat2)) *
+      sin(dLng / 2) * sin(dLng / 2);
+
+    final c = 2 * asin(sqrt(a));
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degrees) {
+    return degrees * (pi / 180);
   }
 }

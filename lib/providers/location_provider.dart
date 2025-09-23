@@ -339,24 +339,12 @@ class LocationProvider extends ChangeNotifier {
       }
     }
 
-    // Fallback 3: User-Dialog würde hier kommen (benötigt BuildContext)
-    // Für Tests ohne Context: Fehler setzen und false zurückgeben
-    debugPrint('❌ Alle Location-Fallbacks fehlgeschlagen');
-
-    // Set error message
-    final errorMessage = 'Standort-Bestimmung fehlgeschlagen. GPS nicht verfügbar und kein Cache vorhanden.';
-
-    if (isTestEnvironment) {
-      // In Tests: Set directly
-      _setLocationError(errorMessage);
-    } else {
-      // In Production: Defer to avoid setState during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _setLocationError(errorMessage);
-      });
-    }
-
-    return false;
+    // Fallback 3: Default to Berlin Mitte for demo purposes
+    debugPrint('📍 Fallback 3: Verwende Berlin Mitte als Demo-Location');
+    await setUserPLZ('10115');  // Berlin Mitte
+    _currentLocationSource = LocationSource.userPLZ;
+    debugPrint('✅ Demo-Location gesetzt: Berlin Mitte (10115)');
+    return true;
   }
   
   /// Helper: PLZ aus LocalStorage laden

@@ -493,11 +493,11 @@ class MockDataService {
         {'name': 'Kaufland Spandau', 'street': 'Neuendorfer Straße 60', 'plz': '13585', 'lat': 52.537923, 'lng': 13.201234}
       ],
       'nahkauf': [
-        {'name': 'nahkauf Wuppertal', 'street': 'Großbeerenstraße 263', 'plz': '42277', 'lat': 52.418734, 'lng': 13.373912},
-        {'name': 'nahkauf Düsseldorf', 'street': 'Landsberger Allee 563', 'plz': '40249', 'lat': 52.524123, 'lng': 13.491234}
+        {'name': 'nahkauf Wuppertal', 'street': 'Großbeerenstraße 263', 'plz': '42277', 'lat': 51.251944, 'lng': 7.150278},
+        {'name': 'nahkauf Düsseldorf', 'street': 'Landsberger Allee 563', 'plz': '40249', 'lat': 51.213478, 'lng': 6.773456}
       ],
       'globus': [
-        {'name': 'Globus Neustadt', 'street': 'Lüdenscheider Weg 1', 'plz': '54974', 'lat': 52.367834, 'lng': 13.212345}
+        {'name': 'Globus Neustadt', 'street': 'Lüdenscheider Weg 1', 'plz': '54974', 'lat': 49.350556, 'lng': 8.148889}
       ],
       'norma': [
         {'name': 'norma Teltow', 'street': 'Unter den Eichen 96a', 'plz': '14503', 'lat': 52.436712, 'lng': 13.318456}
