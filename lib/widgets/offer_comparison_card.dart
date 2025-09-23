@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../utils/responsive_helper.dart';
+import '../providers/retailers_provider.dart';
 import 'retailer_logo.dart';
 
 /// OfferComparisonCard - Preisvergleich-Karte für Angebote
@@ -52,20 +54,51 @@ class OfferComparisonCard extends StatelessWidget {
   };
   
   Widget _buildRetailerBadge(String retailer) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: retailerColors[retailer] ?? primaryGreen,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        retailer,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+    return Consumer<RetailersProvider>(
+      builder: (context, retailersProvider, child) {
+        final logoPath = retailersProvider.getRetailerLogo(retailer);
+
+        // Try to show logo, with fallback to text badge
+        return Container(
+          height: 28,
+          constraints: const BoxConstraints(minWidth: 50, maxWidth: 80),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Image.asset(
+                logoPath,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback to text badge if logo fails
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: retailerColors[retailer] ?? primaryGreen,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: Center(
+                      child: Text(
+                        retailer,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
   
@@ -302,7 +335,7 @@ class OfferComparisonCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
 
-                          // Product image with retailer logo fallback
+                          // Product image: Asset -> Network -> Retailer Logo
                           Container(
                             height: isMobile ? 95 : 115,
                             width: double.infinity,
@@ -315,19 +348,40 @@ class OfferComparisonCard extends StatelessWidget {
                               child: primaryOffer.thumbnailUrl != null
                                   ? Builder(
                                       builder: (context) {
+                                        // First try as asset
                                         return Image.asset(
                                           primaryOffer.thumbnailUrl!,
                                           width: double.infinity,
                                           height: double.infinity,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            // Fallback to retailer logo
-                                            return Center(
-                                              child: RetailerLogo(
-                                                retailerName: primaryOffer.retailer,
-                                                size: isMobile ? LogoSize.medium : LogoSize.large,
-                                                shape: LogoShape.rounded,
-                                              ),
+                                          errorBuilder: (context, assetError, stackTrace) {
+                                            // If asset fails, try network
+                                            return Image.network(
+                                              primaryOffer.thumbnailUrl!,
+                                              width: double.infinity,
+                                              height: double.infinity,
+                                              fit: BoxFit.cover,
+                                              loadingBuilder: (context, child, loadingProgress) {
+                                                if (loadingProgress == null) return child;
+                                                return Center(
+                                                  child: CircularProgressIndicator(
+                                                    value: loadingProgress.expectedTotalBytes != null
+                                                        ? loadingProgress.cumulativeBytesLoaded /
+                                                            loadingProgress.expectedTotalBytes!
+                                                        : null,
+                                                  ),
+                                                );
+                                              },
+                                              errorBuilder: (context, networkError, stackTrace) {
+                                                // If network also fails, show retailer logo
+                                                return Center(
+                                                  child: RetailerLogo(
+                                                    retailerName: primaryOffer.retailer,
+                                                    size: isMobile ? LogoSize.medium : LogoSize.large,
+                                                    shape: LogoShape.rounded,
+                                                  ),
+                                                );
+                                              },
                                             );
                                           },
                                         );

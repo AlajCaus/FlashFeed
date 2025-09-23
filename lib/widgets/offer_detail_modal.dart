@@ -426,7 +426,7 @@ Gefunden mit FlashFeed!
                   controller: scrollController,
                   padding: const EdgeInsets.all(16),
                   children: [
-                    // Product image with retailer logo fallback
+                    // Product image: Asset -> Network -> Retailer Logo
                     Container(
                       height: 200,
                       decoration: BoxDecoration(
@@ -441,14 +441,34 @@ Gefunden mit FlashFeed!
                                 width: double.infinity,
                                 height: double.infinity,
                                 fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  // Fallback to retailer logo
-                                  return Center(
-                                    child: RetailerLogo(
-                                      retailerName: widget.offer.retailer,
-                                      size: LogoSize.large,
-                                      shape: LogoShape.rounded,
-                                    ),
+                                errorBuilder: (context, assetError, stackTrace) {
+                                  // If asset fails, try network
+                                  return Image.network(
+                                    widget.offer.thumbnailUrl!,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    fit: BoxFit.contain,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder: (context, networkError, stackTrace) {
+                                      // If network also fails, show retailer logo
+                                      return Center(
+                                        child: RetailerLogo(
+                                          retailerName: widget.offer.retailer,
+                                          size: LogoSize.large,
+                                          shape: LogoShape.rounded,
+                                        ),
+                                      );
+                                    },
                                   );
                                 },
                               )
@@ -466,20 +486,51 @@ Gefunden mit FlashFeed!
                     // Retailer badge and discount
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: retailerColors[widget.offer.retailer] ?? primaryGreen,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            widget.offer.retailer,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                        Consumer<RetailersProvider>(
+                          builder: (context, retailersProvider, child) {
+                            final logoPath = retailersProvider.getRetailerLogo(widget.offer.retailer);
+
+                            // Try to show logo, with fallback to text badge
+                            return Container(
+                              height: 36,
+                              constraints: const BoxConstraints(minWidth: 60, maxWidth: 100),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: borderColor, width: 1),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: Image.asset(
+                                    logoPath,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      // Fallback to text badge if logo fails
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: retailerColors[widget.offer.retailer] ?? primaryGreen,
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            widget.offer.retailer,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(width: 8),
                         if (widget.offer.discountPercent != null)
