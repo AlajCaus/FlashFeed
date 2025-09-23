@@ -12,8 +12,8 @@ enum AppPanel {
 class AppProvider extends ChangeNotifier {
   // Navigation State
   AppPanel _currentPanel = AppPanel.offers;
-  int _selectedPanelIndex = 0;  // Task 7: For TabController integration
-  final List<int> _navigationHistory = [];  // Task 7: For back navigation
+  int _selectedPanelIndex = 0;  // For TabController integration
+  final List<int> _navigationHistory = [];  // For back navigation
   bool _isLoading = false;
   String? _errorMessage;
   
@@ -24,8 +24,8 @@ class AppProvider extends ChangeNotifier {
   
   // Getters
   AppPanel get currentPanel => _currentPanel;
-  int get selectedPanelIndex => _selectedPanelIndex;  // Task 7
-  List<int> get navigationHistory => List.unmodifiable(_navigationHistory);  // Task 7
+  int get selectedPanelIndex => _selectedPanelIndex;
+  List<int> get navigationHistory => List.unmodifiable(_navigationHistory); 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isDarkMode => _isDarkMode;
@@ -41,7 +41,7 @@ class AppProvider extends ChangeNotifier {
     }
   }
   
-  // Task 7: Navigation with index (for TabController)
+  // Navigation with index (for TabController)
   void navigateToPanel(int index) {
     if (index < 0 || index > 2) return;
     
@@ -59,7 +59,7 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  // Task 7: Check if user can navigate to panel (Premium check)
+  // Check if user can navigate to panel (Premium check)
   bool canNavigateToPanel(int index, bool isPremium) {
     // Panel 1 (Map) requires Premium
     if (index == 1 && !isPremium) {
@@ -68,7 +68,7 @@ class AppProvider extends ChangeNotifier {
     return true;
   }
   
-  // Task 7: Navigate back
+  // Navigate back
   void navigateBack() {
     if (_navigationHistory.isNotEmpty) {
       final previousIndex = _navigationHistory.removeLast();
@@ -79,7 +79,7 @@ class AppProvider extends ChangeNotifier {
     }
   }
   
-  // Task 7: Reset navigation
+  // Reset navigation
   void resetNavigation() {
     _selectedPanelIndex = 0;
     _currentPanel = AppPanel.offers;
@@ -188,7 +188,7 @@ class AppProvider extends ChangeNotifier {
     });
   }
   
-  // Regional Support (ready for Task 5c integration)
+  // Regional Support
   bool get hasRegionalSupport => hasUserLocation;
   
   void refreshRegionalData() {

@@ -109,15 +109,15 @@ class Retailer {
   final String displayName;     // UI-Text (kann doppelt sein)
   final String? logoUrl;         // Optional logo URL
   final String primaryColor;    // Hex-Color für UI (war brandColor)
-  final String? secondaryColor;  // Task 11.2: Sekundäre Farbe für Branding
+  final String? secondaryColor;  // Sekundäre Farbe für Branding
   final String? iconUrl;        // Zusätzliches Icon (z.B. Scottie)
-  final String? slogan;         // Task 11.2: Händler-Slogan (z.B. "ALDI. Einfach ist mehr.")
+  final String? slogan;         // Händler-Slogan (z.B. "ALDI. Einfach ist mehr.")
   final String? description;    // Optional description
   final List<String> categories; // Verfügbare Produktkategorien
   final bool isPremiumPartner;   // Für Freemium-Features (war isActive)
   final String? website;        // Optional website URL (war websiteUrl)
   final int? storeCount;        // Optional store count
-  final List<PLZRange> availablePLZRanges; // Regionale Verfügbarkeit (Task 5a)
+  final List<PLZRange> availablePLZRanges; // Regionale Verfügbarkeit
 
   Retailer({
     required this.id,
@@ -125,9 +125,9 @@ class Retailer {
     required this.displayName,
     this.logoUrl,
     required this.primaryColor,
-    this.secondaryColor,      // Task 11.2
+    this.secondaryColor,      
     this.iconUrl,
-    this.slogan,              // Task 11.2
+    this.slogan,              
     this.description,
     this.categories = const [],
     this.isPremiumPartner = false,
@@ -145,7 +145,7 @@ class Retailer {
   /// Ist aktiv?
   bool get isActive => true; // Alle Mock-Händler sind aktiv
   
-  /// Prüft ob Händler in einer bestimmten PLZ verfügbar ist (Task 5a)
+  /// Prüft ob Händler in einer bestimmten PLZ verfügbar ist
   bool isAvailableInPLZ(String plz) {
     // Wenn keine PLZ-Ranges definiert sind, ist Händler überall verfügbar (bundesweit)
     if (availablePLZRanges.isEmpty) return true;
@@ -164,7 +164,7 @@ class Retailer {
   bool get isNationwide => availablePLZRanges.isEmpty;
 }
 
-/// PLZ-Helper-Service für regionale Verfügbarkeitsprüfung (Task 5a)
+/// PLZ-Helper-Service für regionale Verfügbarkeitsprüfung
 class PLZHelper {
   /// Prüft ob eine PLZ gültig ist (5 Ziffern)
   static bool isValidPLZ(String plz) {
@@ -217,7 +217,7 @@ class PLZHelper {
 class Store {
   final String id;
   final String chainId;         // Retailer ID (von Chain-Version)
-  final String retailerId;      // Task 11.2: Retailer ID für getRetailerByStore
+  final String retailerId;      // Retailer ID für getRetailerByStore
   final String retailerName;    // Retailer Name (von Store-Version)
   final String name;
   final String street;          // Straße (separiert von address)
@@ -237,7 +237,7 @@ class Store {
   Store({
     required this.id,
     required this.chainId,
-    String? retailerId,        // Task 11.2: Optional, falls to chainId
+    String? retailerId,        // Optional, falls to chainId
     required this.retailerName,
     required this.name,
     required this.street,
@@ -252,7 +252,7 @@ class Store {
     this.hasPharmacy = false,
     this.hasBeacon = false,
     this.isActive = true,
-  }) : retailerId = retailerId ?? chainId;  // Task 11.2: Fallback auf chainId
+  }) : retailerId = retailerId ?? chainId;  // Fallback auf chainId
   
   /// Vollständige Adresse generieren
   String get address => '$street, $zipCode $city';
@@ -334,7 +334,7 @@ class Store {
   }
 }
 
-/// Task 11.3: Wochentag Enum
+/// Wochentag Enum
 enum Weekday {
   monday,
   tuesday,
@@ -362,7 +362,7 @@ enum Weekday {
   }
 }
 
-/// Task 11.3: Sonderöffnungszeiten (Feiertage)
+/// Sonderöffnungszeiten (Feiertage)
 class SpecialHours {
   final DateTime date;
   final OpeningHours hours;
@@ -381,23 +381,23 @@ class SpecialHours {
   }
 }
 
-/// Öffnungszeiten Model-Klasse - Task 11.3: Erweitert
+/// Öffnungszeiten Model-Klasse - Erweitert
 class OpeningHours {
   final int openMinutes;   // Minuten seit Mitternacht (z.B. 8:00 = 480)
   final int closeMinutes;  // Minuten seit Mitternacht (z.B. 20:00 = 1200)
   final bool isClosed;     // Geschlossen (z.B. Sonntag)
-  final bool isSpecialHours;  // Task 11.3: Sonderöffnungszeiten
-  final String? specialNote;  // Task 11.3: Hinweis (z.B. "Feiertag")
+  final bool isSpecialHours;  // Sonderöffnungszeiten
+  final String? specialNote;  // Hinweis (z.B. "Feiertag")
 
   OpeningHours({
     required this.openMinutes,
     required this.closeMinutes,
     this.isClosed = false,
-    this.isSpecialHours = false,  // Task 11.3
-    this.specialNote,              // Task 11.3
+    this.isSpecialHours = false,
+    this.specialNote,           
   });
   
-  /// Task 11.3: Prüft ob jetzt geöffnet ist
+  /// Prüft ob jetzt geöffnet ist
   bool isOpenNow() {
     if (isClosed) return false;
     
@@ -412,7 +412,7 @@ class OpeningHours {
     return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
   }
   
-  /// Task 11.3: Zeit bis zur Öffnung/Schließung
+  /// Zeit bis zur Öffnung/Schließung
   Duration? timeUntilOpen() {
     if (isClosed) return null;
     if (isOpenNow()) return Duration.zero;
@@ -432,7 +432,7 @@ class OpeningHours {
     return Duration(minutes: minutesUntilOpen);
   }
   
-  /// Task 11.3: Zeit bis zur Schließung
+  /// Zeit bis zur Schließung
   Duration? timeUntilClose() {
     if (isClosed || !isOpenNow()) return null;
     
@@ -452,7 +452,7 @@ class OpeningHours {
     return Duration(minutes: (24 * 60 - nowMinutes) + closeMinutes);
   }
   
-  /// Task 11.3: Status-Nachricht für UI
+  /// Status-Nachricht für UI
   String getStatusMessage() {
     if (isClosed) {
       return specialNote ?? 'Geschlossen';
@@ -483,14 +483,14 @@ class OpeningHours {
     }
   }
   
-  /// Task 11.3: Zeit formatieren (480 -> "8:00")
+  /// Zeit formatieren (480 -> "8:00")
   String _formatTime(int minutes) {
     final hours = minutes ~/ 60;
     final mins = minutes % 60;
     return '${hours.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}';
   }
   
-  /// Task 11.3: Öffnungszeiten als String ("8:00 - 20:00")
+  /// Öffnungszeiten als String ("8:00 - 20:00")
   String toTimeString() {
     if (isClosed) return 'Geschlossen';
     return '${_formatTime(openMinutes)} - ${_formatTime(closeMinutes)}';
@@ -506,7 +506,7 @@ class OpeningHours {
     );
   }
   
-  /// Task 11.3: Factory für Standard-Öffnungszeiten
+  /// Factory für Standard-Öffnungszeiten
   factory OpeningHours.standard() {
     return OpeningHours(
       openMinutes: 7 * 60,   // 7:00
@@ -514,7 +514,7 @@ class OpeningHours {
     );
   }
   
-  /// Task 11.3: Factory für erweiterte Öffnungszeiten
+  /// Factory für erweiterte Öffnungszeiten
   factory OpeningHours.extended() {
     return OpeningHours(
       openMinutes: 7 * 60,   // 7:00
@@ -522,7 +522,7 @@ class OpeningHours {
     );
   }
   
-  /// Task 11.3: Factory für Sonntagsöffnung
+  /// Factory für Sonntagsöffnung
   factory OpeningHours.sunday() {
     return OpeningHours(
       openMinutes: 10 * 60,   // 10:00

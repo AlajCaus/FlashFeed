@@ -62,7 +62,7 @@ class _RetailerSelectorState extends State<RetailerSelector> {
   
   @override
   Widget build(BuildContext context) {
-    // Task 18.1: Optimized with Selector - only rebuilds when retailers list changes
+    // Optimized with Selector - only rebuilds when retailers list changes
     return Selector<RetailersProvider, List<Retailer>>(
       selector: (context, provider) => _showOnlyAvailable
           ? provider.availableRetailers

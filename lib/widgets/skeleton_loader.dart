@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Skeleton Loading Widgets for improved loading UX
 ///
-/// Task 17: Error Handling & Loading States
+/// Error Handling & Loading States
 /// Provides shimmer effect placeholders while data loads
 class SkeletonLoader extends StatefulWidget {
   final double width;

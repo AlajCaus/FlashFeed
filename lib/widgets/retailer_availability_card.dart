@@ -77,7 +77,7 @@ class _RetailerAvailabilityCardState extends State<RetailerAvailabilityCard> {
   
   @override
   Widget build(BuildContext context) {
-    // Task 18.1: Optimized with Selector - only rebuilds when availability changes
+    // Optimized with Selector - only rebuilds when availability changes
     return Selector<RetailersProvider, bool>(
       selector: (context, provider) => provider
           .getAvailableRetailers(widget.userPLZ)

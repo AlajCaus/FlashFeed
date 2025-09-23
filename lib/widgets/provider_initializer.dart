@@ -8,7 +8,7 @@ import '../providers/retailers_provider.dart';
 import '../providers/user_provider.dart';
 import '../services/demo_service.dart';
 
-/// Task 5c.5 & Task 16: Provider Initializer Widget
+/// Provider Initializer Widget
 /// Sets up cross-provider communication after all providers are created
 /// Including UserProvider freemium enforcement
 class ProviderInitializer extends StatefulWidget {
@@ -45,7 +45,7 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
     final retailersProvider = context.read<RetailersProvider>();
     final userProvider = context.read<UserProvider>();
 
-    // Task 21: Check for Demo Mode and auto-login as Premium
+    // Check for Demo Mode and auto-login as Premium
     final demoService = DemoService();
     if (demoService.isDemoMode) {
       debugPrint('🎬 Demo Mode detected - activating Premium features');
@@ -76,7 +76,7 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
     // Register OffersProvider with UserProvider for demo retailer filtering
     offersProvider.registerWithUserProvider(userProvider);
 
-    // Task 16: Register UserProvider with all providers for freemium enforcement
+    // Register UserProvider with all providers for freemium enforcement
     userProvider.registerWithProviders(
       offersProvider: offersProvider,
       flashDealsProvider: flashDealsProvider,

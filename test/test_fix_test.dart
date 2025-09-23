@@ -1,9 +1,7 @@
 // Isolierter Test für die Fehleranalyse
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/providers/location_provider.dart';
-import 'package:flashfeed/providers/offers_provider.dart';
 import 'package:flashfeed/providers/flash_deals_provider.dart';
-import 'package:flashfeed/providers/retailers_provider.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
 import 'package:flashfeed/services/gps/test_gps_service.dart';
 

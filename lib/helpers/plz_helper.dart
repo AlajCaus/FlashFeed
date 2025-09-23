@@ -1,9 +1,9 @@
 /// Utility-Klasse für deutsche Postleitzahlen-Validierung
 /// 
-/// Task 5b.3: Erstellt für PLZ-Fallback-Kette
+/// Erstellt für PLZ-Fallback-Kette
 /// Integration: LocalStorageService, PLZInputDialog, LocationProvider
 class PLZHelper {
-  /// Deutsche PLZ-Validierung (5 Ziffern, gültiger Bereich) - Task D Fix
+  /// Deutsche PLZ-Validierung (5 Ziffern, gültiger Bereich)
   /// 
   /// Deutsche PLZ-Bereiche: 01001-99999 (99999 ist gültig!)
   /// Ausgeschlossen: 00000 (ungültiger Testcode)
@@ -22,13 +22,13 @@ class PLZHelper {
     if (plzNumber == null) return false;
     
     // Deutsche PLZ-Bereiche: 01001-99999
-    // TASK D FIX: 99999 ist gültige deutsche PLZ, nicht ausschließen
+    // 99999 ist gültige deutsche PLZ, nicht ausschließen
     if (plzNumber < 1001 || plzNumber > 99999) return false;
     
     return true;
   }
   
-  /// Debug-Informationen für PLZ-Validierung - Updated für Task D
+  /// Debug-Informationen für PLZ-Validierung
   static Map<String, dynamic> validatePLZDetailed(String plz) {
     return {
       'plz': plz,

@@ -1,5 +1,5 @@
 # FlashFeed Robots.txt
-# Task 19: SEO Configuration
+# SEO Configuration
 
 User-agent: *
 Allow: /

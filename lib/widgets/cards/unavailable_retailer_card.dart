@@ -1,5 +1,5 @@
 // FlashFeed Unavailable Retailer Card Widget
-// Task 5c.4: Regional unavailability UI fallback logic
+// Regional unavailability UI fallback logic
 
 import 'package:flutter/material.dart';
 import '../../models/models.dart';

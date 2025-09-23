@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 /// Simple offline caching service using in-memory storage
 ///
-/// Task 17: Error Handling & Loading States
+/// Error Handling & Loading States
 /// Provides fallback data when network is unavailable
 ///
 /// Note: For production, use SharedPreferences or similar persistent storage

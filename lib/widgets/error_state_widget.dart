@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Centralized Error Widget for consistent error display across the app
 ///
-/// Task 17: Error Handling & Loading States
+/// Error Handling & Loading States
 /// Provides user-friendly error messages with retry functionality
 class ErrorStateWidget extends StatelessWidget {
   final String? errorMessage;

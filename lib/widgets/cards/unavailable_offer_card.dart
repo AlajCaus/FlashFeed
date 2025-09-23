@@ -1,5 +1,5 @@
 // FlashFeed Unavailable Offer Card Widget
-// Task 5c.4: Regional unavailability UI fallback logic
+// Regional unavailability UI fallback logic
 // Updated: Added retailerDisplayName for better UI (shows "Netto" instead of "NETTO")
 
 import 'package:flutter/material.dart';

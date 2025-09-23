@@ -1,5 +1,5 @@
 // Web GPS Service - Real Browser Geolocation API Integration
-// Task 12: LocationProvider Setup with Web Geolocation
+// LocationProvider Setup with Web Geolocation
 
 import 'dart:async';
 // ignore: deprecated_member_use

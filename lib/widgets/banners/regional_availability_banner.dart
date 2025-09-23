@@ -1,5 +1,5 @@
 // FlashFeed Regional Availability Banner Widget
-// Task 5c.4: Regional unavailability UI fallback logic
+// Regional unavailability UI fallback logic
 
 import 'package:flutter/material.dart';
 

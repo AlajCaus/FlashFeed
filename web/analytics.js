@@ -1,4 +1,4 @@
-// Task 20: Analytics & Performance Monitoring Setup
+// Analytics & Performance Monitoring Setup
 // This file provides privacy-friendly analytics using a self-hosted solution
 
 (function() {

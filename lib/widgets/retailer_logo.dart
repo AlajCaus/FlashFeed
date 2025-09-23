@@ -51,7 +51,7 @@ class RetailerLogo extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    // Task 18.1: Optimized with Selector - only rebuilds when retailer-specific data changes
+    // Optimized with Selector - only rebuilds when retailer-specific data changes
     return Selector<RetailersProvider, Map<String, dynamic>>(
       selector: (context, provider) => {
         'logo': provider.getRetailerLogo(retailerName),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/plz_lookup_service.dart';
 import '../services/plz_cache_memory_manager.dart';
 
-/// Performance Metrics Dashboard für PLZLookupService (Task 5b.4)
+/// Performance Metrics Dashboard für PLZLookupService
 /// 
 /// Debug-Widget für Development-Environment
 /// Zeigt Real-time Cache-Stats, Memory-Usage, Performance-Metriken

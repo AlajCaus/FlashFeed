@@ -220,7 +220,7 @@ class _StoreSearchBarState extends State<StoreSearchBar> {
       child: Row(
         children: [
           // Radius filter
-          // Task 18.4: Added const where possible
+          // Added const where possible
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: ChoiceChip(

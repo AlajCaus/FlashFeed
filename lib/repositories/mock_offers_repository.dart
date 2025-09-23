@@ -253,7 +253,7 @@ class MockOffersRepository implements OffersRepository {
         sortedOffers = [...flashDeals, ...regularOffers];
         break;
       case OfferSortType.distanceAsc:
-        // Task 9.1: Use provided coordinates or Berlin Mitte as fallback
+        // Use provided coordinates or Berlin Mitte as fallback
         final lat = userLat ?? 52.5200;
         final lng = userLng ?? 13.4050;
         flashDeals.sort((a, b) =>

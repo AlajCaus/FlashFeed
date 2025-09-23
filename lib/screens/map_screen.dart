@@ -144,7 +144,7 @@ class _MapScreenState extends State<MapScreen> {
               },
               onPositionChanged: (position, hasGesture) {
                 setState(() {
-                  _currentZoom = position.zoom!;
+                  _currentZoom = position.zoom;
                 });
                             },
               onTap: (_, __) {
