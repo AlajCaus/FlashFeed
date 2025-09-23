@@ -431,22 +431,34 @@ Gefunden mit FlashFeed!
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F5F5),
                         borderRadius: BorderRadius.circular(12),
-                        image: widget.offer.thumbnailUrl != null && widget.offer.thumbnailUrl!.isNotEmpty
-                            ? DecorationImage(
-                                image: NetworkImage(widget.offer.thumbnailUrl!),
-                                fit: BoxFit.contain,
-                              )
-                            : null,
                       ),
-                      child: widget.offer.thumbnailUrl == null || widget.offer.thumbnailUrl!.isEmpty
-                          ? Center(
-                              child: Icon(
-                                _getCategoryIcon(widget.offer.flashFeedCategory),
-                                size: 80,
-                                color: primaryGreen.withAlpha(153),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: widget.offer.thumbnailUrl != null && widget.offer.thumbnailUrl!.isNotEmpty
+                            ? Image.asset(
+                                widget.offer.thumbnailUrl!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  // Fallback to icon if image fails
+                                  return Center(
+                                    child: Icon(
+                                      _getCategoryIcon(widget.offer.flashFeedCategory),
+                                      size: 80,
+                                      color: primaryGreen.withAlpha(153),
+                                    ),
+                                  );
+                                },
+                              )
+                            : Center(
+                                child: Icon(
+                                  _getCategoryIcon(widget.offer.flashFeedCategory),
+                                  size: 80,
+                                  color: primaryGreen.withAlpha(153),
+                                ),
                               ),
-                            )
-                          : null,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     
