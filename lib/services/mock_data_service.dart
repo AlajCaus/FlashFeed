@@ -425,7 +425,7 @@ class MockDataService {
 
   Future<void> _generateStores() async {
     // Task 5.6: Realistische Berliner Standorte für alle 10 deutschen LEH-Händler
-    // 35+ Filialen mit präzisen GPS-Koordinaten für Professor-Demo
+    // 35+ Filialen mit präzisen GPS-Koordinaten für Demo
     final realisticStoreLocations = {
       'edeka': [
         {'name': 'EDEKA Neukauf Alexanderplatz', 'street': 'Alexanderstraße 9', 'plz': '10178', 'lat': 52.521918, 'lng': 13.413209},
@@ -784,12 +784,12 @@ class MockDataService {
     );
   }
 
-  // Task 14: Enhanced Professor Demo Features
+  // Task 14: Enhanced Demo Features
   FlashDeal generateInstantFlashDeal() {
     final now = DateTime.now();
 
     // Generate impressive demo deal with short duration
-    final deal = _generateProfessorDemoDeal(now);
+    final deal = _generateDemoDeal(now);
 
     // Add to active deals at the beginning for visibility
     _flashDeals.insert(0, deal);
@@ -807,7 +807,7 @@ class MockDataService {
   }
 
   // Task 14: Generate impressive demo deals
-  FlashDeal _generateProfessorDemoDeal(DateTime currentTime) {
+  FlashDeal _generateDemoDeal(DateTime currentTime) {
     if (_products.isEmpty || _stores.isEmpty) {
       throw Exception('No products or stores available');
     }

@@ -419,10 +419,10 @@ FILE: lib/helpers/plz_helper.dart
 
 /// Utility-Klasse für deutsche Postleitzahlen-Validierung
 /// 
-/// Task 5b.3: Erstellt für PLZ-Fallback-Kette
+/// Erstellt für PLZ-Fallback-Kette
 /// Integration: LocalStorageService, PLZInputDialog, LocationProvider
 class PLZHelper {
-  /// Deutsche PLZ-Validierung (5 Ziffern, gültiger Bereich) - Task D Fix
+  /// Deutsche PLZ-Validierung (5 Ziffern, gültiger Bereich)
   /// 
   /// Deutsche PLZ-Bereiche: 01001-99999 (99999 ist gültig!)
   /// Ausgeschlossen: 00000 (ungültiger Testcode)
@@ -441,13 +441,13 @@ class PLZHelper {
     if (plzNumber == null) return false;
     
     // Deutsche PLZ-Bereiche: 01001-99999
-    // TASK D FIX: 99999 ist gültige deutsche PLZ, nicht ausschließen
+    // FIX: 99999 ist gültige deutsche PLZ, nicht ausschließen
     if (plzNumber < 1001 || plzNumber > 99999) return false;
     
     return true;
   }
   
-  /// Debug-Informationen für PLZ-Validierung - Updated für Task D
+  /// Debug-Informationen für PLZ-Validierung - Updated für
   static Map<String, dynamic> validatePLZDetailed(String plz) {
     return {
       'plz': plz,
@@ -765,15 +765,15 @@ class Retailer {
   final String displayName;     // UI-Text (kann doppelt sein)
   final String? logoUrl;         // Optional logo URL
   final String primaryColor;    // Hex-Color für UI (war brandColor)
-  final String? secondaryColor;  // Task 11.2: Sekundäre Farbe für Branding
+  final String? secondaryColor;  // Sekundäre Farbe für Branding
   final String? iconUrl;        // Zusätzliches Icon (z.B. Scottie)
-  final String? slogan;         // Task 11.2: Händler-Slogan (z.B. "ALDI. Einfach ist mehr.")
+  final String? slogan;         // Händler-Slogan (z.B. "ALDI. Einfach ist mehr.")
   final String? description;    // Optional description
   final List<String> categories; // Verfügbare Produktkategorien
   final bool isPremiumPartner;   // Für Freemium-Features (war isActive)
   final String? website;        // Optional website URL (war websiteUrl)
   final int? storeCount;        // Optional store count
-  final List<PLZRange> availablePLZRanges; // Regionale Verfügbarkeit (Task 5a)
+  final List<PLZRange> availablePLZRanges; // Regionale Verfügbarkeit
 
   Retailer({
     required this.id,
@@ -781,9 +781,9 @@ class Retailer {
     required this.displayName,
     this.logoUrl,
     required this.primaryColor,
-    this.secondaryColor,      // Task 11.2
+    this.secondaryColor,      //
     this.iconUrl,
-    this.slogan,              // Task 11.2
+    this.slogan,              //
     this.description,
     this.categories = const [],
     this.isPremiumPartner = false,
@@ -801,7 +801,7 @@ class Retailer {
   /// Ist aktiv?
   bool get isActive => true; // Alle Mock-Händler sind aktiv
   
-  /// Prüft ob Händler in einer bestimmten PLZ verfügbar ist (Task 5a)
+  /// Prüft ob Händler in einer bestimmten PLZ verfügbar ist
   bool isAvailableInPLZ(String plz) {
     // Wenn keine PLZ-Ranges definiert sind, ist Händler überall verfügbar (bundesweit)
     if (availablePLZRanges.isEmpty) return true;
@@ -820,7 +820,7 @@ class Retailer {
   bool get isNationwide => availablePLZRanges.isEmpty;
 }
 
-/// PLZ-Helper-Service für regionale Verfügbarkeitsprüfung (Task 5a)
+/// PLZ-Helper-Service für regionale Verfügbarkeitsprüfung
 class PLZHelper {
   /// Prüft ob eine PLZ gültig ist (5 Ziffern)
   static bool isValidPLZ(String plz) {
@@ -873,7 +873,7 @@ class PLZHelper {
 class Store {
   final String id;
   final String chainId;         // Retailer ID (von Chain-Version)
-  final String retailerId;      // Task 11.2: Retailer ID für getRetailerByStore
+  final String retailerId;      // Retailer ID für getRetailerByStore
   final String retailerName;    // Retailer Name (von Store-Version)
   final String name;
   final String street;          // Straße (separiert von address)
@@ -893,7 +893,7 @@ class Store {
   Store({
     required this.id,
     required this.chainId,
-    String? retailerId,        // Task 11.2: Optional, falls to chainId
+    String? retailerId,        // Optional, falls to chainId
     required this.retailerName,
     required this.name,
     required this.street,
@@ -908,7 +908,7 @@ class Store {
     this.hasPharmacy = false,
     this.hasBeacon = false,
     this.isActive = true,
-  }) : retailerId = retailerId ?? chainId;  // Task 11.2: Fallback auf chainId
+  }) : retailerId = retailerId ?? chainId;  // Fallback auf chainId
   
   /// Vollständige Adresse generieren
   String get address => '$street, $zipCode $city';

@@ -167,7 +167,7 @@ class MockRetailersRepository implements RetailersRepository {
       chainId: 'aldi',
       retailerName: 'ALDI',
       name: 'ALDI SÜD Berlin Mitte',
-      street: 'Professorweg 1',
+      street: 'Hauptstraße 1',
       zipCode: '10119',
       city: 'Berlin',
       latitude: 52.5230,
@@ -347,7 +347,7 @@ class MockRetailersRepository implements RetailersRepository {
     _mockStores.add(store);
   }
   
-  /// Für Professor-Demo: Alle verfügbaren Kategorien
+  /// Für Demo: Alle verfügbaren Kategorien
   static List<String> getAllAvailableCategories() {
     return ProductCategoryMapping.flashFeedCategories;
   }
