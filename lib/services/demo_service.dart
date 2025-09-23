@@ -102,7 +102,7 @@ class DemoService {
     if (includeMetrics) params.add('metrics=true');
 
     if (params.isNotEmpty) {
-      landingPageUrl += '?' + params.join('&');
+      landingPageUrl += '?${params.join('&')}';
     }
 
     return landingPageUrl;

@@ -4,7 +4,6 @@ import '../providers/offers_provider.dart';
 import '../providers/user_provider.dart';
 // Removed unused imports - these are used in child widgets
 import '../models/models.dart' show Offer, OfferSortType;
-import '../utils/responsive_helper.dart';
 import '../widgets/offer_search_bar.dart';
 import '../widgets/offer_filter_bar.dart';
 import '../widgets/offer_comparison_card.dart';

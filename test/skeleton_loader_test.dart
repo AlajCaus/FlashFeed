@@ -410,7 +410,7 @@ void main() {
         const MaterialApp(
           home: Scaffold(
             body: Column(
-              children: const [
+              children: [
                 SkeletonLoader(width: 100, height: 50),
                 SkeletonLoader(width: 100, height: 50),
                 SkeletonLoader(width: 100, height: 50),

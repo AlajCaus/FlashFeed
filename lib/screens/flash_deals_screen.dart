@@ -106,11 +106,11 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                   ),
                   TextButton(
                     onPressed: () => _showUpgradeDialog(context),
-                    child: const Text('Premium'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.orange.shade700,
                       textStyle: const TextStyle(fontWeight: FontWeight.bold),
                     ),
+                    child: const Text('Premium'),
                   ),
                 ],
               ),

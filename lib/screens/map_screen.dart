@@ -143,12 +143,10 @@ class _MapScreenState extends State<MapScreen> {
                 });
               },
               onPositionChanged: (position, hasGesture) {
-                if (position.zoom != null) {
-                  setState(() {
-                    _currentZoom = position.zoom!;
-                  });
-                }
-              },
+                setState(() {
+                  _currentZoom = position.zoom!;
+                });
+                            },
               onTap: (_, __) {
                 // Deselect store when tapping on map
                 setState(() {
@@ -272,7 +270,6 @@ class _MapScreenState extends State<MapScreen> {
     if (hasLocation) {
       // Filter stores by radius from user location
       stores = retailersProvider.allStores.where((store) {
-        if (store.longitude == null) return false;
         final distance = _calculateDistance(
           locationProvider.latitude!,
           locationProvider.longitude!,
@@ -285,7 +282,6 @@ class _MapScreenState extends State<MapScreen> {
     } else {
       // No location available - show stores around default center (Berlin)
       stores = retailersProvider.allStores.where((store) {
-        if (store.longitude == null) return false;
         final distance = _calculateDistance(
           _defaultCenter.latitude,
           _defaultCenter.longitude,
@@ -299,24 +295,22 @@ class _MapScreenState extends State<MapScreen> {
 
     // Create markers for each store
     for (final store in stores) {
-      if (store.longitude != null) {
-        markers.add(
-          Marker(
-            point: LatLng(store.latitude, store.longitude),
-            width: 40,
-            height: 40,
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedStore = store;
-                });
-              },
-              child: _buildStorePin(store),
-            ),
+      markers.add(
+        Marker(
+          point: LatLng(store.latitude, store.longitude),
+          width: 40,
+          height: 40,
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedStore = store;
+              });
+            },
+            child: _buildStorePin(store),
           ),
-        );
-      }
-    }
+        ),
+      );
+        }
 
     return markers;
   }
@@ -920,7 +914,7 @@ class _MapScreenState extends State<MapScreen> {
               Icon(Icons.phone, size: 16, color: textSecondary),
               const SizedBox(width: 8),
               Text(
-                store.phoneNumber!,
+                store.phoneNumber,
                 style: TextStyle(
                   fontSize: ResponsiveHelper.getBodySize(context),
                   color: textSecondary,
@@ -935,15 +929,6 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _openNavigation(Store store) async {
-    if (store.longitude == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Keine Koordinaten für diese Filiale verfügbar'),
-        ),
-      );
-      return;
-    }
-
     final lat = store.latitude;
     final lng = store.longitude;
     final address = Uri.encodeComponent('${store.street}, ${store.zipCode} ${store.city}');
