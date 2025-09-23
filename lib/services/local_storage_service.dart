@@ -40,14 +40,11 @@ class LocalStorageService {
       final success2 = await _prefs!.setInt(_plzCacheTimestampKey, now);
       
       if (success1 && success2) {
-        debugPrint('✅ LocalStorage: User-PLZ "$plz" gespeichert');
         return true;
       } else {
-        debugPrint('❌ LocalStorage: Fehler beim Speichern der PLZ');
         return false;
       }
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler beim Speichern: $e');
       return false;
     }
   }
@@ -60,13 +57,11 @@ class LocalStorageService {
     try {
       final plz = _prefs!.getString(_userPLZKey);
       if (plz == null) {
-        debugPrint('💭 LocalStorage: Keine User-PLZ gespeichert');
         return null;
       }
       
       final timestamp = _prefs!.getInt(_plzCacheTimestampKey);
       if (timestamp == null) {
-        debugPrint('⚠️ LocalStorage: PLZ ohne Timestamp gefunden, Cache ungültig');
         await clearUserPLZ(); // Cleanup
         return null;
       }
@@ -75,16 +70,13 @@ class LocalStorageService {
       final maxAgeMs = maxAgeHours * 60 * 60 * 1000;
       
       if (cacheAge > maxAgeMs) {
-        debugPrint('🕐 LocalStorage: PLZ-Cache abgelaufen (${cacheAge / 1000 / 3600}h alt)');
         await clearUserPLZ(); // Cleanup
         return null;
       }
       
-      debugPrint('✅ LocalStorage: User-PLZ "$plz" geladen (${cacheAge / 1000 / 60}min alt)');
       return plz;
       
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler beim Laden: $e');
       return null;
     }
   }
@@ -96,14 +88,11 @@ class LocalStorageService {
       final success2 = await _prefs!.remove(_plzCacheTimestampKey);
       
       if (success1 && success2) {
-        debugPrint('🧹 LocalStorage: User-PLZ Cache geleert');
         return true;
       } else {
-        debugPrint('⚠️ LocalStorage: Teilweises Löschen fehlgeschlagen');
         return false;
       }
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler beim Löschen: $e');
       return false;
     }
   }
@@ -114,10 +103,8 @@ class LocalStorageService {
   Future<bool> setHasAskedForLocation(bool hasAsked) async {
     try {
       final success = await _prefs!.setBool(_hasAskedForLocationKey, hasAsked);
-      debugPrint('📍 LocalStorage: Location-Permission-Status gesetzt: $hasAsked');
       return success;
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler bei Permission-Status: $e');
       return false;
     }
   }
@@ -126,10 +113,8 @@ class LocalStorageService {
   bool getHasAskedForLocation() {
     try {
       final hasAsked = _prefs!.getBool(_hasAskedForLocationKey) ?? false;
-      debugPrint('📍 LocalStorage: Location-Permission-Status: $hasAsked');
       return hasAsked;
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler beim Laden des Permission-Status: $e');
       return false;
     }
   }
@@ -140,7 +125,6 @@ class LocalStorageService {
       final history = _prefs!.getStringList(_searchHistoryKey) ?? [];
       return history;
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler beim Laden der Such-Historie: $e');
       return [];
     }
   }
@@ -164,7 +148,6 @@ class LocalStorageService {
       
       return await _prefs!.setStringList(_searchHistoryKey, history);
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler beim Speichern der Such-Historie: $e');
       return false;
     }
   }
@@ -173,7 +156,6 @@ class LocalStorageService {
     try {
       return await _prefs!.remove(_searchHistoryKey);
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler beim Löschen der Such-Historie: $e');
       return false;
     }
   }
@@ -187,10 +169,8 @@ class LocalStorageService {
       );
       
       final allSuccess = results.every((result) => result == true);
-      debugPrint('🧹 LocalStorage: Gesamter Cache geleert - Erfolg: $allSuccess');
       return allSuccess;
     } catch (e) {
-      debugPrint('❌ LocalStorage Fehler beim Gesamt-Reset: $e');
       return false;
     }
   }

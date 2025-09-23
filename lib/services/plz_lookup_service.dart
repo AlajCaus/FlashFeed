@@ -103,13 +103,11 @@ class PLZLookupService {
       cachedEntry.markAccessed();
       _cacheHits++;
       
-      debugPrint('✅ PLZ-Cache Hit: $cacheKey -> ${cachedEntry.plz}');
       return cachedEntry.plz;
     }
     
     // Cache-Miss: API-Call nötig
     _cacheMisses++;
-    debugPrint('🔍 PLZ-Cache Miss: $cacheKey (Hits: $_cacheHits, Misses: $_cacheMisses)');
     
     try {
       // Rate limiting
@@ -141,7 +139,6 @@ class PLZLookupService {
     // Entry speichern
     _plzCache[cacheKey] = entry;
     
-    debugPrint('💾 PLZ-Cache Stored: $cacheKey -> $plz (Size: ${_plzCache.length}/$_maxCacheSize)');
   }
   
   /// LRU-Eviction: Älteste Entries entfernen (Task 5b.4)
@@ -161,7 +158,6 @@ class PLZLookupService {
       _cacheEvictions++;
     }
     
-    debugPrint('🗑️ PLZ-Cache LRU Eviction: $evictionCount entries removed (Total evictions: $_cacheEvictions)');
   }
   
   /// Ensure background cleanup is started (lazy initialization)
@@ -180,7 +176,6 @@ class PLZLookupService {
                              const String.fromEnvironment('FLUTTER_TEST').isNotEmpty;
 
     if (isTestEnvironment) {
-      debugPrint('⏰ PLZ-Cache Background-Cleanup deaktiviert (Test Environment)');
       return;
     }
 
@@ -188,7 +183,6 @@ class PLZLookupService {
       _performBackgroundCleanup();
     });
 
-    debugPrint('⏰ PLZ-Cache Background-Cleanup gestartet (Interval: ${_cleanupInterval.inMinutes}min)');
   }
   
   /// Background-Cleanup ausführen (Task 5b.4)
@@ -203,7 +197,6 @@ class PLZLookupService {
     _lastCleanup = now;
     
     if (removed > 0) {
-      debugPrint('🧹 PLZ-Cache Background-Cleanup: $removed expired entries removed');
     }
   }
 
@@ -285,7 +278,6 @@ class PLZLookupService {
     _cacheEvictions = 0;
     _lastCleanup = DateTime.now();
     
-    debugPrint('🧹 PLZ-Cache komplett geleert: $entriesRemoved entries entfernt');
   }
 
   /// Erweiterte Cache-Statistiken für Performance-Monitoring (Task 5b.4)
@@ -366,7 +358,6 @@ class PLZLookupService {
     _cleanupTimer = null;
     _plzCache.clear();
     
-    debugPrint('PLZLookupService disposed - Timer gestoppt, Cache geleert');
   }
   
   /// Performance-Benchmark für Bulk-Operations (Task 5b.4)
@@ -384,7 +375,6 @@ class PLZLookupService {
         results.add(result);
       }
     } catch (e) {
-      debugPrint('Benchmark-Fehler: $e');
     }
     
     stopwatch.stop();

@@ -147,14 +147,12 @@ class OffersProvider extends ChangeNotifier {
     // Task 9.1: Get initial coordinates
     _updateUserCoordinates();
     
-    debugPrint('OffersProvider: Registered with LocationProvider');
   }
   
   void unregisterFromLocationProvider(LocationProvider locationProvider) {
     locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
     locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
     _locationProvider = null; // Clear reference
-    debugPrint('OffersProvider: Unregistered from LocationProvider');
   }
 
   // Register UserProvider for demo retailer filtering
@@ -164,7 +162,6 @@ class OffersProvider extends ChangeNotifier {
     // Listen to UserProvider changes (for premium status changes)
     userProvider.addListener(_onUserProviderChanged);
 
-    debugPrint('OffersProvider: Registered with UserProvider');
   }
 
   void unregisterFromUserProvider() {
@@ -172,18 +169,15 @@ class OffersProvider extends ChangeNotifier {
       _userProvider!.removeListener(_onUserProviderChanged);
     }
     _userProvider = null;
-    debugPrint('OffersProvider: Unregistered from UserProvider');
   }
 
   // Callback when UserProvider changes (e.g., premium status)
   void _onUserProviderChanged() {
     if (_disposed) return;
 
-    debugPrint('OffersProvider: UserProvider changed, reloading offers with new retailer selection');
 
     // Clear cache when user status changes (important for premium upgrade)
     _filterCache.clear();
-    debugPrint('OffersProvider: Cache cleared due to user status change');
 
     // Reload offers with new retailer selection
     loadOffers(applyRegionalFilter: false);
@@ -201,7 +195,6 @@ class OffersProvider extends ChangeNotifier {
       // Task 9.1: Clear coordinates too
       _userLatitude = null;
       _userLongitude = null;
-      debugPrint('OffersProvider: Location cleared, resetting state');
       notifyListeners();
       return;
     }
@@ -209,7 +202,6 @@ class OffersProvider extends ChangeNotifier {
     // Task 9.1: Update coordinates when location changes
     _updateUserCoordinates();
     
-    debugPrint('OffersProvider: Location changed, reloading offers');
     loadOffers(applyRegionalFilter: true);
   }
   
@@ -219,7 +211,6 @@ class OffersProvider extends ChangeNotifier {
       // Set PLZ and retailers immediately for use by loadOffers
       _userPLZ = plz;
       _availableRetailers = availableRetailers;
-      debugPrint('OffersProvider: Regional data changed - PLZ: $plz, Retailers: $availableRetailers');
       // Load offers with the new regional data
       loadOffers(applyRegionalFilter: true);
     }
@@ -232,20 +223,17 @@ class OffersProvider extends ChangeNotifier {
       if (_locationProvider!.latitude != null && _locationProvider!.longitude != null) {
         _userLatitude = _locationProvider!.latitude;
         _userLongitude = _locationProvider!.longitude;
-        debugPrint('OffersProvider: Updated coordinates from GPS: $_userLatitude, $_userLongitude');
       } 
       // Fallback: PLZ to coordinates
       else if (_locationProvider!.postalCode != null && _locationProvider!.postalCode!.isNotEmpty) {
         final coords = _convertPLZToCoordinates(_locationProvider!.postalCode!);
         _userLatitude = coords['lat'];
         _userLongitude = coords['lng'];
-        debugPrint('OffersProvider: Updated coordinates from PLZ ${_locationProvider!.postalCode}: $_userLatitude, $_userLongitude');
       }
       // Default: Berlin Mitte (will use fallback in getter)
       else {
         _userLatitude = null;
         _userLongitude = null;
-        debugPrint('OffersProvider: No location data available, using default coordinates');
       }
       
       // Re-sort if distance sorting is active
@@ -442,14 +430,10 @@ class OffersProvider extends ChangeNotifier {
                 _availableRetailers.contains(offer.retailer)
             ).toList();
             
-            debugPrint('OffersProvider: Regional filtering applied - PLZ: $_userPLZ, Retailers: $_availableRetailers');
-            debugPrint('OffersProvider: Filtered from ${_unfilteredOffers.length} to ${_allOffers.length} offers');
           } else {
-            debugPrint('OffersProvider: No retailers available for PLZ $_userPLZ');
           }
         } else {
           // No PLZ available, can't filter regionally
-          debugPrint('OffersProvider: Regional filtering requested but no PLZ available');
           // Extract all retailers if no regional filtering
           _availableRetailers = _allOffers
               .map((offer) => offer.retailer)
@@ -472,8 +456,6 @@ class OffersProvider extends ChangeNotifier {
             selectedRetailers.contains(offer.retailer)
         ).toList();
 
-        debugPrint('OffersProvider: Demo retailer filtering applied - Selected: $selectedRetailers');
-        debugPrint('OffersProvider: Filtered to ${_allOffers.length} offers for demo retailers');
       }
 
       // CRITICAL: Must await _applyFilters to ensure sorting completes
@@ -635,7 +617,6 @@ class OffersProvider extends ChangeNotifier {
             userLat: currentLatitude,  // Uses getter with fallback
             userLng: currentLongitude
           );
-          debugPrint('OffersProvider: Distance sorting applied with coordinates: $currentLatitude, $currentLongitude ($locationSource)');
         } else {
           _filteredOffers = await _offersRepository.getSortedOffers(_filteredOffers, sortType);
         }
@@ -673,7 +654,6 @@ class OffersProvider extends ChangeNotifier {
     if (cachedEntry != null) {
       _filteredOffers = List.from(cachedEntry.offers);
       _cacheHits++;
-      debugPrint('OffersProvider: Cache hit! Key: $cacheKey (Hit rate: ${(cacheHitRate * 100).toStringAsFixed(1)}%)');
       _resetPagination();
       _updateDisplayedOffers();
       notifyListeners();
@@ -754,8 +734,6 @@ class OffersProvider extends ChangeNotifier {
     
     // NEW: Track empty results for UI feedback (Task 5c.2)
     if (hasRegionalFiltering && filtered.isEmpty && _allOffers.isNotEmpty) {
-      debugPrint('⚠️ Regional filtering active: No offers available in PLZ $_userPLZ');
-      debugPrint('Available retailers: $_availableRetailers');
     }
     
     // Task 9.4.2: Apply sorting BEFORE updating display
@@ -764,12 +742,10 @@ class OffersProvider extends ChangeNotifier {
   }
   
   Future<void> _applySorting() async {
-    debugPrint('_applySorting called: sortType=$_sortType, offers=${_filteredOffers.length}');
     try {
       // Always apply sorting if we have a sort type set
       // Don't skip sorting even if list is empty - it needs to be ready when filled
       if (_filteredOffers.isNotEmpty) {
-        debugPrint('Applying sort type: $_sortType to ${_filteredOffers.length} offers');
         // Task 9.1: Pass user coordinates for distance sorting
         if (_sortType == OfferSortType.distanceAsc) {
           _filteredOffers = await _offersRepository.getSortedOffers(
@@ -784,11 +760,8 @@ class OffersProvider extends ChangeNotifier {
 
         // Debug output to verify sorting
         if (_filteredOffers.isNotEmpty) {
-          debugPrint('Sorting applied: ${_sortType.toString()} - First offer price: ${_filteredOffers.first.price}€');
           // Print first 5 prices to see sorting order
-          debugPrint('First 5 sorted prices:');
           for (int i = 0; i < _filteredOffers.length && i < 5; i++) {
-            debugPrint('  ${i+1}. ${_filteredOffers[i].productName}: ${_filteredOffers[i].price}€');
           }
         }
       }
@@ -801,7 +774,6 @@ class OffersProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       // Sorting errors are non-critical, just log
-      debugPrint('Sorting error: $e');
       // Still update UI even if sorting fails
       _resetPagination();
       _updateDisplayedOffers();
@@ -884,7 +856,6 @@ class OffersProvider extends ChangeNotifier {
     
     if (oldestKey != null) {
       _filterCache.remove(oldestKey);
-      debugPrint('OffersProvider: Evicted oldest cache entry (LRU)');
     }
   }
   
@@ -892,7 +863,6 @@ class OffersProvider extends ChangeNotifier {
     _filterCache.clear();
     _cacheHits = 0;
     _cacheMisses = 0;
-    debugPrint('OffersProvider: Cache cleared');
     notifyListeners();
   }
   
@@ -907,17 +877,13 @@ class OffersProvider extends ChangeNotifier {
     final startIndex = _currentPage * _pageSize;
     final endIndex = (startIndex + _pageSize).clamp(0, _filteredOffers.length);
 
-    debugPrint('DEBUG _updateDisplayedOffers: page=$_currentPage, startIndex=$startIndex, endIndex=$endIndex');
-    debugPrint('DEBUG _updateDisplayedOffers: _filteredOffers.length=${_filteredOffers.length}');
 
     if (_currentPage == 0) {
       // First page - replace all
       _displayedOffers = _filteredOffers.sublist(0, endIndex);
 
       // Debug: Show first 10 items being set
-      debugPrint('DEBUG _updateDisplayedOffers: Setting displayedOffers (first 10):');
       for (int i = 0; i < _displayedOffers.length && i < 10; i++) {
-        debugPrint('  Display ${i+1}. ${_displayedOffers[i].productName}: ${_displayedOffers[i].price}€');
       }
     } else {
       // Additional pages - append
@@ -985,7 +951,6 @@ class OffersProvider extends ChangeNotifier {
       _filterCache.remove(key);
     }
     
-    debugPrint('OffersProvider: Memory pressure - cleared ${keysToRemove.length} cache entries');
   }
   
   // Task 9.2: Smart Filter Management
@@ -1002,7 +967,6 @@ class OffersProvider extends ChangeNotifier {
 
     if (hadFilters) {
       await _applyFilters();
-      debugPrint('OffersProvider: Cleared active filters, keeping regional filtering');
     }
   }
   
@@ -1028,7 +992,6 @@ class OffersProvider extends ChangeNotifier {
         clearActiveFilters();
         break;
       default:
-        debugPrint('Unknown filter type: $filterType');
     }
   }
   
@@ -1694,9 +1657,7 @@ class OffersProvider extends ChangeNotifier {
       try {
         _locationProvider!.unregisterLocationChangeCallback(_onLocationChanged);
         _locationProvider!.unregisterRegionalDataCallback(_onRegionalDataChanged);
-        debugPrint('✅ OffersProvider: Auto-unregistered callbacks during disposal');
       } catch (e) {
-        debugPrint('⚠️ OffersProvider: Error during callback cleanup: $e');
       }
       _locationProvider = null;
     }

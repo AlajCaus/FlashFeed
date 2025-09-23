@@ -49,14 +49,12 @@ class PLZCacheMemoryManager {
       _performMemoryCheck();
     });
     
-    debugPrint('PLZ Memory Manager started - checking every ${_memoryCheckInterval.inMinutes}min');
   }
   
   /// Memory-Manager stoppen
   void stopMemoryMonitoring() {
     _memoryMonitorTimer?.cancel();
     _memoryMonitorTimer = null;
-    debugPrint('PLZ Memory Manager stopped');
   }
   
   /// Aktuelle Memory-Situation prüfen und Cache-Limits anpassen
@@ -78,22 +76,18 @@ class PLZCacheMemoryManager {
         _currentMaxCacheSize = newCacheSize;
         _onCacheSizeChange?.call(newCacheSize);
         
-        debugPrint('PLZ Cache size adjusted: $newCacheSize (Available memory: ${availableMemoryMB}MB)');
       }
       
       // Bei Critical Memory: Sofortiger Cleanup
       if (availableMemoryMB < _criticalMemoryThresholdMB) {
-        debugPrint('PLZ Critical memory detected: ${availableMemoryMB}MB - triggering cleanup');
         _onMemoryPressureCleanup?.call();
       }
       
       // Memory-Pressure-Status-Change loggen
       if (_memoryPressureDetected != previousPressure) {
-        debugPrint('PLZ Memory pressure ${_memoryPressureDetected ? "detected" : "resolved"}: ${availableMemoryMB}MB available');
       }
       
     } catch (e) {
-      debugPrint('PLZ Memory check failed: $e');
     }
   }
   
@@ -126,7 +120,6 @@ class PLZCacheMemoryManager {
         return {'availableMB': 200, 'usedMB': 0, 'totalMB': 0};
       }
     } catch (e) {
-      debugPrint('Failed to get memory info: $e');
       return {'availableMB': 200, 'usedMB': 0, 'totalMB': 0}; // Safe defaults
     }
   }
@@ -144,7 +137,6 @@ class PLZCacheMemoryManager {
         return _parseMacOSMemInfo(result.stdout.toString());
       }
     } catch (e) {
-      debugPrint('Unix memory info failed: $e');
     }
     
     return {'availableMB': 200, 'usedMB': 0, 'totalMB': 0};
@@ -160,7 +152,6 @@ class PLZCacheMemoryManager {
       
       return _parseWindowsMemInfo(result.stdout.toString());
     } catch (e) {
-      debugPrint('Windows memory info failed: $e');
       return {'availableMB': 200, 'usedMB': 0, 'totalMB': 0};
     }
   }

@@ -260,10 +260,6 @@ class _MapScreenState extends State<MapScreen> {
     final hasLocation = locationProvider.hasLocation;
 
     // Debug output
-    debugPrint('🗺️ Building store markers:');
-    debugPrint('  - Has location: $hasLocation');
-    debugPrint('  - Radius: $_radiusKm km');
-    debugPrint('  - Total stores available: ${retailersProvider.allStores.length}');
 
     // Get stores near location if available, otherwise use all stores
     List<Store> stores;
@@ -278,7 +274,6 @@ class _MapScreenState extends State<MapScreen> {
         );
         return distance <= _radiusKm;
       }).toList();
-      debugPrint('  - Stores in radius: ${stores.length}');
     } else {
       // No location available - show stores around default center (Berlin)
       stores = retailersProvider.allStores.where((store) {
@@ -290,7 +285,6 @@ class _MapScreenState extends State<MapScreen> {
         );
         return distance <= _radiusKm;
       }).toList();
-      debugPrint('  - Stores in radius (from Berlin center): ${stores.length}');
     }
 
     // Create markers for each store

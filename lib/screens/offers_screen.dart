@@ -266,17 +266,12 @@ class _OffersScreenState extends State<OffersScreen> {
 
   Widget _buildOffersGrid(OffersProvider offersProvider, UserProvider userProvider) {
     var offers = offersProvider.displayedOffers;
-    print('DEBUG offers_screen: Total offers to display: ${offers.length}');
-    print('DEBUG offers_screen: Current sort type: ${offersProvider.sortType}');
 
     // Debug: Show first 10 prices in UI order
-    print('DEBUG offers_screen: First 10 prices in UI order:');
     for (int i = 0; i < offers.length && i < 10; i++) {
-      print('  UI ${i+1}. ${offers[i].productName}: ${offers[i].price}€');
     }
 
     if (offers.isNotEmpty) {
-      print('DEBUG: First offer thumbnailUrl: ${offers.first.thumbnailUrl}');
     }
 
     // Task 16: No limits for free users - they see ALL offers from their selected retailer

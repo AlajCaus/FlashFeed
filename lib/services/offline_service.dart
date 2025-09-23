@@ -31,9 +31,7 @@ class OfflineService {
     try {
       _cache[key] = data;
       _cacheTimestamps[key] = DateTime.now();
-      debugPrint('📦 OfflineService: Cached data for key: $key');
     } catch (e) {
-      debugPrint('❌ OfflineService: Failed to cache data for key $key: $e');
     }
   }
 
@@ -41,13 +39,11 @@ class OfflineService {
   Future<dynamic> getCachedData(String key, {Duration? maxAge}) async {
     try {
       if (!_cache.containsKey(key)) {
-        debugPrint('📦 OfflineService: No cache found for key: $key');
         return null;
       }
 
       final timestamp = _cacheTimestamps[key];
       if (timestamp == null) {
-        debugPrint('📦 OfflineService: No timestamp for cache key: $key');
         return null;
       }
 
@@ -55,16 +51,13 @@ class OfflineService {
       final maxCacheAge = maxAge ?? defaultCacheDuration;
 
       if (age > maxCacheAge) {
-        debugPrint('📦 OfflineService: Cache expired for key: $key (age: ${age.inHours}h)');
         _cache.remove(key);
         _cacheTimestamps.remove(key);
         return null;
       }
 
-      debugPrint('✅ OfflineService: Retrieved cached data for key: $key (age: ${age.inMinutes}m)');
       return _cache[key];
     } catch (e) {
-      debugPrint('❌ OfflineService: Error retrieving cache for key $key: $e');
       return null;
     }
   }
@@ -86,14 +79,12 @@ class OfflineService {
   Future<void> clearCache(String key) async {
     _cache.remove(key);
     _cacheTimestamps.remove(key);
-    debugPrint('🧹 OfflineService: Cleared cache for key: $key');
   }
 
   /// Clear all caches
   Future<void> clearAllCaches() async {
     _cache.clear();
     _cacheTimestamps.clear();
-    debugPrint('🧹 OfflineService: Cleared all caches');
   }
 
   /// Get cache age in minutes

@@ -19,10 +19,8 @@ class WebAudioServiceImpl {
       final audio = html.AudioElement(soundData);
       audio.volume = 0.3;
       audio.play().catchError((e) {
-        debugPrint('Could not play notification sound: $e');
       });
     } catch (e) {
-      debugPrint('Web Audio error: $e');
     }
   }
 }

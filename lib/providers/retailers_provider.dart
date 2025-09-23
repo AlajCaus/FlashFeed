@@ -226,7 +226,6 @@ class RetailersProvider extends ChangeNotifier {
       _retailerDetailsCache[retailerName] = retailer;
       return retailer;
     } catch (e) {
-      debugPrint('⚠️ RetailersProvider: Händler "$retailerName" nicht gefunden');
       return null;
     }
   }
@@ -326,11 +325,9 @@ class RetailersProvider extends ChangeNotifier {
             .toList();
       }
       
-      debugPrint('✅ RetailersProvider: ${_allRetailers.length} Händler geladen');
       
     } catch (e) {
       _errorMessage = 'Fehler beim Laden der Händler: $e';
-      debugPrint('❌ RetailersProvider Error: $e');
     } finally {
       _isLoading = false;
       if (!_disposed) {
@@ -343,7 +340,6 @@ class RetailersProvider extends ChangeNotifier {
   List<Retailer> getAvailableRetailers(String plz) {
     // Validierung
     if (!PLZHelper.isValidPLZ(plz)) {
-      debugPrint('⚠️ RetailersProvider: Ungültige PLZ: $plz');
       return [];
     }
     
@@ -379,7 +375,6 @@ class RetailersProvider extends ChangeNotifier {
     if (_disposed) return;
     if (_currentPLZ == plz) return; // Keine Änderung
     
-    debugPrint('📍 RetailersProvider: PLZ-Update von $_currentPLZ zu $plz');
     
     _currentPLZ = plz;
     _updateAvailableRetailers(plz);
@@ -405,7 +400,6 @@ class RetailersProvider extends ChangeNotifier {
           .toList();
     }
     
-    debugPrint('✅ Verfügbare Händler in PLZ $plz: ${_availableRetailers.length}/${_allRetailers.length}');
   }
   
   /// Gibt Verfügbarkeitsnachricht für UI zurück
@@ -452,7 +446,6 @@ class RetailersProvider extends ChangeNotifier {
   /// Erweiterte Version mit echter Umkreissuche
   Future<List<Retailer>> getNearbyRetailers(String plz, double radiusKm) async {
     if (!PLZHelper.isValidPLZ(plz)) {
-      debugPrint('⚠️ getNearbyRetailers: Ungültige PLZ $plz');
       return [];
     }
     
@@ -469,7 +462,6 @@ class RetailersProvider extends ChangeNotifier {
       // 1. Get coordinates for the PLZ
       final coordinates = _getPLZCoordinates(plz);
       if (coordinates == null) {
-        debugPrint('⚠️ Keine Koordinaten für PLZ $plz gefunden');
         return getAvailableRetailers(plz); // Fallback to PLZ-based
       }
       
@@ -514,11 +506,9 @@ class RetailersProvider extends ChangeNotifier {
         DateTime.now()
       );
       
-      debugPrint('✅ Found ${nearbyRetailers.length} retailers within ${radiusKm}km of PLZ $plz');
       return nearbyRetailers;
       
     } catch (e) {
-      debugPrint('❌ Error in getNearbyRetailers: $e');
       return getAvailableRetailers(plz); // Fallback
     }
   }
@@ -598,22 +588,18 @@ class RetailersProvider extends ChangeNotifier {
   /// Findet alternative Händler wenn der bevorzugte nicht verfügbar ist
   List<Retailer> findAlternativeRetailers(String plz, String preferredRetailerName) {
     if (!PLZHelper.isValidPLZ(plz)) {
-      debugPrint('⚠️ findAlternativeRetailers: Ungültige PLZ $plz');
       return [];
     }
     
     // Get preferred retailer details
     final preferredRetailer = getRetailerDetails(preferredRetailerName);
     if (preferredRetailer == null) {
-      debugPrint('⚠️ Preferred retailer "$preferredRetailerName" nicht gefunden');
       final availableAlternatives = getAvailableRetailers(plz);
-      debugPrint('ℹ️ Found ${availableAlternatives.length} available alternatives for PLZ $plz');
       return availableAlternatives; // Return all available as alternatives
     }
     
     // Check if preferred retailer is available
     if (preferredRetailer.isAvailableInPLZ(plz)) {
-      debugPrint('ℹ️ $preferredRetailerName ist bereits in PLZ $plz verfügbar');
       return []; // No alternatives needed
     }
     
@@ -670,9 +656,7 @@ class RetailersProvider extends ChangeNotifier {
         .map((sr) => sr.retailer)
         .toList();
     
-    debugPrint('✅ Found ${alternatives.length} alternatives for $preferredRetailerName in PLZ $plz');
     for (int i = 0; i < alternatives.length; i++) {
-      debugPrint('  ${i+1}. ${alternatives[i].displayName} (Score: ${scoredAlternatives[i].score})');
     }
     
     return alternatives;
@@ -836,25 +820,21 @@ class RetailersProvider extends ChangeNotifier {
       updateUserLocation(locationProvider.postalCode!);
     }
 
-    debugPrint('RetailersProvider: Registered with LocationProvider');
   }
   
   void unregisterFromLocationProvider(LocationProvider locationProvider) {
     locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
     locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
     _locationProvider = null; // Clear reference
-    debugPrint('RetailersProvider: Unregistered from LocationProvider');
   }
   
   // Task 5c.5: Callback handlers
   void _onLocationChanged() {
     if (_disposed) return;
-    debugPrint('RetailersProvider: Location changed, updating retailer availability');
   }
   
   void _onRegionalDataChanged(String? plz, List<String> retailerNames) {
     if (_disposed) return;
-    debugPrint('📍 RetailersProvider: Regional data changed - PLZ: $plz');
     
     if (plz != null) {
       updateUserLocation(plz);
@@ -864,7 +844,6 @@ class RetailersProvider extends ChangeNotifier {
       _availableRetailers = []; // Empty for invalid PLZ edge case
       _unavailableRetailers = _allRetailers; // All retailers become unavailable
       
-      debugPrint('✅ RetailersProvider: PLZ invalid/null, clearing all available retailers');
       _notifyRetailerUpdate();
     }
   }
@@ -898,7 +877,6 @@ class RetailersProvider extends ChangeNotifier {
           (r) => r.id == store.retailerId,
         );
       } catch (e) {
-        debugPrint('⚠️ RetailersProvider: Händler für Store ${store.id} nicht gefunden');
       }
     }
     
@@ -937,7 +915,6 @@ class RetailersProvider extends ChangeNotifier {
     try {
       return await _repository.getRetailerByName(name);
     } catch (e) {
-      debugPrint('❌ RetailersProvider: Fehler bei Händlersuche: $e');
       return null;
     }
   }
@@ -947,7 +924,6 @@ class RetailersProvider extends ChangeNotifier {
     try {
       return await _repository.getStoresByRetailer(retailerName);
     } catch (e) {
-      debugPrint('❌ RetailersProvider: Fehler beim Laden der Filialen: $e');
       return [];
     }
   }
@@ -957,7 +933,6 @@ class RetailersProvider extends ChangeNotifier {
     _plzRetailerCache.clear();
     _retailerDetailsCache.clear(); // Task 11.1: Details-Cache auch leeren
     _storeSearchCache.clear(); // Task 11.4: Store-Search Cache leeren
-    debugPrint('🧹 RetailersProvider: Cache geleert');
   }
   
   /// Reload aller Daten
@@ -975,7 +950,6 @@ class RetailersProvider extends ChangeNotifier {
     // This method allows tests to inject a mock repository
     // Note: This would require making _repository non-final
     // For now, use the factory constructor with a test repository instead
-    debugPrint('⚠️ Use RetailersProvider.mock() factory for testing');
   }
   
   @visibleForTesting
@@ -1071,7 +1045,6 @@ class RetailersProvider extends ChangeNotifier {
       
       return ranges;
     } catch (e) {
-      debugPrint('⚠️ RetailersProvider: PLZ-Expansion fehlgeschlagen: $e');
       return [];
     }
   }
@@ -1147,7 +1120,6 @@ class RetailersProvider extends ChangeNotifier {
 
     // Reject empty or whitespace-only queries
     if (trimmedQuery.isEmpty) {
-      debugPrint('⚠️ RetailersProvider: Empty search query rejected');
       _isSearching = false;
       notifyListeners();
       return [];
@@ -1155,7 +1127,6 @@ class RetailersProvider extends ChangeNotifier {
 
     // Require minimum 2 characters for performance
     if (trimmedQuery.length < 2) {
-      debugPrint('⚠️ RetailersProvider: Query too short (${trimmedQuery.length} chars): "$trimmedQuery"');
       _isSearching = false;
       notifyListeners();
       return [];
@@ -1164,13 +1135,11 @@ class RetailersProvider extends ChangeNotifier {
     // Sanitize query - remove special characters that could cause issues
     final sanitizedQuery = trimmedQuery.replaceAll(RegExp(r'[^\w\s\-äöüßÄÖÜ]'), '');
     if (sanitizedQuery.isEmpty) {
-      debugPrint('⚠️ RetailersProvider: Query contains only special characters: "$query"');
       _isSearching = false;
       notifyListeners();
       return [];
     }
 
-    debugPrint('🔍 RetailersProvider: Searching for "$sanitizedQuery" (original: "$query")');
 
     // Update search state
     _isSearching = true;
@@ -1184,7 +1153,6 @@ class RetailersProvider extends ChangeNotifier {
         .timeout(
           const Duration(seconds: 10),
           onTimeout: () {
-            debugPrint('🚨 RetailersProvider: Search timeout for "$sanitizedQuery"');
             _searchTimeoutTimer = null; // Clear timeout timer reference
             _isSearching = false;
             // Safety check: Don't notify if already disposed
@@ -1222,7 +1190,6 @@ class RetailersProvider extends ChangeNotifier {
           if (!_disposed) {
             notifyListeners();
           }
-          debugPrint('✅ RetailersProvider: Cache hit for "$sanitizedQuery"');
           return cached.results;
         }
       }
@@ -1268,7 +1235,6 @@ class RetailersProvider extends ChangeNotifier {
       return filtered;
 
     } catch (e) {
-      debugPrint('❌ Store search failed: $e');
       _isSearching = false;
       _errorMessage = 'Fehler bei der Filial-Suche: $e';
       // Safety check: Don't notify if already disposed
@@ -1296,9 +1262,7 @@ class RetailersProvider extends ChangeNotifier {
       // Task 11.4: Verwende neue getAllStores() Repository-Methode
       // Dies lädt effizient alle 35+ Berlin-Stores aus MockDataService
       _allStores = await _repository.getAllStores();
-      debugPrint('✅ Loaded ${_allStores.length} stores total');
     } catch (e) {
-      debugPrint('❌ Failed to load all stores: $e');
       // Fallback: Lade Stores per Händler
       final stores = <Store>[];
       for (final retailer in _allRetailers) {
@@ -1306,7 +1270,6 @@ class RetailersProvider extends ChangeNotifier {
           final retailerStores = await _repository.getStoresByRetailer(retailer.name);
           stores.addAll(retailerStores);
         } catch (e) {
-          debugPrint('⚠️ Failed to load stores for ${retailer.name}: $e');
         }
       }
       _allStores = stores;
@@ -1580,7 +1543,6 @@ class RetailersProvider extends ChangeNotifier {
         // Clear search cache as distances have changed
         _storeSearchCache.clear();
         
-        debugPrint('📍 Store search: User location updated');
       }
     });
   }
@@ -1623,9 +1585,7 @@ class RetailersProvider extends ChangeNotifier {
       try {
         _locationProvider!.unregisterLocationChangeCallback(_onLocationChanged);
         _locationProvider!.unregisterRegionalDataCallback(_onRegionalDataChanged);
-        debugPrint('✅ RetailersProvider: Auto-unregistered callbacks during disposal');
       } catch (e) {
-        debugPrint('⚠️ RetailersProvider: Error during callback cleanup: $e');
       }
       _locationProvider = null;
     }
@@ -1655,7 +1615,6 @@ class RetailersProvider extends ChangeNotifier {
 
       if (oldestKey != null) {
         _storeSearchCache.remove(oldestKey);
-        debugPrint('🧹 RetailersProvider: LRU Cache evicted oldest entry');
       }
     }
 

@@ -66,7 +66,6 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     // Register LocationProvider callbacks
     locationProvider.registerLocationChangeCallback(() {
       // Retailers already registered via ProviderInitializer
-      debugPrint('Location updated');
     });
     
     // Ensure location data is available

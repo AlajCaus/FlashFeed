@@ -37,10 +37,6 @@ class DemoService {
     _demoStartTime = DateTime.now();
 
     if (kDebugMode) {
-      print('🎬 Demo-Modus aktiviert');
-      print('  - Auto-Login: $autoLogin');
-      print('  - Guided Tour: $guidedTour');
-      print('  - Performance Metrics: $performanceMetrics');
     }
   }
 
@@ -52,7 +48,6 @@ class DemoService {
     _demoStartTime = null;
 
     if (kDebugMode) {
-      print('🎬 Demo-Modus deaktiviert');
     }
   }
 
@@ -62,7 +57,6 @@ class DemoService {
     if (!_isDemoMode) return;
 
     if (kDebugMode) {
-      print('🔄 Demo-Daten werden zurückgesetzt...');
     }
 
     // Simulierte Verzögerung
@@ -74,7 +68,6 @@ class DemoService {
     // - Cache leeren
 
     if (kDebugMode) {
-      print('✅ Demo-Daten zurückgesetzt');
     }
   }
 

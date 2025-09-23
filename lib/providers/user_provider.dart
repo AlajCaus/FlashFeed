@@ -333,14 +333,12 @@ class UserProvider extends ChangeNotifier {
     _flashDealsProvider = flashDealsProvider;
     _retailersProvider = retailersProvider;
 
-    debugPrint('UserProvider: Registered with all providers for freemium enforcement');
   }
 
   void unregisterFromProviders() {
     _offersProvider = null;
     _flashDealsProvider = null;
     _retailersProvider = null;
-    debugPrint('UserProvider: Unregistered from all providers');
   }
 
   // Task 16: Apply Freemium Limits

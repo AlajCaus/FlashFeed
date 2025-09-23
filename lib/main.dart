@@ -70,8 +70,6 @@ void _handleDemoMode() {
       demoService.handleUrlParameters(params);
 
       if (kDebugMode) {
-        print('URL Parameters: $params');
-        print('Demo Mode: ${demoService.isDemoMode}');
       }
     }
   }

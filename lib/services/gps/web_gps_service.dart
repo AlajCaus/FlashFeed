@@ -21,7 +21,6 @@ class WebGPSService implements GPSService {
 
   @override
   Future<bool> requestPermission() async {
-    debugPrint('🌐 WebGPSService: Requesting GPS permission from browser...');
 
     try {
       // Check if geolocation is available
@@ -33,7 +32,6 @@ class WebGPSService implements GPSService {
 
       geolocation.getCurrentPosition().then(
         (html.Geoposition position) {
-          debugPrint('✅ GPS permission granted');
           _hasPermission = true;
           _permissionChecked = true;
 
@@ -59,18 +57,14 @@ class WebGPSService implements GPSService {
             // Handle different error codes
             switch (errorCode) {
               case 1: // PERMISSION_DENIED
-                debugPrint('User denied GPS permission');
                 break;
               case 2: // POSITION_UNAVAILABLE
-                debugPrint('Position unavailable');
                 break;
               case 3: // TIMEOUT
-                debugPrint('GPS request timed out');
                 break;
             }
           }
 
-          debugPrint('❌ GPS permission denied or error: $errorMessage');
           _hasPermission = false;
           _permissionChecked = true;
           completer.complete(false);
@@ -81,7 +75,6 @@ class WebGPSService implements GPSService {
       return completer.future.timeout(
         Duration(seconds: 10),
         onTimeout: () {
-          debugPrint('⏱️ GPS permission request timed out');
           _hasPermission = false;
           _permissionChecked = true;
           return false;
@@ -89,7 +82,6 @@ class WebGPSService implements GPSService {
       );
 
     } catch (e) {
-      debugPrint('❌ Error requesting GPS permission: $e');
       _hasPermission = false;
       _permissionChecked = true;
       return false;
@@ -98,7 +90,6 @@ class WebGPSService implements GPSService {
 
   @override
   Future<GPSResult> getCurrentLocation() async {
-    debugPrint('📍 WebGPSService: Getting current location from browser...');
 
     // Check permission first
     if (!_permissionChecked) {
@@ -140,7 +131,6 @@ class WebGPSService implements GPSService {
             final lng = coords.longitude?.toDouble() ?? 0.0;
             final accuracy = coords.accuracy?.toDouble();
 
-            debugPrint('✅ GPS location obtained: $lat, $lng (accuracy: ${accuracy}m)');
 
             // Cache the position
             _lastLatitude = lat;
@@ -162,14 +152,12 @@ class WebGPSService implements GPSService {
           if (error is html.PositionError) {
             errorMessage = error.message ?? 'Position error';
           }
-          debugPrint('❌ Error getting GPS location: $errorMessage');
 
           // If we have cached position less than 5 minutes old, use it
           if (_lastLatitude != null &&
               _lastLongitude != null &&
               _lastPositionTime != null &&
               DateTime.now().difference(_lastPositionTime!).inMinutes < 5) {
-            debugPrint('📦 Using cached GPS position');
             completer.complete(GPSResult(
               latitude: _lastLatitude!,
               longitude: _lastLongitude!,
@@ -186,7 +174,6 @@ class WebGPSService implements GPSService {
       return completer.future.timeout(
         Duration(seconds: 20),
         onTimeout: () {
-          debugPrint('⏱️ GPS location request timed out');
 
           // Use cached position if available
           if (_lastLatitude != null && _lastLongitude != null) {
@@ -203,14 +190,12 @@ class WebGPSService implements GPSService {
       );
 
     } catch (e) {
-      debugPrint('❌ Exception getting GPS location: $e');
       return _getFallbackLocation(e.toString());
     }
   }
 
   @override
   Future<AddressResult> reverseGeocode(double latitude, double longitude) async {
-    debugPrint('🗺️ WebGPSService: Reverse geocoding $latitude, $longitude');
 
     // Enhanced reverse geocoding with more German cities
     // This would ideally use a real geocoding API, but for MVP we use mappings
@@ -337,7 +322,6 @@ class WebGPSService implements GPSService {
 
   /// Fallback location when GPS fails
   GPSResult _getFallbackLocation(String? errorMessage) {
-    debugPrint('🔄 Using fallback location due to: $errorMessage');
 
     // Try to determine location based on timezone or language
     final timeZone = DateTime.now().timeZoneName;

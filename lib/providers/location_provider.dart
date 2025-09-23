@@ -87,7 +87,6 @@ class LocationProvider extends ChangeNotifier {
   LocationProvider({GPSService? gpsService, MockDataService? mockDataService})
     : _gpsService = gpsService ?? GPSFactory.create(),
       _mockDataServiceInstance = mockDataService {
-    debugPrint('🔧 LocationProvider: Initialized with ${_gpsService.runtimeType}');
   }
   
   // Disposal check helper
@@ -242,12 +241,10 @@ class LocationProvider extends ChangeNotifier {
 
     // Prevent duplicate registrations
     if (_locationChangeCallbacks.contains(callback)) {
-      debugPrint('⚠️ LocationProvider: Duplicate location callback registration ignored.');
       return;
     }
 
     _locationChangeCallbacks.add(callback);
-    debugPrint('✅ LocationProvider: Location callback registered. Total: ${_locationChangeCallbacks.length}');
   }
 
   void registerRegionalDataCallback(Function(String?, List<String>) callback) {
@@ -257,21 +254,17 @@ class LocationProvider extends ChangeNotifier {
 
     // Prevent duplicate registrations
     if (_regionalDataCallbacks.contains(callback)) {
-      debugPrint('⚠️ LocationProvider: Duplicate regional data callback registration ignored.');
       return;
     }
 
     _regionalDataCallbacks.add(callback);
-    debugPrint('✅ LocationProvider: Regional data callback registered. Total: ${_regionalDataCallbacks.length}');
   }
   
   void unregisterLocationChangeCallback(VoidCallback callback) {
     _checkDisposed();
     final wasRemoved = _locationChangeCallbacks.remove(callback);
     if (wasRemoved) {
-      debugPrint('✅ LocationProvider: Location callback unregistered. Remaining: ${_locationChangeCallbacks.length}');
     } else {
-      debugPrint('⚠️ LocationProvider: Location callback not found for unregistration.');
     }
   }
 
@@ -279,9 +272,7 @@ class LocationProvider extends ChangeNotifier {
     _checkDisposed();
     final wasRemoved = _regionalDataCallbacks.remove(callback);
     if (wasRemoved) {
-      debugPrint('✅ LocationProvider: Regional data callback unregistered. Remaining: ${_regionalDataCallbacks.length}');
     } else {
-      debugPrint('⚠️ LocationProvider: Regional data callback not found for unregistration.');
     }
   }
   
@@ -290,7 +281,6 @@ class LocationProvider extends ChangeNotifier {
   /// Implementiert Fallback-Kette: GPS → Cache → Dialog
   Future<bool> ensureLocationData({bool forceRefresh = false}) async {
     _checkDisposed();
-    debugPrint('🗺️ LocationProvider: Starte intelligente Location-Bestimmung...');
 
     // Check if we're in a test environment
     final isTestEnvironment = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
@@ -308,44 +298,36 @@ class LocationProvider extends ChangeNotifier {
 
     // Fallback 1: GPS-Lokalisierung (wenn aktiviert und nicht force-refresh bei Cache)
     if (_useGPS && (forceRefresh || _currentLocationSource == LocationSource.none)) {
-      debugPrint('📍 Fallback 1: GPS-Lokalisierung versuchen...');
 
       try {
         await getCurrentLocation();
         if (hasLocation) {
           // LocationSource.gps is already set in getCurrentLocation()
-          debugPrint('✅ GPS-Lokalisierung erfolgreich');
           return true;
         }
       } catch (e) {
-        debugPrint('❌ GPS-Lokalisierung fehlgeschlagen: $e');
       }
     }
 
     // Fallback 2: LocalStorage PLZ-Cache (nur wenn nicht force-refresh)
     if (!forceRefresh) {
-      debugPrint('💾 Fallback 2: LocalStorage PLZ-Cache laden...');
 
       try {
         final cachedPLZ = await _loadPLZFromCache();
         if (cachedPLZ != null) {
           await _setPLZAsLocation(cachedPLZ);
           _currentLocationSource = LocationSource.cachedPLZ;
-          debugPrint('✅ PLZ-Cache erfolgreich geladen: $cachedPLZ');
           return true;
         }
       } catch (e) {
-        debugPrint('❌ PLZ-Cache-Laden fehlgeschlagen: $e');
       }
     }
 
     // Fallback 3: Default to Berlin Mitte for demo purposes (not in tests)
     // In tests, we want to properly test the failure case
     if (!isTestEnvironment) {
-      debugPrint('📍 Fallback 3: Verwende Berlin Mitte als Demo-Location');
       await setUserPLZ('10115');  // Berlin Mitte
       _currentLocationSource = LocationSource.userPLZ;
-      debugPrint('✅ Demo-Location gesetzt: Berlin Mitte (10115)');
       return true;
     }
 
@@ -361,14 +343,11 @@ class LocationProvider extends ChangeNotifier {
       final cachedPLZ = await _storageService!.getUserPLZ();
       
       if (cachedPLZ != null) {
-        debugPrint('✅ LocalStorage: User-PLZ "$cachedPLZ" geladen');
         return cachedPLZ;
       } else {
-        debugPrint('💭 LocalStorage: Keine User-PLZ gespeichert');
         return null;
       }
     } catch (e) {
-      debugPrint('❌ PLZ-Cache nicht verfügbar oder abgelaufen');
       return null;
     }
   }
@@ -378,9 +357,7 @@ class LocationProvider extends ChangeNotifier {
     try {
       _storageService ??= await LocalStorageService.getInstance();
       await _storageService!.saveUserPLZ(plz);
-      debugPrint('✅ LocalStorage: User-PLZ "$plz" gespeichert');
     } catch (e) {
-      debugPrint('⚠️ PLZ-Cache speichern fehlgeschlagen');
     }
   }
   
@@ -411,8 +388,6 @@ class LocationProvider extends ChangeNotifier {
       // FIX: Set address field properly for tests
       _address = '$plz, $region, Deutschland';
       
-      debugPrint('🎯 PLZ $plz → Region: $region');
-      debugPrint('🗺️ PLZ $plz → Koordinaten: $_latitude, $_longitude');
       
       await _updateRegionalData();
       
@@ -422,7 +397,6 @@ class LocationProvider extends ChangeNotifier {
       notifyListeners();
       
     } catch (e) {
-      debugPrint('❌ PLZ-Location-Setup fehlgeschlagen: $e');
 
       // Task 17: Specific error message for invalid PLZ
       if (plz.length != 5) {
@@ -445,9 +419,6 @@ class LocationProvider extends ChangeNotifier {
     _availableRetailersInRegion = getAvailableRetailersForPLZ(plz);
     
     final region = _getRegionForPLZ(plz);
-    debugPrint('🏪 PLZ $plz → Region: $region');
-    debugPrint('🏪 Verfügbare Retailer: $_availableRetailersInRegion');
-    debugPrint('🏪 MockDataService: ${_mockDataService.retailers.length} total retailers');
   }
   
   /// Helper: Get coordinates for PLZ (built-in mapping)
@@ -599,11 +570,9 @@ class LocationProvider extends ChangeNotifier {
         _availableRetailersInRegion.clear(); // Empty retailer list
         
         // Trigger callbacks with empty data so providers can generate warnings
-        debugPrint('🔔 DEBUG: Triggering callbacks for invalid PLZ with empty retailer list...');
         _notifyLocationCallbacks();
         notifyListeners();
         
-        debugPrint('✅ DEBUG: Graceful handling completed for invalid PLZ');
         return false; // Still return false (PLZ was invalid), but handled gracefully
       }
       
@@ -618,7 +587,6 @@ class LocationProvider extends ChangeNotifier {
         await _savePLZToCache(plz);
       }
       
-      debugPrint('User-PLZ gesetzt: $plz');
       return true;
       
     } catch (e) {
@@ -633,14 +601,11 @@ class LocationProvider extends ChangeNotifier {
     try {
       _storageService ??= await LocalStorageService.getInstance();
       await _storageService!.clearUserPLZ();
-      debugPrint('🧹 LocalStorage: User-PLZ Cache geleert');
       
       // PLZ-Cache aus PLZLookupService löschen
       _plzLookupService?.clearCache();
-      debugPrint('🧹 PLZ-Cache gelöscht');
       
     } catch (e) {
-      debugPrint('⚠️ PLZ-Cache löschen fehlgeschlagen: $e');
     }
   }
   
@@ -658,7 +623,6 @@ class LocationProvider extends ChangeNotifier {
     _locationError = null;
     _isLoadingLocation = false;
 
-    debugPrint('🧹 LocationProvider: Alle Location-Daten gelöscht');
 
     // Notify callbacks so dependent providers can clear their state
     _notifyLocationCallbacks();
@@ -683,7 +647,6 @@ class LocationProvider extends ChangeNotifier {
     _setLoadingLocation(true);
     _setLocationError(null);
     
-    debugPrint('🔧 getCurrentLocation: canUseLocation = $canUseLocation');
     
     try {
       // Use GPS Service (handles delays based on implementation)
@@ -694,7 +657,6 @@ class LocationProvider extends ChangeNotifier {
         _longitude = result.longitude;
         _currentLocationSource = LocationSource.gps;
         
-        debugPrint('✅ getCurrentLocation: LocationSource set to GPS');
         
         // Start background updates if enabled
         _startLocationUpdates();
@@ -705,7 +667,6 @@ class LocationProvider extends ChangeNotifier {
         // Provider-Callbacks benachrichtigen
         _notifyLocationCallbacks();
         
-        debugPrint('✅ getCurrentLocation: notifyListeners called');
         notifyListeners();
         
         return true;
@@ -768,7 +729,6 @@ class LocationProvider extends ChangeNotifier {
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     double distance = earthRadius * c;
     
-    debugPrint('📰 Distance: ($lat1, $lon1) → ($targetLat, $targetLon) = ${distance.toStringAsFixed(2)}km');
     
     return distance;
   }
@@ -815,7 +775,6 @@ class LocationProvider extends ChangeNotifier {
       }
       
     } catch (e) {
-      debugPrint('Reverse geocoding error: $e');
     }
   }
   
@@ -870,7 +829,6 @@ class LocationProvider extends ChangeNotifier {
   void _notifyLocationCallbacks() {
     if (_disposed) return;
     
-    debugPrint('LocationProvider: Benachrichtige ${_locationChangeCallbacks.length} Location-Callbacks, ${_regionalDataCallbacks.length} Regional-Data-Callbacks');
     
     try {
       // Create copies to prevent concurrent modification
@@ -882,7 +840,6 @@ class LocationProvider extends ChangeNotifier {
         try {
           callback();
         } catch (e) {
-          debugPrint('LocationProvider: Fehler in LocationChange-Callback: $e');
           // Continue with next callback
         }
       }
@@ -892,15 +849,12 @@ class LocationProvider extends ChangeNotifier {
         try {
           callback(_postalCode, _availableRetailersInRegion);
         } catch (e) {
-          debugPrint('LocationProvider: Fehler in RegionalData-Callback: $e');
           // Continue with next callback
         }
       }
       
-      debugPrint('✅ LocationProvider: Alle Callbacks erfolgreich benachrichtigt');
       
     } catch (e) {
-      debugPrint('❌ LocationProvider: Fehler bei Callback-Benachrichtigung: $e');
     }
   }
   

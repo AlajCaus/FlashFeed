@@ -37,7 +37,6 @@ class MockDataService {
     : _seed = seed,
       _random = Random(seed ?? DateTime.now().millisecondsSinceEpoch) {
     if (seed != null) {
-      debugPrint('🎲 MockDataService: Using seed $seed for deterministic data');
     }
   }
   
@@ -124,7 +123,6 @@ class MockDataService {
   Future<void> initializeMockData({bool testMode = false}) async {
     if (_isInitialized) return;
 
-    debugPrint('🏗️ MockDataService: Initialisiere Mock-Daten...');
 
     try {
       // Essential data needed at startup:
@@ -147,7 +145,6 @@ class MockDataService {
       _flashDealsLoaded = true;
 
       if (testMode) {
-        debugPrint('⚠️ MockDataService: Test-Mode - Timer werden nicht gestartet');
       }
 
       _isInitialized = true;
@@ -157,16 +154,9 @@ class MockDataService {
         _startPeriodicUpdates();
       }
 
-      // Task 18.2: Log only loaded data
-      debugPrint('✅ MockDataService: Initialisierung abgeschlossen');
-      if (_retailersLoaded) debugPrint('   • ${_retailers.length} Retailers generiert');
-      if (_storesLoaded) debugPrint('   • ${_stores.length} Stores generiert');
-      if (_productsLoaded) debugPrint('   • ${_products.length} Products generiert');
-      if (_offersLoaded) debugPrint('   • ${_offers.length} Offers generiert');
-      if (_flashDealsLoaded) debugPrint('   • ${_flashDeals.length} Flash Deals generiert');
+      // Task 18.2: Data loading completed
 
     } catch (e) {
-      debugPrint('❌ MockDataService Fehler: $e');
       rethrow;
     }
   }
@@ -188,7 +178,6 @@ class MockDataService {
       _onFlashDealsUpdated?.call(); // Provider-Update für Timer
     });
 
-    debugPrint('⏰ MockDataService: Timer gestartet (Flash Deals: 2h, State-Check: 30s)');
   }
 
   // Mock Data Generation basierend auf Datenbank-Schema
@@ -655,11 +644,9 @@ class MockDataService {
       }
     }
     
-    debugPrint('📊 Offer Distribution:');
     for (final retailer in _retailers) {
       final count = _offers.where((o) => o.retailer == retailer.name).length;
       if (count > 0) {
-        debugPrint('   • ${retailer.name}: $count offers');
       }
     }
     
@@ -724,7 +711,6 @@ class MockDataService {
       if (newDeal != null) _flashDeals.add(newDeal);
     }
     
-    debugPrint('🔄 Flash Deals aktualisiert: ${_flashDeals.length} aktive Deals');
   }
 
   void _updateCountdownTimers() {
@@ -756,7 +742,6 @@ class MockDataService {
     }
     
     if (hasChanges) {
-      debugPrint('⏱️ Countdown Timer aktualisiert: ${_flashDeals.length} aktive Deals');
     }
   }
 
@@ -817,10 +802,6 @@ class MockDataService {
     // Notify providers immediately
     _onFlashDealsUpdated?.call();
 
-    debugPrint('🎓 Professor Demo: BEEINDRUCKENDER Flash Deal generiert!');
-    debugPrint('   → ${deal.productName} von ${deal.brand}');
-    debugPrint('   → ${deal.discountPercentage}% Rabatt (${deal.originalPrice.toStringAsFixed(2)}€ → ${deal.flashPrice.toStringAsFixed(2)}€)');
-    debugPrint('   → Läuft ab in ${deal.remainingMinutes} Minuten!');
 
     return deal;
   }
@@ -1123,6 +1104,5 @@ class MockDataService {
     // Mark as disposed
     _isInitialized = false;
     
-    debugPrint('🧹 MockDataService: Timer gestoppt');
   }
 }

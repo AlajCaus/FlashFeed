@@ -48,7 +48,6 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
     // Task 21: Check for Demo Mode and auto-login as Premium
     final demoService = DemoService();
     if (demoService.isDemoMode) {
-      debugPrint('🎬 Demo Mode detected - activating Premium features');
       // Auto-login as Premium user for demo
       userProvider.loginUser(
         'demo-user',
@@ -58,7 +57,6 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
       userProvider.upgradeToPremium();
     } else {
       // Default Demo setup: Free user with only EDEKA
-      debugPrint('🛒 Demo Mode: Starting as Free user with EDEKA');
       userProvider.loginUser(
         'demo-user',
         'Demo User',
@@ -83,16 +81,12 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
       retailersProvider: retailersProvider,
     );
 
-    debugPrint('✅ ProviderInitializer: Cross-provider communication established');
-    debugPrint('✅ ProviderInitializer: UserProvider freemium enforcement registered');
 
     // Trigger initial location detection
     // This will cascade updates to all registered providers
     locationProvider.ensureLocationData().then((success) {
       if (success) {
-        debugPrint('✅ ProviderInitializer: Initial location data loaded');
       } else {
-        debugPrint('⚠️ ProviderInitializer: No location data available');
       }
     });
   }

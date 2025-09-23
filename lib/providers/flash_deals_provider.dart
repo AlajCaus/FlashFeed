@@ -80,31 +80,26 @@ class FlashDealsProvider extends ChangeNotifier {
 
     // Get initial location data if available
     if (locationProvider.hasLocation) {
-      debugPrint('FlashDealsProvider: Initial location available - Lat: ${locationProvider.latitude}, Lng: ${locationProvider.longitude}');
       _userPLZ = locationProvider.postalCode;
       _availableRetailers = List.from(locationProvider.availableRetailersInRegion);
       // Apply distance-based filtering for Flash Deals
       _loadFlashDealsFromService();  // This will apply regional filtering
     } else {
-      debugPrint('FlashDealsProvider: No initial location available yet');
       // Still need to load flash deals, but without filtering
       _loadFlashDealsFromService();
     }
 
-    debugPrint('FlashDealsProvider: Registered with LocationProvider (hasLocation: ${locationProvider.hasLocation})');
   }
   
   void unregisterFromLocationProvider(LocationProvider locationProvider) {
     locationProvider.unregisterLocationChangeCallback(_onLocationChanged);
     locationProvider.unregisterRegionalDataCallback(_onRegionalDataChanged);
     _locationProvider = null; // Clear reference
-    debugPrint('FlashDealsProvider: Unregistered from LocationProvider');
   }
   
   // Task 5c.5: Callback handlers
   void _onLocationChanged() {
     if (_disposed) return;
-    debugPrint('FlashDealsProvider: Location changed, resetting flash deals timer');
     
     // Reset timer state when location changes
     _resetTimerState();
@@ -116,7 +111,6 @@ class FlashDealsProvider extends ChangeNotifier {
     
     // Handle location cleared case
     if (plz == null) {
-      debugPrint('FlashDealsProvider: Location cleared');
       _userPLZ = null;
       _availableRetailers = [];
       if (!_disposed) notifyListeners();
@@ -124,7 +118,6 @@ class FlashDealsProvider extends ChangeNotifier {
     }
     
     if (availableRetailers.isNotEmpty) {
-      debugPrint('FlashDealsProvider: Regional data changed - PLZ: $plz');
       _userPLZ = plz;
       _availableRetailers = List.from(availableRetailers);
       
@@ -161,7 +154,6 @@ class FlashDealsProvider extends ChangeNotifier {
       }
     }
     
-    debugPrint('🔄 Timer state reset: ${_flashDeals.length} valid deals remaining');
   }
   
   // Apply regional filtering based on DISTANCE AND retailer availability
@@ -169,7 +161,6 @@ class FlashDealsProvider extends ChangeNotifier {
     // Get user location from LocationProvider
     final locationProvider = _locationProvider;
     if (locationProvider == null || !locationProvider.hasLocation) {
-      debugPrint('📍 FlashDealsProvider: No user location available, showing all deals');
       return;
     }
 
@@ -194,16 +185,12 @@ class FlashDealsProvider extends ChangeNotifier {
 
       if (distance <= maxDistanceKm && isRetailerAvailable) {
         filteredDeals.add(deal);
-        debugPrint('✅ Flash Deal included: ${deal.productName} at ${deal.storeName} (${distance.toStringAsFixed(1)}km)');
       } else if (distance > maxDistanceKm) {
-        debugPrint('❌ Flash Deal too far: ${deal.productName} at ${deal.storeName} (${distance.toStringAsFixed(1)}km)');
       } else {
-        debugPrint('❌ Flash Deal retailer not available: ${deal.retailer} not in region');
       }
     }
 
     _flashDeals = filteredDeals;
-    debugPrint('📍 Regional filtering by distance and retailer: $originalCount → ${_flashDeals.length} deals (within ${maxDistanceKm}km)');
   }
   
   // Initialize Provider-Callbacks
@@ -235,14 +222,12 @@ class FlashDealsProvider extends ChangeNotifier {
       }
     });
 
-    debugPrint('⏱️ FlashDealsProvider: Echtzeit-Countdown gestartet (1-Sekunden-Updates)');
   }
 
   void _stopCountdownTimer() {
     _countdownTimer?.cancel();
     _countdownTimer = null;
     _isCountdownActive = false;
-    debugPrint('⏹️ FlashDealsProvider: Countdown-Timer gestoppt');
   }
 
   // Public methods for test control
@@ -291,7 +276,6 @@ class FlashDealsProvider extends ChangeNotifier {
         deal.expiresAt.difference(now).inSeconds <= 0);
       final removedCount = beforeCount - _flashDeals.length;
       if (removedCount > 0) {
-        debugPrint('🗑️ $removedCount Flash Deal(s) abgelaufen und entfernt');
       }
     }
 
@@ -306,23 +290,18 @@ class FlashDealsProvider extends ChangeNotifier {
     if (_mockDataService.isInitialized) {
       // Filter out hidden deals
       final allDeals = _mockDataService.flashDeals;
-      debugPrint('🔍 FlashDealsProvider: Loading ${allDeals.length} flash deals from service');
 
       _flashDeals = allDeals
           .where((deal) => !_hiddenDealIds.contains(deal.id))
           .toList();
-      debugPrint('🔍 FlashDealsProvider: After hiding filter: ${_flashDeals.length} deals');
 
       _applyRegionalFiltering(); // FIX: Apply regional filtering first
-      debugPrint('🔍 FlashDealsProvider: After regional filter: ${_flashDeals.length} deals');
 
       // TEMPORARILY DISABLED: _applyFilters() was removing all deals
       // _applyFilters();
-      debugPrint('🔍 FlashDealsProvider: Filters temporarily disabled to show deals');
 
       if (!_disposed) notifyListeners();
     } else {
-      debugPrint('❌ FlashDealsProvider: MockDataService not initialized!');
     }
   }
   
@@ -359,9 +338,6 @@ class FlashDealsProvider extends ChangeNotifier {
         _startCountdownTimer();
       }
 
-      debugPrint('🎓 Professor Demo: Beeindruckender Flash Deal generiert!');
-      debugPrint('   → ${deal.productName} (-${deal.discountPercentage}%)');
-      debugPrint('   → Läuft ab in ${deal.remainingMinutes} Minuten');
 
       return deal;
     } catch (e) {
@@ -373,7 +349,6 @@ class FlashDealsProvider extends ChangeNotifier {
   // Task 14: Mock Push Notification
   void _showFlashDealNotification(FlashDeal deal) {
     // This will be called from UI to show SnackBar or Dialog
-    debugPrint('🔔 NEU: ${deal.productName} jetzt -${deal.discountPercentage}%!');
   }
   
   // Filter by Urgency Level
@@ -543,9 +518,7 @@ class FlashDealsProvider extends ChangeNotifier {
       try {
         _locationProvider!.unregisterLocationChangeCallback(_onLocationChanged);
         _locationProvider!.unregisterRegionalDataCallback(_onRegionalDataChanged);
-        debugPrint('✅ FlashDealsProvider: Auto-unregistered callbacks during disposal');
       } catch (e) {
-        debugPrint('⚠️ FlashDealsProvider: Error during callback cleanup: $e');
       }
       _locationProvider = null;
     }

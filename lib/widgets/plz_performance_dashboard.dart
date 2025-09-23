@@ -398,14 +398,12 @@ class PLZPerformanceMonitor {
       _printPerformanceStats(service);
     });
     
-    debugPrint('PLZ Performance Console Monitoring started (${interval.inMinutes}min interval)');
   }
   
   /// Console-Monitoring stoppen
   static void stopConsoleMonitoring() {
     _consoleTimer?.cancel();
     _consoleTimer = null;
-    debugPrint('PLZ Performance Console Monitoring stopped');
   }
   
   /// Performance-Stats in Console ausgeben
@@ -413,11 +411,5 @@ class PLZPerformanceMonitor {
     final stats = service.getCacheStats();
     final memoryStats = PLZCacheMemoryManager.instance.getMemoryStats();
     
-    debugPrint('=== PLZ Performance Stats ===');
-    debugPrint('Cache: ${stats['entries']}/${stats['maxSize']} entries (${stats['usagePercent']}%)');
-    debugPrint('Hit Rate: ${stats['hitRate']} (${stats['cacheHits']} hits, ${stats['cacheMisses']} misses)');
-    debugPrint('Memory: ${stats['estimatedMemoryKB']}, Evictions: ${stats['cacheEvictions']}');
-    debugPrint('Memory Pressure: ${memoryStats['memoryPressureDetected']}');
-    debugPrint('=============================');
   }
 }

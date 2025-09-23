@@ -136,21 +136,15 @@ class MockOffersRepository implements OffersRepository {
     // Simuliere Netzwerk-Delay
     await Future.delayed(Duration(milliseconds: 300));
 
-    // Debug output to understand the issue
-    print('DEBUG MockOffersRepository.getAllOffers():');
-    print('  - _dataService.isInitialized: ${_dataService.isInitialized}');
-    print('  - _dataService.offers.length: ${_dataService.offers.length}');
-    print('  - _dataService.offers.isEmpty: ${_dataService.offers.isEmpty}');
+    // Check service initialization
 
     // ALWAYS use data from MockDataService when available
     // The service generates offers with thumbnailUrl
     if (_dataService.isInitialized && _dataService.offers.isNotEmpty) {
-      print('MockOffersRepository: Returning ${_dataService.offers.length} offers from MockDataService (with images)');
       return List.from(_dataService.offers);
     }
 
     // Only use hardcoded _mockOffers as last resort (these have no thumbnailUrl!)
-    print('WARNING: MockOffersRepository using hardcoded offers without images!');
     return List.from(_mockOffers);
   }
 
@@ -233,12 +227,6 @@ class MockOffersRepository implements OffersRepository {
         regularOffers.sort((a, b) => a.price.compareTo(b.price));
         // Combine: Flash Deals first, then regular offers
         sortedOffers = [...flashDeals, ...regularOffers];
-        // Debug: Print first 10 sorted prices
-        print('DEBUG: Sorted prices (first 10):');
-        for (int i = 0; i < sortedOffers.length && i < 10; i++) {
-          final isFlash = (sortedOffers[i].discountPercent ?? 0) >= 30.0;
-          print('  ${i+1}. ${isFlash ? "🔥" : "  "} ${sortedOffers[i].productName}: ${sortedOffers[i].price}€');
-        }
         break;
       case OfferSortType.priceDesc:
         flashDeals.sort((a, b) => b.price.compareTo(a.price));

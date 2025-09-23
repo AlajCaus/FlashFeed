@@ -8,12 +8,10 @@ class WebAudioService {
       _playWebSound();
     } else {
       // On mobile, we could use a different approach
-      debugPrint('Notification sound: Mobile implementation not yet available');
     }
   }
 
   static void _playWebSound() {
     // This will be overridden by web implementation
-    debugPrint('Web Audio: Playing notification sound');
   }
 }
