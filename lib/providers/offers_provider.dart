@@ -1148,17 +1148,25 @@ class OffersProvider extends ChangeNotifier {
   }
   
   /// Get featured offers for "Top Deals" showcase
-  List<Offer> getFeaturedOffers({int limit = 5}) {
-    final featured = _filteredOffers.where((offer) => 
-        // Feature criteria: has discount and still valid
-        offer.hasDiscount && offer.isValid
+  /// ALL offers with 30%+ discount are considered featured (no limit!)
+  List<Offer> getFeaturedOffers({int? limit}) {
+    final featured = _filteredOffers.where((offer) =>
+        // Feature criteria: 30%+ discount and still valid
+        offer.hasDiscount &&
+        offer.isValid &&
+        (offer.discountPercent ?? 0) >= 30.0
     ).toList();
-    
+
     // Sort by discount percentage descending
-    featured.sort((a, b) => 
+    featured.sort((a, b) =>
         (b.discountPercent ?? 0).compareTo(a.discountPercent ?? 0));
-    
-    return featured.take(limit).toList();
+
+    // If limit is provided, use it (for backwards compatibility)
+    // Otherwise return ALL featured offers
+    if (limit != null) {
+      return featured.take(limit).toList();
+    }
+    return featured;
   }
   
   /// Get nearby offers based on user location

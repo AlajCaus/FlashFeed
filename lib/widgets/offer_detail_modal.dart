@@ -383,14 +383,39 @@ Gefunden mit FlashFeed!
           ),
           child: Column(
             children: [
-              // Handle
-              Container(
-                margin: const EdgeInsets.only(top: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: borderColor,
-                  borderRadius: BorderRadius.circular(2),
+              // Header with handle and close button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox(width: 40), // Balance for close button
+                    // Handle
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: borderColor,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    // Close button
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          size: 20,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               
@@ -400,20 +425,28 @@ Gefunden mit FlashFeed!
                   controller: scrollController,
                   padding: const EdgeInsets.all(16),
                   children: [
-                    // Product image placeholder
+                    // Product image (using thumbnailUrl like offer cards)
                     Container(
                       height: 200,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F5F5),
                         borderRadius: BorderRadius.circular(12),
+                        image: widget.offer.thumbnailUrl != null && widget.offer.thumbnailUrl!.isNotEmpty
+                            ? DecorationImage(
+                                image: NetworkImage(widget.offer.thumbnailUrl!),
+                                fit: BoxFit.contain,
+                              )
+                            : null,
                       ),
-                      child: Center(
-                        child: Icon(
-                          _getCategoryIcon(widget.offer.flashFeedCategory),
-                          size: 80,
-                          color: primaryGreen.withAlpha(153),
-                        ),
-                      ),
+                      child: widget.offer.thumbnailUrl == null || widget.offer.thumbnailUrl!.isEmpty
+                          ? Center(
+                              child: Icon(
+                                _getCategoryIcon(widget.offer.flashFeedCategory),
+                                size: 80,
+                                color: primaryGreen.withAlpha(153),
+                              ),
+                            )
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     

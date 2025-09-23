@@ -214,37 +214,66 @@ class MockOffersRepository implements OffersRepository {
 
     List<Offer> sortedOffers = List.from(offers);
 
+    // First separate Flash Deals (Top Deals with discount >= 30%) from regular offers
+    List<Offer> flashDeals = [];
+    List<Offer> regularOffers = [];
+
+    for (var offer in sortedOffers) {
+      if ((offer.discountPercent ?? 0) >= 30.0) {
+        flashDeals.add(offer);
+      } else {
+        regularOffers.add(offer);
+      }
+    }
+
+    // Apply sorting to each group separately
     switch (sortType) {
       case OfferSortType.priceAsc:
-        sortedOffers.sort((a, b) => a.price.compareTo(b.price));
+        flashDeals.sort((a, b) => a.price.compareTo(b.price));
+        regularOffers.sort((a, b) => a.price.compareTo(b.price));
+        // Combine: Flash Deals first, then regular offers
+        sortedOffers = [...flashDeals, ...regularOffers];
         // Debug: Print first 10 sorted prices
         print('DEBUG: Sorted prices (first 10):');
         for (int i = 0; i < sortedOffers.length && i < 10; i++) {
-          print('  ${i+1}. ${sortedOffers[i].productName}: ${sortedOffers[i].price}€');
+          final isFlash = (sortedOffers[i].discountPercent ?? 0) >= 30.0;
+          print('  ${i+1}. ${isFlash ? "🔥" : "  "} ${sortedOffers[i].productName}: ${sortedOffers[i].price}€');
         }
         break;
       case OfferSortType.priceDesc:
-        sortedOffers.sort((a, b) => b.price.compareTo(a.price));
+        flashDeals.sort((a, b) => b.price.compareTo(a.price));
+        regularOffers.sort((a, b) => b.price.compareTo(a.price));
+        sortedOffers = [...flashDeals, ...regularOffers];
         break;
       case OfferSortType.discountDesc:
-        sortedOffers.sort((a, b) => 
+        flashDeals.sort((a, b) =>
           (b.discountPercent ?? 0).compareTo(a.discountPercent ?? 0));
+        regularOffers.sort((a, b) =>
+          (b.discountPercent ?? 0).compareTo(a.discountPercent ?? 0));
+        sortedOffers = [...flashDeals, ...regularOffers];
         break;
       case OfferSortType.distanceAsc:
         // Task 9.1: Use provided coordinates or Berlin Mitte as fallback
         final lat = userLat ?? 52.5200;
         final lng = userLng ?? 13.4050;
-        sortedOffers.sort((a, b) => 
+        flashDeals.sort((a, b) =>
           a.distanceTo(lat, lng).compareTo(b.distanceTo(lat, lng)));
+        regularOffers.sort((a, b) =>
+          a.distanceTo(lat, lng).compareTo(b.distanceTo(lat, lng)));
+        sortedOffers = [...flashDeals, ...regularOffers];
         break;
       case OfferSortType.validityDesc:
-        sortedOffers.sort((a, b) => b.validUntil.compareTo(a.validUntil));
+        flashDeals.sort((a, b) => b.validUntil.compareTo(a.validUntil));
+        regularOffers.sort((a, b) => b.validUntil.compareTo(a.validUntil));
+        sortedOffers = [...flashDeals, ...regularOffers];
         break;
       case OfferSortType.nameAsc:
-        sortedOffers.sort((a, b) => a.productName.compareTo(b.productName));
+        flashDeals.sort((a, b) => a.productName.compareTo(b.productName));
+        regularOffers.sort((a, b) => a.productName.compareTo(b.productName));
+        sortedOffers = [...flashDeals, ...regularOffers];
         break;
     }
-    
+
     return sortedOffers;
   }
   
