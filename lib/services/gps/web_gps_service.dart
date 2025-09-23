@@ -4,7 +4,6 @@
 import 'dart:async';
 // ignore: deprecated_member_use
 import 'dart:html' as html;
-import 'package:flutter/foundation.dart';
 import 'gps_service.dart';
 
 class WebGPSService implements GPSService {

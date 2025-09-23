@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -144,7 +144,7 @@ class _MapScreenState extends State<MapScreen> {
               },
               onPositionChanged: (position, hasGesture) {
                 setState(() {
-                  _currentZoom = position.zoom!;
+                  _currentZoom = position.zoom;
                 });
                             },
               onTap: (_, __) {
@@ -171,8 +171,8 @@ class _MapScreenState extends State<MapScreen> {
                         : _defaultCenter,
                     radius: _radiusKm * 1000, // Convert km to meters
                     useRadiusInMeter: true,
-                    color: primaryBlue.withOpacity(0.1),
-                    borderColor: primaryBlue.withOpacity(0.3),
+                    color: primaryBlue.withValues(alpha: 0.1),
+                    borderColor: primaryBlue.withValues(alpha: 0.3),
                     borderStrokeWidth: 2,
                   ),
                 ],
@@ -194,7 +194,7 @@ class _MapScreenState extends State<MapScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: userLocationColor.withOpacity(0.2),
+                          color: userLocationColor.withValues(alpha: 0.2),
                           border: Border.all(
                             color: userLocationColor,
                             width: 2,
@@ -745,7 +745,7 @@ class _MapScreenState extends State<MapScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      store.name ?? store.retailerName,
+                      store.name,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -856,7 +856,7 @@ class _MapScreenState extends State<MapScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      store.name ?? store.retailerName,
+                      store.name,
                       style: TextStyle(
                         fontSize: ResponsiveHelper.getTitleSize(context),
                         fontWeight: FontWeight.bold,

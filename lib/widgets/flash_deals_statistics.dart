@@ -57,8 +57,8 @@ class _FlashDealsStatisticsState extends State<FlashDealsStatistics>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            primaryGreen.withOpacity(0.1),
-            primaryRed.withOpacity(0.05),
+            primaryGreen.withValues(alpha: 0.1),
+            primaryRed.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -85,7 +85,7 @@ class _FlashDealsStatisticsState extends State<FlashDealsStatistics>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: primaryRed.withOpacity(0.5),
+                            color: primaryRed.withValues(alpha: 0.5),
                             blurRadius: 4,
                             spreadRadius: 1,
                           ),
@@ -194,9 +194,9 @@ class _FlashDealsStatisticsState extends State<FlashDealsStatistics>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -236,7 +236,7 @@ class _FlashDealsStatisticsState extends State<FlashDealsStatistics>
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -267,7 +267,7 @@ class _FlashDealsStatisticsState extends State<FlashDealsStatistics>
               subtitle,
               style: TextStyle(
                 fontSize: 10,
-                color: textSecondary.withOpacity(0.7),
+                color: textSecondary.withValues(alpha: 0.7),
                 fontStyle: FontStyle.italic,
               ),
             ),

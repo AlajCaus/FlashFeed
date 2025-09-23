@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 
 /// Memory-Monitoring und Auto-Cleanup für PLZLookupService Cache (Task 5b.4)
 /// 

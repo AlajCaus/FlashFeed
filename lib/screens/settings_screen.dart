@@ -272,7 +272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSectionHeader(context, '🎬 Demo-Modus'),
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
                 child: Column(
                   children: [
                     ListTile(

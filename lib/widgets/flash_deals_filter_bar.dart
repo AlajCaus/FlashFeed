@@ -202,7 +202,7 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
           provider.clearUrgencyFilter();
         }
       },
-      selectedColor: color.withOpacity(0.2),
+      selectedColor: color.withValues(alpha: 0.2),
       checkmarkColor: color,
       labelStyle: TextStyle(
         color: isSelected ? color : textSecondary,
@@ -281,9 +281,9 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: secondaryOrange,
-            inactiveTrackColor: secondaryOrange.withOpacity(0.3),
+            inactiveTrackColor: secondaryOrange.withValues(alpha: 0.3),
             thumbColor: secondaryOrange,
-            overlayColor: secondaryOrange.withOpacity(0.2),
+            overlayColor: secondaryOrange.withValues(alpha: 0.2),
           ),
           child: Slider(
             value: provider.maxRemainingMinutes?.toDouble() ?? 120,
