@@ -676,7 +676,7 @@ Task 5c bereitet State-Management für Tasks 9-10 vor:
 
 #### **Task 9: OffersProvider Implementation** ✅ **TEILWEISE ABGESCHLOSSEN**
 
-**Task 9.1: Entfernungsbasierte Sortierung mit LocationProvider** ✅ **ABGESCHLOSSEN**
+**Entfernungsbasierte Sortierung mit LocationProvider** ✅ **ABGESCHLOSSEN**
 - [x] Dynamische GPS/PLZ-Koordinaten Integration in OffersProvider
 - [x] PLZ-to-Coordinates Mapping für 10 deutsche Großstädte
 - [x] Erweiterte Repository Interface mit userLat/userLng Parameter
@@ -706,7 +706,7 @@ Task 5c bereitet State-Management für Tasks 9-10 vor:
 - [x] Comprehensive Test Suite (40+ Tests) erstellt
 - [x] Fallback-Mechanismen (category → fuzzy → lenient fuzzy)
 
-**Task 9.4: Performance & Caching Optimization** ✅ **ABGESCHLOSSEN**
+** Performance & Caching Optimization** ✅ **ABGESCHLOSSEN**
 
 **📋 IMPLEMENTIERTE FEATURES:**
 

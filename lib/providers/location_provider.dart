@@ -1,5 +1,5 @@
 // FlashFeed Location Provider - GPS & Standort
-// Erweitert: PLZ-Fallback-Kette mit LocalStorage & Dialog Integration (Task 5b.3)
+// Erweitert: PLZ-Fallback-Kette mit LocalStorage & Dialog Integration
 
 import 'dart:io' show Platform;
 import 'dart:math';
@@ -15,7 +15,7 @@ import '../services/mock_data_service.dart';
 import '../main.dart'; // For global mockDataService
 import '../models/models.dart' show Offer; // Specific imports to avoid PLZHelper conflict
 
-/// Enum für Location-Datenquellen (Task 5b.3)
+/// Enum für Location-Datenquellen
 enum LocationSource {
   none,
   gps,
@@ -31,7 +31,7 @@ class LocationProvider extends ChangeNotifier {
   // GPS Service (injected)
   final GPSService _gpsService;
   
-  // MockDataService (injected for Task 5c.1)
+  // MockDataService
   final MockDataService? _mockDataServiceInstance;
   
   // Lazy getter for MockDataService
@@ -53,8 +53,8 @@ class LocationProvider extends ChangeNotifier {
   String? _address;
   String? _city;
   String? _postalCode;
-  bool _hasLocationPermission = false;  // Task 11.4: Restored for setMockLocation
-  bool _isLocationServiceEnabled = false;  // Task 11.4: Restored for setMockLocation
+  bool _hasLocationPermission = false;  // Restored for setMockLocation
+  bool _isLocationServiceEnabled = false;  // Restored for setMockLocation
   bool _isLoadingLocation = false;
   String? _locationError;
   
@@ -63,10 +63,10 @@ class LocationProvider extends ChangeNotifier {
   bool _useGPS = true;
   bool _autoUpdateLocation = false;
   
-  // Regional Support (ready for Task 5b-5c)
+  // Regional Support
   List<String> _availableRetailersInRegion = [];
   
-  // Provider Callbacks (Task 5b.5: Cross-Provider Communication)
+  // Provider Callbacks (Cross-Provider Communication)
   final List<VoidCallback> _locationChangeCallbacks = [];
   final List<Function(String?, List<String>)> _regionalDataCallbacks = [];
 
@@ -74,7 +74,7 @@ class LocationProvider extends ChangeNotifier {
   // In a real app, callbacks are managed by widget lifecycle
   // and Provider framework, not arbitrary limits
   
-  // PLZ Fallback State (Task 5b.3)
+  // PLZ Fallback State
   String? _userPLZ; // Cached user PLZ from LocalStorage
   final bool _hasAskedForLocation = false;
   LocationSource _currentLocationSource = LocationSource.none;
@@ -168,7 +168,7 @@ class LocationProvider extends ChangeNotifier {
     return _autoUpdateLocation;
   }
   
-  // Getters - Regional (ready for Task 5c)
+  // Getters - Regional
   List<String> get availableRetailersInRegion {
     _checkDisposed();
     return List.unmodifiable(_availableRetailersInRegion);
@@ -178,7 +178,7 @@ class LocationProvider extends ChangeNotifier {
     return _availableRetailersInRegion.isNotEmpty;
   }
   
-  // Task 5c.1: Regional Retailer API Methods
+  // Regional Retailer API Methods
   /// Returns list of retailer names available in the given PLZ
   List<String> getAvailableRetailersForPLZ(String plz) {
     _checkDisposed();
@@ -203,7 +203,7 @@ class LocationProvider extends ChangeNotifier {
         .toList();
   }
   
-  // Getters - PLZ Fallback (Task 5b.3)
+  // Getters - PLZ Fallback
   String? get userPLZ {
     _checkDisposed();
     return _userPLZ;
@@ -236,7 +236,7 @@ class LocationProvider extends ChangeNotifier {
 
   // Callback limits removed - no artificial restrictions in production
   
-  // Provider Callbacks API (Task 5b.5)
+  // Provider Callbacks API
   void registerLocationChangeCallback(VoidCallback callback) {
     _checkDisposed();
 
@@ -286,7 +286,7 @@ class LocationProvider extends ChangeNotifier {
   }
   
   // CORE METHODE: ensureLocationData() für Tests
-  /// Task 5b.6: Hauptmethode für intelligente Location-Bestimmung
+  /// Hauptmethode für intelligente Location-Bestimmung
   /// Implementiert Fallback-Kette: GPS → Cache → Dialog
   Future<bool> ensureLocationData({bool forceRefresh = false}) async {
     _checkDisposed();
@@ -384,7 +384,7 @@ class LocationProvider extends ChangeNotifier {
     }
   }
   
-  /// Helper: PLZ als Location-Daten setzen (Task 5b.5: Enhanced PLZ Integration)
+  /// Helper: PLZ als Location-Daten setzen (Enhanced PLZ Integration)
   Future<void> _setPLZAsLocation(String plz) async {
     try {
       _setLoadingLocation(true);
@@ -416,7 +416,7 @@ class LocationProvider extends ChangeNotifier {
       
       await _updateRegionalData();
       
-      // Provider-Callbacks benachrichtigen (Task 5b.5)
+      // Provider-Callbacks benachrichtigen
       _notifyLocationCallbacks();
       
       notifyListeners();
@@ -424,7 +424,7 @@ class LocationProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ PLZ-Location-Setup fehlgeschlagen: $e');
 
-      // Task 17: Specific error message for invalid PLZ
+      // Specific error message for invalid PLZ
       if (plz.length != 5) {
         _setLocationError('Ungültige PLZ. Bitte geben Sie eine 5-stellige deutsche Postleitzahl ein.');
       } else if (_getCoordinatesForPLZ(plz)['lat'] == 52.5200 &&
@@ -439,9 +439,9 @@ class LocationProvider extends ChangeNotifier {
     }
   }
   
-  /// Task 5c.1: Update available retailers based on PLZ using MockDataService
+  /// Update available retailers based on PLZ using MockDataService
   void _updateAvailableRetailersForPLZ(String plz) {
-    // Use MockDataService with PLZRange system from Task 5a
+    // Use MockDataService with PLZRange system
     _availableRetailersInRegion = getAvailableRetailersForPLZ(plz);
     
     final region = _getRegionForPLZ(plz);
@@ -580,7 +580,7 @@ class LocationProvider extends ChangeNotifier {
     }
   }
   
-  // Task 5b.6: setUserPLZ() Public API für Tests und UI
+  // setUserPLZ() Public API für Tests und UI
   Future<bool> setUserPLZ(String plz, {bool saveToCache = true}) async {
     _checkDisposed();
     try {
@@ -627,7 +627,7 @@ class LocationProvider extends ChangeNotifier {
     }
   }
   
-  /// Task 5b.6: clearPLZCache() für Tests
+  /// clearPLZCache() für Tests
   Future<void> clearPLZCache() async {
     _checkDisposed();
     try {
@@ -745,7 +745,7 @@ class LocationProvider extends ChangeNotifier {
     notifyListeners();
   }
   
-  // Distance Calculation (Task 5c ready)
+  // Distance Calculation
   double calculateDistance(double targetLat, double targetLon, [double? sourceLat, double? sourceLon]) {
     _checkDisposed();
     // If source coordinates not provided, use current location
@@ -782,14 +782,14 @@ class LocationProvider extends ChangeNotifier {
     return distance <= radius;
   }
   
-  // Regional Data Support (ready for Task 5c)
+  // Regional Data Support
   Future<void> _updateRegionalData() async {
     // Placeholder for regional retailer lookup
-    // In Task 5c, this will query actual retailer availability data
+    // this will query actual retailer availability data
     
     if (_postalCode != null) {
       // For MVP, simulate regional data based on PLZ
-      // This will be replaced with actual retailer API calls in Task 5c
+      // This will be replaced with actual retailer API calls
     }
   }
   
@@ -838,7 +838,7 @@ class LocationProvider extends ChangeNotifier {
   void _setLocationError(String? error) {
     _locationError = error;
 
-    // Task 17: Enhanced error messages for specific cases
+    // Enhanced error messages for specific cases
     if (error != null) {
       if (error.contains('permission') || error.contains('denied')) {
         _locationError = 'Standortberechtigung verweigert. Bitte aktivieren Sie GPS in den Einstellungen.';
@@ -866,7 +866,7 @@ class LocationProvider extends ChangeNotifier {
     }
   }
   
-  // Provider Callback Helpers (Task 5b.5)
+  // Provider Callback Helpers
   void _notifyLocationCallbacks() {
     if (_disposed) return;
     
@@ -908,7 +908,7 @@ class LocationProvider extends ChangeNotifier {
   
   // ============ Test Helpers ============
   
-  /// Task 11.4: Set mock location for testing
+  /// Set mock location for testing
   @visibleForTesting
   Future<void> setMockLocation(double lat, double lng, {String? plz}) async {
     if (_disposed) return;

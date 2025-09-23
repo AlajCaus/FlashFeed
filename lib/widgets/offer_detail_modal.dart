@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import '../models/models.dart';
 import '../providers/location_provider.dart';
 import '../providers/retailers_provider.dart';
+import 'retailer_logo.dart';
 
 /// OfferDetailModal - Detaillierte Produktansicht
 /// 
@@ -425,7 +426,7 @@ Gefunden mit FlashFeed!
                   controller: scrollController,
                   padding: const EdgeInsets.all(16),
                   children: [
-                    // Product image (using thumbnailUrl like offer cards)
+                    // Product image with retailer logo fallback
                     Container(
                       height: 200,
                       decoration: BoxDecoration(
@@ -441,21 +442,21 @@ Gefunden mit FlashFeed!
                                 height: double.infinity,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
-                                  // Fallback to icon if image fails
+                                  // Fallback to retailer logo
                                   return Center(
-                                    child: Icon(
-                                      _getCategoryIcon(widget.offer.flashFeedCategory),
-                                      size: 80,
-                                      color: primaryGreen.withAlpha(153),
+                                    child: RetailerLogo(
+                                      retailerName: widget.offer.retailer,
+                                      size: LogoSize.large,
+                                      shape: LogoShape.rounded,
                                     ),
                                   );
                                 },
                               )
                             : Center(
-                                child: Icon(
-                                  _getCategoryIcon(widget.offer.flashFeedCategory),
-                                  size: 80,
-                                  color: primaryGreen.withAlpha(153),
+                                child: RetailerLogo(
+                                  retailerName: widget.offer.retailer,
+                                  size: LogoSize.large,
+                                  shape: LogoShape.rounded,
                                 ),
                               ),
                       ),

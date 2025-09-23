@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../main.dart'; // Access to global mockDataService
 import '../services/mock_data_service.dart'; // For test service parameter
-import '../providers/location_provider.dart'; // Task 5b.6: Cross-Provider Integration
+import '../providers/location_provider.dart'; // Cross-Provider Integration
 
 class FlashDealsProvider extends ChangeNotifier {
   // State
@@ -19,7 +19,7 @@ class FlashDealsProvider extends ChangeNotifier {
   // Service instance (for test compatibility)
   late final MockDataService _mockDataService;
 
-  // Task 14: Echtzeit-Countdown Timer
+  // Echtzeit-Countdown Timer
   Timer? _countdownTimer;
   bool _isCountdownActive = false;
 
@@ -28,7 +28,7 @@ class FlashDealsProvider extends ChangeNotifier {
   String? _selectedRetailer;
   int? _maxRemainingMinutes;
 
-  // Regional State (Task 5b.6: Cross-Provider Integration)
+  // Regional State (Cross-Provider Integration)
   String? _userPLZ;
   List<String> _availableRetailers = [];
 
@@ -40,7 +40,7 @@ class FlashDealsProvider extends ChangeNotifier {
     _mockDataService = testService ?? mockDataService;
     _initializeCallbacks();
 
-    // Task 14: Start real-time countdown only in non-test environments
+    // Start real-time countdown only in non-test environments
     // Check if we're using a test service - if so, don't start the timer
     if (testService == null) {
       _startCountdownTimer();
@@ -57,7 +57,7 @@ class FlashDealsProvider extends ChangeNotifier {
   String? get selectedRetailer => _selectedRetailer;
   int? get maxRemainingMinutes => _maxRemainingMinutes;
   
-  // Regional Getters (Task 5b.6: Phase 2.1)
+  // Regional Getters
   String? get userPLZ => _userPLZ;
   List<String> get availableRetailers => _availableRetailers;
   bool get hasRegionalFiltering => _locationProvider?.hasLocation ?? false;
@@ -69,7 +69,7 @@ class FlashDealsProvider extends ChangeNotifier {
       .map((deal) => deal.savings)
       .fold(0.0, (sum, savings) => sum + savings);
   
-  // Task 5c.5: Cross-Provider Communication Methods
+  // Cross-Provider Communication Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
     // Store reference for auto-cleanup during disposal
     _locationProvider = locationProvider;
@@ -101,7 +101,7 @@ class FlashDealsProvider extends ChangeNotifier {
     debugPrint('FlashDealsProvider: Unregistered from LocationProvider');
   }
   
-  // Task 5c.5: Callback handlers
+  // Callback handlers
   void _onLocationChanged() {
     if (_disposed) return;
     debugPrint('FlashDealsProvider: Location changed, resetting flash deals timer');
@@ -221,7 +221,7 @@ class FlashDealsProvider extends ChangeNotifier {
     }
   }
 
-  // Task 14: Echtzeit-Countdown Timer Management
+  // Echtzeit-Countdown Timer Management
   void _startCountdownTimer() {
     if (_isCountdownActive) return;
 
@@ -342,7 +342,7 @@ class FlashDealsProvider extends ChangeNotifier {
     }
   }
   
-  // Task 14: Enhanced Demo - Generate Impressive Flash Deals
+  // Enhanced Demo - Generate Impressive Flash Deals
   FlashDeal generateInstantFlashDeal() {
     try {
       // Generate impressive deal with short duration (5-15 minutes)
@@ -370,7 +370,7 @@ class FlashDealsProvider extends ChangeNotifier {
     }
   }
 
-  // Task 14: Mock Push Notification
+  // Mock Push Notification
   void _showFlashDealNotification(FlashDeal deal) {
     // This will be called from UI to show SnackBar or Dialog
     debugPrint('🔔 NEU: ${deal.productName} jetzt -${deal.discountPercentage}%!');
@@ -535,7 +535,7 @@ class FlashDealsProvider extends ChangeNotifier {
     // Prevent double disposal
     if (_disposed) return;
 
-    // Task 14: Stop countdown timer
+    // Stop countdown timer
     _stopCountdownTimer();
 
     // CRITICAL: Auto-unregister callbacks to prevent memory leaks

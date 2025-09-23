@@ -1,11 +1,11 @@
-// Task 9.4: Performance & Caching Tests for OffersProvider
+//  Performance & Caching Tests for OffersProvider
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/providers/offers_provider.dart';
 import 'package:flashfeed/models/models.dart' show Offer, OfferSortType;
 import 'package:flashfeed/services/mock_data_service.dart';
 
 void main() {
-  group('Task 9.4: OffersProvider Performance & Caching', () {
+  group(' OffersProvider Performance & Caching', () {
     late OffersProvider offersProvider;
     late MockDataService testMockDataService;
     

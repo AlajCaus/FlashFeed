@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../utils/responsive_helper.dart';
+import 'retailer_logo.dart';
 
 /// OfferComparisonCard - Preisvergleich-Karte für Angebote
 /// 
@@ -301,7 +302,7 @@ class OfferComparisonCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
 
-                          // Product image
+                          // Product image with retailer logo fallback
                           Container(
                             height: isMobile ? 95 : 115,
                             width: double.infinity,
@@ -320,12 +321,12 @@ class OfferComparisonCard extends StatelessWidget {
                                           height: double.infinity,
                                           fit: BoxFit.cover,
                                           errorBuilder: (context, error, stackTrace) {
-                                            // Fallback to icon if image fails
+                                            // Fallback to retailer logo
                                             return Center(
-                                              child: Icon(
-                                                _getCategoryIcon(primaryOffer.flashFeedCategory),
-                                                size: isMobile ? 32 : 40,
-                                                color: primaryGreen.withAlpha(153),
+                                              child: RetailerLogo(
+                                                retailerName: primaryOffer.retailer,
+                                                size: isMobile ? LogoSize.medium : LogoSize.large,
+                                                shape: LogoShape.rounded,
                                               ),
                                             );
                                           },
@@ -333,10 +334,10 @@ class OfferComparisonCard extends StatelessWidget {
                                     },
                                   )
                                   : Center(
-                                      child: Icon(
-                                        _getCategoryIcon(primaryOffer.flashFeedCategory),
-                                        size: isMobile ? 32 : 40,
-                                        color: primaryGreen.withAlpha(153),
+                                      child: RetailerLogo(
+                                        retailerName: primaryOffer.retailer,
+                                        size: isMobile ? LogoSize.medium : LogoSize.large,
+                                        shape: LogoShape.rounded,
                                       ),
                                     ),
                             ),

@@ -1,7 +1,7 @@
 // FlashFeed Offers Provider - Angebote & Preisvergleich
-// Mit regionaler Filterung (Integration für Task 5c vorbereitet)
+// Mit regionaler Filterung
 
-import 'dart:async'; // Task 9.4: Timer for debouncing
+import 'dart:async'; // Timer for debouncing
 
 import 'package:flutter/material.dart';
 import '../repositories/offers_repository.dart';
@@ -10,11 +10,11 @@ import '../data/product_category_mapping.dart';
 import '../models/models.dart';
 import '../main.dart'; // Access to global mockDataService
 import '../services/mock_data_service.dart'; // For test service parameter
-import '../providers/location_provider.dart'; // Task 5b.5: Provider-Callbacks
+import '../providers/location_provider.dart';
 import '../providers/user_provider.dart'; // For demo retailer filtering
-import '../services/search_service.dart'; // Task 9.3: Advanced Search
+import '../services/search_service.dart'; // Advanced Search
 
-// Task 9.4.1: Cache Entry for filter results
+// Cache Entry for filter results
 class FilterCacheEntry {
   final List<Offer> offers;
   final DateTime timestamp;
@@ -32,9 +32,9 @@ class FilterCacheEntry {
 
 class OffersProvider extends ChangeNotifier {
   final OffersRepository _offersRepository;
-  final SearchService _searchService = SearchService(); // Task 9.3
+  final SearchService _searchService = SearchService();
   
-  // NEW: Reference to LocationProvider for regional data (Task 5c.2)
+  // NEW: Reference to LocationProvider for regional data
   LocationProvider? _locationProvider;
 
   // Reference to UserProvider for demo retailer filtering
@@ -51,14 +51,14 @@ class OffersProvider extends ChangeNotifier {
   // Service reference for proper callback cleanup (FIX)
   MockDataService? _registeredService;
   
-  // Task 9.4.1: Cache Management
+  // Cache Management
   final Map<String, FilterCacheEntry> _filterCache = {};
   // static const Duration _cacheTimeToLive = Duration(minutes: 5); // Currently unused
   static const int _maxCacheEntries = 50;
   int _cacheHits = 0;
   int _cacheMisses = 0;
   
-  // Task 9.4.2: Pagination State
+  // Pagination State
   // Default to 1000 for production (effectively no pagination for small datasets)
   // Can be overridden to 20 for testing via setPageSizeForTesting()
   static int _pageSize = 1000;
@@ -67,7 +67,7 @@ class OffersProvider extends ChangeNotifier {
   bool _isLoadingMore = false;
   List<Offer> _displayedOffers = []; // Paginated subset
   
-  // Task 9.4.3: Debounced Search
+  // Debounced Search
   Timer? _searchDebounceTimer;
   final Duration _searchDebounceDelay = const Duration(milliseconds: 300); // Made final as suggested
   bool _isSearchPending = false;
@@ -81,15 +81,15 @@ class OffersProvider extends ChangeNotifier {
   double? _maxPrice;
   bool _showOnlyWithDiscount = false;
   
-  // Regional State (ready for Task 5c)
+  // Regional State
   String? _userPLZ;
   List<String> _availableRetailers = [];
   
-  // Task 9.1: Dynamic coordinates for distance sorting
+  // Dynamic coordinates for distance sorting
   double? _userLatitude;
   double? _userLongitude;
   
-  // Task 9.4.2: Test helper to override page size
+  // Test helper to override page size
   @visibleForTesting
   static void setPageSizeForTesting(int size) {
     _pageSize = size;
@@ -129,9 +129,9 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Task 5c.5: Cross-Provider Communication Methods
+  // Cross-Provider Communication Methods
   void registerWithLocationProvider(LocationProvider locationProvider) {
-    _locationProvider = locationProvider; // Store reference for Task 5c.2
+    _locationProvider = locationProvider; // Store reference
     
     // Register for both location and regional data updates
     locationProvider.registerLocationChangeCallback(_onLocationChanged);
@@ -144,7 +144,7 @@ class OffersProvider extends ChangeNotifier {
       // Don't load offers here - let the initialization flow handle it
     }
     
-    // Task 9.1: Get initial coordinates
+    // Get initial coordinates
     _updateUserCoordinates();
     
     debugPrint('OffersProvider: Registered with LocationProvider');
@@ -189,7 +189,7 @@ class OffersProvider extends ChangeNotifier {
     loadOffers(applyRegionalFilter: false);
   }
   
-  // Task 5c.5: Callback handlers
+  // Callback handlers
   void _onLocationChanged() {
     if (_disposed) return;
     
@@ -198,7 +198,7 @@ class OffersProvider extends ChangeNotifier {
       // Location was cleared - reset our state
       _userPLZ = null;
       _availableRetailers = [];
-      // Task 9.1: Clear coordinates too
+      // Clear coordinates too
       _userLatitude = null;
       _userLongitude = null;
       debugPrint('OffersProvider: Location cleared, resetting state');
@@ -206,7 +206,7 @@ class OffersProvider extends ChangeNotifier {
       return;
     }
     
-    // Task 9.1: Update coordinates when location changes
+    // Update coordinates when location changes
     _updateUserCoordinates();
     
     debugPrint('OffersProvider: Location changed, reloading offers');
@@ -225,7 +225,7 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Task 9.1: Update user coordinates from LocationProvider
+  // Update user coordinates from LocationProvider
   void _updateUserCoordinates() {
     if (_locationProvider != null) {
       // GPS coordinates if available
@@ -255,7 +255,7 @@ class OffersProvider extends ChangeNotifier {
     }
   }
   
-  // Task 9.1: Convert PLZ to approximate coordinates for major German cities
+  // Convert PLZ to approximate coordinates for major German cities
   Map<String, double> _convertPLZToCoordinates(String plz) {
     // Major German cities mapping
     if (plz.startsWith('10') || plz.startsWith('12') || plz.startsWith('13') || plz.startsWith('14')) {
@@ -305,7 +305,7 @@ class OffersProvider extends ChangeNotifier {
   String? get userPLZ => _userPLZ;
   bool get hasRegionalFiltering => _userPLZ != null && _availableRetailers.isNotEmpty;
   
-  // Task 9.4: Performance Getters
+  //  Performance Getters
   bool get isLoadingMore => _isLoadingMore;
   bool get isSearchPending => _isSearchPending;
   int get currentPage => _currentPage;
@@ -322,7 +322,7 @@ class OffersProvider extends ChangeNotifier {
     'memoryUsage': _estimateCacheMemoryUsage(),
   };
   
-  // Task 9.1: Location Getters for distance sorting
+  // Location Getters for distance sorting
   double get currentLatitude => _userLatitude ?? 52.5200; // Berlin Mitte fallback
   double get currentLongitude => _userLongitude ?? 13.4050;
   bool get hasUserLocation => _userLatitude != null && _userLongitude != null;
@@ -627,7 +627,7 @@ class OffersProvider extends ChangeNotifier {
 
       _setLoading(true);
       try {
-        // Task 9.1: Pass user coordinates for distance sorting
+        // Pass user coordinates for distance sorting
         if (sortType == OfferSortType.distanceAsc) {
           _filteredOffers = await _offersRepository.getSortedOffers(
             _filteredOffers,
@@ -770,7 +770,7 @@ class OffersProvider extends ChangeNotifier {
       // Don't skip sorting even if list is empty - it needs to be ready when filled
       if (_filteredOffers.isNotEmpty) {
         debugPrint('Applying sort type: $_sortType to ${_filteredOffers.length} offers');
-        // Task 9.1: Pass user coordinates for distance sorting
+        // Pass user coordinates for distance sorting
         if (_sortType == OfferSortType.distanceAsc) {
           _filteredOffers = await _offersRepository.getSortedOffers(
             _filteredOffers,
