@@ -19,7 +19,7 @@ import '../services/web_audio_service_stub.dart'
 /// UI-Spezifikationen:
 /// - Flash-Cards: 12px radius, 4px crimson left-border
 /// - Countdown: HH:MM:SS mit Farb-Coding
-/// - Professor-Demo-Button prominent
+/// - Demo-Button prominent
 class FlashDealsScreen extends StatefulWidget {
   const FlashDealsScreen({super.key});
 
@@ -178,12 +178,12 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                   ),
                 ),
 
-                // Professor Demo Button
+                // Demo Button für neue Deals
                 Container(
                   padding: const EdgeInsets.all(16),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Task 14: Enhanced Professor Demo with notification
+                      // Task 14: Enhanced Demo with notification
                       try {
                         final newDeal = flashDealsProvider.generateInstantFlashDeal();
 
@@ -212,7 +212,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                       children: [
                         Icon(Icons.flash_on, size: 28),
                         SizedBox(width: 8),
-                        Text('PROFESSOR DEMO - NEUE DEALS'),
+                        Text('LADE NEUE DEALS'),
                       ],
                     ),
                   ),
