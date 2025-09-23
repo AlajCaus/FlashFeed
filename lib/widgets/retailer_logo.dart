@@ -125,21 +125,30 @@ class RetailerLogo extends StatelessWidget {
         logoUrl,
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
+          // Debug print for troubleshooting
+          print('Failed to load logo: $logoUrl for $displayName');
           return _buildFallbackLogo(displayName, primaryColor);
         },
       );
     } else if (logoUrl.startsWith('/assets/')) {
-      // Local asset with leading slash
+      // Local asset with leading slash (legacy support)
       return Image.asset(
         logoUrl.substring(1), // Remove leading /
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          print('Failed to load logo: $logoUrl for $displayName');
+          return _buildFallbackLogo(displayName, primaryColor);
+        },
+      );
+    } else {
+      // Try as asset anyway
+      return Image.asset(
+        logoUrl,
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           return _buildFallbackLogo(displayName, primaryColor);
         },
       );
-    } else {
-      // Fallback for generic or invalid URLs
-      return _buildFallbackLogo(displayName, primaryColor);
     }
   }
   

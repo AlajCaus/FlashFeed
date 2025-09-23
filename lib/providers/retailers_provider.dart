@@ -46,21 +46,28 @@ class RetailersProvider extends ChangeNotifier {
   
   // ============ Task 11.1 & 11.6: Branding & UI Support ============
   
-  // Händler-Logos (Placeholder URLs für MVP)
+  // Händler-Logos (korrigierte Asset-Pfade)
   static const Map<String, String> _retailerLogos = {
-    'EDEKA': '/assets/images/retailers/edeka.jpg',
-    'REWE': '/assets/images/retailers/rewe.png',
-    'ALDI': '/assets/images/retailers/Aldi.png',
-    'ALDI SÜD': '/assets/images/retailers/Aldi_Sued.jpg',
-    'LIDL': '/assets/images/retailers/lidl.png',
-    'NETTO': '/assets/images/retailers/netto.png',
-    'netto Scottie': '/assets/images/retailers/Scottie.png',
-    'PENNY': '/assets/images/retailers/Penny-Logo.svg',
-    'KAUFLAND': '/assets/images/retailers/Kaufland_201x_logo.svg',
-    'nahkauf': '/assets/images/retailers/Real-logo.svg',
-    'GLOBUS': '/assets/images/retailers/Globus_Hypermarkt_Logo_2020.svg',
-    'MARKTKAUF': '/assets/images/retailers/Marktkauf_Logo.svg',
-    'BIOCOMPANY': '/assets/images/retailers/biocompany.png', // Local asset fallback
+    'EDEKA': 'assets/images/retailers/edeka.jpg',
+    'REWE': 'assets/images/retailers/rewe.png',
+    'ALDI': 'assets/images/retailers/Aldi.png',
+    'ALDI SÜD': 'assets/images/retailers/Aldi_Sued.jpg',
+    'LIDL': 'assets/images/retailers/lidl.png',
+    'NETTO': 'assets/images/retailers/netto.png',
+    'netto Scottie': 'assets/images/retailers/Scottie.png',
+    'netto scottie': 'assets/images/retailers/Scottie.png',
+    'PENNY': 'assets/images/retailers/penny.png',
+    'Penny': 'assets/images/retailers/penny.png',
+    'KAUFLAND': 'assets/images/retailers/kaufland.png',
+    'Kaufland': 'assets/images/retailers/kaufland.png',
+    'nahkauf': 'assets/images/retailers/nahkauf.png',
+    'GLOBUS': 'assets/images/retailers/globus.png',
+    'Globus': 'assets/images/retailers/globus.png',
+    'MARKTKAUF': 'assets/images/retailers/marktkauf.png',
+    'Marktkauf': 'assets/images/retailers/marktkauf.png',
+    'norma': 'assets/images/retailers/norma.png',
+    'BIOCOMPANY': 'assets/images/retailers/biocompany.png',
+    'BioCompany': 'assets/images/retailers/biocompany.png',
   };
   
   // Händler Brand-Farben (offizielle Markenfarben)
@@ -233,8 +240,12 @@ class RetailersProvider extends ChangeNotifier {
   
   /// Gibt die Logo-URL für einen Händler zurück
   String getRetailerLogo(String retailerName) {
-    final upperName = retailerName.toUpperCase();
-    return _retailerLogos[upperName] ?? '/assets/images/default_retailer.png';
+    // Versuche verschiedene Schreibweisen
+    String? logo = _retailerLogos[retailerName.toUpperCase()] ??
+                   _retailerLogos[retailerName] ??
+                   _retailerLogos[retailerName.toLowerCase()];
+
+    return logo ?? 'assets/images/product_placeholder.svg';
   }
   
   /// Gibt die Brand-Farben für einen Händler zurück
