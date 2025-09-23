@@ -58,46 +58,72 @@ class OfferComparisonCard extends StatelessWidget {
       builder: (context, retailersProvider, child) {
         final logoPath = retailersProvider.getRetailerLogo(retailer);
 
-        // Try to show logo, with fallback to text badge
-        return Container(
-          height: 28,
-          constraints: const BoxConstraints(minWidth: 50, maxWidth: 80),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: borderColor, width: 1),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Padding(
-              padding: const EdgeInsets.all(4),
-              child: Image.asset(
-                logoPath,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  // Fallback to text badge if logo fails
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: retailerColors[retailer] ?? primaryGreen,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        retailer,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+        // Check if logo path points to a real asset (not placeholder)
+        final bool hasRealLogo = logoPath.contains('/retailers/') &&
+                                 !logoPath.contains('placeholder');
+
+        if (hasRealLogo) {
+          // SQUARE badge for logo
+          return Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: borderColor, width: 1),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.all(3),
+                child: Image.asset(
+                  logoPath,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    // If logo fails to load, show initials in square format
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: retailerColors[retailer] ?? primaryGreen,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Center(
+                        child: Text(
+                          retailer.length >= 2 ? retailer.substring(0, 2).toUpperCase() : retailer[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        );
+          );
+        } else {
+          // RECTANGULAR badge for text
+          return Container(
+            height: 28,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            constraints: const BoxConstraints(minWidth: 50),
+            decoration: BoxDecoration(
+              color: retailerColors[retailer] ?? primaryGreen,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: Text(
+                retailer,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        }
       },
     );
   }

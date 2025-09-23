@@ -371,7 +371,7 @@ class _OffersScreenState extends State<OffersScreen> {
                       // Top Angebot Badge - positioned below retailer logo
                       if (isFeatured)
                         Positioned(
-                          top: 40,  // Below retailer badge (which is at top: 8)
+                          top: 48,  // Moved down to avoid overlapping with retailer logo
                           left: 8,
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

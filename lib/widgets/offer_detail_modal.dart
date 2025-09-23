@@ -490,46 +490,74 @@ Gefunden mit FlashFeed!
                           builder: (context, retailersProvider, child) {
                             final logoPath = retailersProvider.getRetailerLogo(widget.offer.retailer);
 
-                            // Try to show logo, with fallback to text badge
-                            return Container(
-                              height: 36,
-                              constraints: const BoxConstraints(minWidth: 60, maxWidth: 100),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: borderColor, width: 1),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: Image.asset(
-                                    logoPath,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      // Fallback to text badge if logo fails
-                                      return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: retailerColors[widget.offer.retailer] ?? primaryGreen,
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            widget.offer.retailer,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
+                            // Check if logo path points to a real asset (not placeholder)
+                            final bool hasRealLogo = logoPath.contains('/retailers/') &&
+                                                     !logoPath.contains('placeholder');
+
+                            if (hasRealLogo) {
+                              // SQUARE badge for logo
+                              return Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: borderColor, width: 1),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Image.asset(
+                                      logoPath,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        // If logo fails to load, show initials in square format
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                            color: retailerColors[widget.offer.retailer] ?? primaryGreen,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              widget.offer.retailer.length >= 2
+                                                ? widget.offer.retailer.substring(0, 2).toUpperCase()
+                                                : widget.offer.retailer[0].toUpperCase(),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      );
-                                    },
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
+                              );
+                            } else {
+                              // RECTANGULAR badge for text
+                              return Container(
+                                height: 36,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                constraints: const BoxConstraints(minWidth: 60),
+                                decoration: BoxDecoration(
+                                  color: retailerColors[widget.offer.retailer] ?? primaryGreen,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    widget.offer.retailer,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
                           },
                         ),
                         const SizedBox(width: 8),
