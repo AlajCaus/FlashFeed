@@ -58,6 +58,9 @@ dependencies:
   # QR Code generation for demo access
   qr_flutter: ^4.1.0
 
+  # SVG support for logo
+  flutter_svg: ^2.0.10
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

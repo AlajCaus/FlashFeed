@@ -3,10 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../theme/app_theme.dart';
 import '../widgets/custom_app_bar.dart';
+import '../widgets/plz_hint_overlay.dart';
 
 import 'offers_screen.dart';
 import 'map_screen.dart';
 import 'flash_deals_screen.dart';
+import 'settings_screen.dart';
 
 import '../providers/location_provider.dart';
 import '../providers/app_provider.dart';
@@ -26,10 +28,12 @@ class MainLayoutScreen extends StatefulWidget {
   State<MainLayoutScreen> createState() => _MainLayoutScreenState();
 }
 
-class _MainLayoutScreenState extends State<MainLayoutScreen> 
+class _MainLayoutScreenState extends State<MainLayoutScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isInitialized = false;
+  bool _showPLZHint = true;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
   @override
   void initState() {
@@ -131,11 +135,23 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
         }
         
         return Scaffold(
+          key: _scaffoldKey,
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: const CustomAppBar(),
-          body: isDesktop 
-              ? _buildDesktopLayout()
-              : _buildMobileTabletLayout(),
+          body: Stack(
+            children: [
+              isDesktop ? _buildDesktopLayout() : _buildMobileTabletLayout(),
+              if (_showPLZHint)
+                PLZHintOverlay(
+                  onOpenSettings: () {
+                    setState(() {
+                      _showPLZHint = false;
+                    });
+                    _showSettingsOverlay(context);
+                  },
+                ),
+            ],
+          ),
         );
       },
     );
@@ -287,4 +303,160 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     return const FlashDealsScreen();
   }
 
+  void _showSettingsOverlay(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => _SettingsOverlay(),
+    );
+  }
+}
+
+class _SettingsOverlay extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final appProvider = context.watch<AppProvider>();
+    final userProvider = context.watch<UserProvider>();
+    final locationProvider = context.watch<LocationProvider>();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Dark Mode Toggle
+          ListTile(
+            leading: const Icon(Icons.dark_mode),
+            title: const Text('Dark Mode'),
+            trailing: Switch(
+              value: appProvider.isDarkMode,
+              onChanged: (value) {
+                appProvider.setDarkMode(value);
+                Navigator.pop(context);
+              },
+            ),
+          ),
+
+          // PLZ Input mit sichtbaren Buttons
+          ListTile(
+            leading: const Icon(Icons.location_on),
+            title: const Text('PLZ-Filter'),
+            subtitle: Text(
+              locationProvider.postalCode ??
+              locationProvider.userPLZ ??
+              'Nicht gesetzt'
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // PLZ ändern Button
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showPLZDialog(context);
+                  },
+                  child: const Text('Ändern'),
+                ),
+                // PLZ löschen Button (nur wenn PLZ gesetzt)
+                if (locationProvider.postalCode != null || locationProvider.userPLZ != null)
+                  TextButton(
+                    onPressed: () {
+                      locationProvider.clearLocation();
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('PLZ-Filter entfernt'),
+                        ),
+                      );
+                    },
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text('Löschen'),
+                  ),
+              ],
+            ),
+          ),
+
+          // Settings
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Einstellungen'),
+            subtitle: const Text('App-Konfiguration & Demo-Zugriff'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+
+          // Premium Toggle
+          if (!userProvider.isPremium)
+            ListTile(
+              leading: const Icon(Icons.star),
+              title: const Text('Premium aktivieren'),
+              subtitle: const Text('Alle Features freischalten'),
+              onTap: () {
+                userProvider.enableDemoMode();
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Premium aktiviert!'),
+                    backgroundColor: Color(0xFF2E8B57),
+                  ),
+                );
+              },
+            ),
+
+          const Divider(),
+
+          // Info Section
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text('FlashFeed MVP'),
+            subtitle: const Text('Version 1.0.0 - Prototype'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPLZDialog(BuildContext context) {
+    final controller = TextEditingController();
+    final locationProvider = context.read<LocationProvider>();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('PLZ eingeben'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          maxLength: 5,
+          decoration: const InputDecoration(
+            hintText: 'z.B. 10115',
+            labelText: 'Postleitzahl',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.length == 5) {
+                locationProvider.setUserPLZ(controller.text);
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2E8B57),
+            ),
+            child: const Text('Speichern'),
+          ),
+        ],
+      ),
+    );
+  }
 }

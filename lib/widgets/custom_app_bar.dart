@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../providers/user_provider.dart';
@@ -46,14 +47,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Container(
                   width: ResponsiveHelper.isMobile(context) ? 28 : 32,
                   height: ResponsiveHelper.isMobile(context) ? 28 : 32,
+                  padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(
-                    Icons.flash_on,
-                    color: const Color(0xFF2E8B57),
-                    size: ResponsiveHelper.isMobile(context) ? 20 : 24,
+                  child: SvgPicture.asset(
+                    'assets/images/logo.svg',
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF2E8B57),
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
                 SizedBox(width: ResponsiveHelper.space3),
