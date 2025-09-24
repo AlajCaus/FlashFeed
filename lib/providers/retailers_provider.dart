@@ -403,6 +403,18 @@ class RetailersProvider extends ChangeNotifier {
   
   /// Interne Methode zur Aktualisierung der Verfügbarkeitslisten
   void _updateAvailableRetailers(String plz) {
+    // Check if retailers are loaded
+    if (_allRetailers.isEmpty) {
+      debugPrint('⚠️ RetailersProvider: Retailers not loaded yet, triggering load...');
+      loadRetailers().then((_) {
+        // Retry update after loading
+        if (plz.isNotEmpty) {
+          _updateAvailableRetailers(plz);
+        }
+      });
+      return;
+    }
+
     if (PLZHelper.isValidPLZ(plz)) {
       _availableRetailers = getAvailableRetailers(plz);
       _unavailableRetailers = getUnavailableRetailers(plz);
@@ -415,7 +427,7 @@ class RetailersProvider extends ChangeNotifier {
           .where((r) => !r.isNationwide)
           .toList();
     }
-    
+
     debugPrint('✅ Verfügbare Händler in PLZ $plz: ${_availableRetailers.length}/${_allRetailers.length}');
   }
   
