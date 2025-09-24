@@ -271,7 +271,6 @@ class RegionalAvailabilityBanner extends StatelessWidget {
 
     final availableCount = retailersProvider.availableRetailers.length;
     final totalCount = 11; // Total number of retailers in system
-    final percentage = ((availableCount / totalCount) * 100).round();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

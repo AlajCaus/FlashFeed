@@ -109,55 +109,6 @@ class _OffersScreenState extends State<OffersScreen> {
     );
   }
 
-  // Task 16: Upgrade Dialog for Premium Features
-  void _showUpgradeDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Upgrade zu Premium'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Mit Premium erhalten Sie:'),
-            const SizedBox(height: 8),
-            const Text('• Angebote von ALLEN Händlern gleichzeitig'),
-            const Text('• Preisvergleich zwischen allen Händlern'),
-            const Text('• Mehrere Händler-Filter'),
-            const Text('• Karten-Features mit allen Filialen'),
-            const SizedBox(height: 16),
-            Text(
-              context.read<UserProvider>().getUpgradePrompt('offers'),
-              style: TextStyle(fontStyle: FontStyle.italic, color: textSecondary),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Später'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<UserProvider>().enableDemoMode();
-              // Force reload offers with new retailers
-              context.read<OffersProvider>().loadOffers();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Premium aktiviert! Alle Angebote freigeschaltet.'),
-                  backgroundColor: Color(0xFF2E8B57),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: primaryGreen),
-            child: const Text('Premium aktivieren'),
-          ),
-        ],
-      ),
-    );
-  }
-  
   Widget _buildSortOptions() {
     final offersProvider = context.watch<OffersProvider>();
     final sortOptions = offersProvider.getSortOptions();
@@ -279,17 +230,17 @@ class _OffersScreenState extends State<OffersScreen> {
 
   Widget _buildOffersGrid(OffersProvider offersProvider, UserProvider userProvider) {
     var offers = offersProvider.displayedOffers;
-    print('DEBUG offers_screen: Total offers to display: ${offers.length}');
-    print('DEBUG offers_screen: Current sort type: ${offersProvider.sortType}');
+    debugPrint('DEBUG offers_screen: Total offers to display: ${offers.length}');
+    debugPrint('DEBUG offers_screen: Current sort type: ${offersProvider.sortType}');
 
     // Debug: Show first 10 prices in UI order
-    print('DEBUG offers_screen: First 10 prices in UI order:');
+    debugPrint('DEBUG offers_screen: First 10 prices in UI order:');
     for (int i = 0; i < offers.length && i < 10; i++) {
-      print('  UI ${i+1}. ${offers[i].productName}: ${offers[i].price}€');
+      debugPrint('  UI ${i+1}. ${offers[i].productName}: ${offers[i].price}€');
     }
 
     if (offers.isNotEmpty) {
-      print('DEBUG: First offer thumbnailUrl: ${offers.first.thumbnailUrl}');
+      debugPrint('DEBUG: First offer thumbnailUrl: ${offers.first.thumbnailUrl}');
     }
 
     // Task 16: No limits for free users - they see ALL offers from their selected retailer

@@ -1,6 +1,8 @@
 // FlashFeed Mock Offers Repository Implementation
 // Nutzt zentralen MockDataService als Datenquelle
 
+import 'package:flutter/material.dart';
+
 import 'offers_repository.dart';
 import '../data/product_category_mapping.dart';
 import '../models/models.dart';
@@ -137,20 +139,20 @@ class MockOffersRepository implements OffersRepository {
     await Future.delayed(Duration(milliseconds: 300));
 
     // Debug output to understand the issue
-    print('DEBUG MockOffersRepository.getAllOffers():');
-    print('  - _dataService.isInitialized: ${_dataService.isInitialized}');
-    print('  - _dataService.offers.length: ${_dataService.offers.length}');
-    print('  - _dataService.offers.isEmpty: ${_dataService.offers.isEmpty}');
+    debugPrint('DEBUG MockOffersRepository.getAllOffers():');
+    debugPrint('  - _dataService.isInitialized: ${_dataService.isInitialized}');
+    debugPrint('  - _dataService.offers.length: ${_dataService.offers.length}');
+    debugPrint('  - _dataService.offers.isEmpty: ${_dataService.offers.isEmpty}');
 
     // ALWAYS use data from MockDataService when available
     // The service generates offers with thumbnailUrl
     if (_dataService.isInitialized && _dataService.offers.isNotEmpty) {
-      print('MockOffersRepository: Returning ${_dataService.offers.length} offers from MockDataService (with images)');
+      debugPrint('MockOffersRepository: Returning ${_dataService.offers.length} offers from MockDataService (with images)');
       return List.from(_dataService.offers);
     }
 
     // Only use hardcoded _mockOffers as last resort (these have no thumbnailUrl!)
-    print('WARNING: MockOffersRepository using hardcoded offers without images!');
+    debugPrint('WARNING: MockOffersRepository using hardcoded offers without images!');
     return List.from(_mockOffers);
   }
 
@@ -234,10 +236,10 @@ class MockOffersRepository implements OffersRepository {
         // Combine: Flash Deals first, then regular offers
         sortedOffers = [...flashDeals, ...regularOffers];
         // Debug: Print first 10 sorted prices
-        print('DEBUG: Sorted prices (first 10):');
+        debugPrint('DEBUG: Sorted prices (first 10):');
         for (int i = 0; i < sortedOffers.length && i < 10; i++) {
           final isFlash = (sortedOffers[i].discountPercent ?? 0) >= 30.0;
-          print('  ${i+1}. ${isFlash ? "🔥" : "  "} ${sortedOffers[i].productName}: ${sortedOffers[i].price}€');
+          debugPrint('  ${i+1}. ${isFlash ? "🔥" : "  "} ${sortedOffers[i].productName}: ${sortedOffers[i].price}€');
         }
         break;
       case OfferSortType.priceDesc:

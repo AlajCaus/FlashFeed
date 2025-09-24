@@ -53,8 +53,6 @@ class LocationProvider extends ChangeNotifier {
   String? _address;
   String? _city;
   String? _postalCode;
-  bool _hasLocationPermission = false;  // Restored for setMockLocation
-  bool _isLocationServiceEnabled = false;  // Restored for setMockLocation
   bool _isLoadingLocation = false;
   String? _locationError;
   
@@ -916,8 +914,6 @@ class LocationProvider extends ChangeNotifier {
     _latitude = lat;
     _longitude = lng;
     _currentLocationSource = LocationSource.gps;
-    _hasLocationPermission = true;
-    _isLocationServiceEnabled = true;
     
     // If PLZ provided, use it; otherwise simulate lookup
     if (plz != null) {

@@ -202,7 +202,7 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
           provider.clearUrgencyFilter();
         }
       },
-      selectedColor: color.withOpacity(0.2),
+      selectedColor: color.withValues(alpha: 0.2),
       checkmarkColor: color,
       labelStyle: TextStyle(
         color: isSelected ? color : textSecondary,

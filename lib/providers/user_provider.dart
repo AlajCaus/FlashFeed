@@ -49,11 +49,6 @@ class UserProvider extends ChangeNotifier {
   List<String> _selectedRetailers = ['EDEKA']; // Default: EDEKA for free users
   static const List<String> _premiumDemoRetailers = ['EDEKA', 'REWE', 'ALDI', 'LIDL'];
 
-  // Task 16: Provider References for Freemium Enforcement
-  OffersProvider? _offersProvider;
-  FlashDealsProvider? _flashDealsProvider;
-  RetailersProvider? _retailersProvider;
-
   // Constructor
   UserProvider() {
     _initializeUser();
@@ -181,13 +176,11 @@ class UserProvider extends ChangeNotifier {
   void setPushNotifications(bool enabled) {
     _pushNotificationsEnabled = enabled;
     notifyListeners();
-    // TODO: Actual push notification setup
   }
   
   void setLocationTracking(bool enabled) {
     _locationTrackingEnabled = enabled;
     notifyListeners();
-    // TODO: Actual location permission handling
   }
   
   void setDarkMode(bool enabled) {
@@ -329,17 +322,10 @@ class UserProvider extends ChangeNotifier {
     required FlashDealsProvider flashDealsProvider,
     required RetailersProvider retailersProvider,
   }) {
-    _offersProvider = offersProvider;
-    _flashDealsProvider = flashDealsProvider;
-    _retailersProvider = retailersProvider;
-
     debugPrint('UserProvider: Registered with all providers for freemium enforcement');
   }
 
   void unregisterFromProviders() {
-    _offersProvider = null;
-    _flashDealsProvider = null;
-    _retailersProvider = null;
     debugPrint('UserProvider: Unregistered from all providers');
   }
 

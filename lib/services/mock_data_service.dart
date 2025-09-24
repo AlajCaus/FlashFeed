@@ -44,8 +44,7 @@ class MockDataService {
   // Provider Callbacks (statt BLoC Events)
   VoidCallback? _onFlashDealsUpdated;
   VoidCallback? _onOffersUpdated;
-  VoidCallback? _onStoresUpdated; // Callback for store updates
-  
+
   // Generated Mock Data (basierend auf Datenbank-Schema)
   List<Retailer> _retailers = [];
   List<Store> _stores = [];
@@ -103,10 +102,6 @@ class MockDataService {
     _onOffersUpdated = callback;
   }
   
-  void setStoresCallback(VoidCallback callback) {
-    _onStoresUpdated = callback;  // Not currently used
-  }
-
   // Provider-Callback Unregistration (FIX: für proper disposal)
   void clearFlashDealsCallback() {
     _onFlashDealsUpdated = null;
@@ -116,10 +111,6 @@ class MockDataService {
     _onOffersUpdated = null;
   }
   
-  void clearStoresCallback() {
-    _onStoresUpdated = null;
-  }
-
   // Task 18.2: Optimized initialization with lazy loading
   Future<void> initializeMockData({bool testMode = false}) async {
     if (_isInitialized) return;
@@ -1118,7 +1109,6 @@ class MockDataService {
     // Clear all callback references (FIX: prevent "used after disposed" errors)
     _onFlashDealsUpdated = null;
     _onOffersUpdated = null;
-    _onStoresUpdated = null;
     
     // Mark as disposed
     _isInitialized = false;

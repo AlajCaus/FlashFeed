@@ -147,7 +147,7 @@ class _MapScreenState extends State<MapScreen> {
                   _currentZoom = position.zoom;
                 });
                             },
-              onTap: (_, __) {
+              onTap: (_, _) {
                 // Deselect store when tapping on map
                 setState(() {
                   _selectedStore = null;
@@ -171,8 +171,8 @@ class _MapScreenState extends State<MapScreen> {
                         : _defaultCenter,
                     radius: _radiusKm * 1000, // Convert km to meters
                     useRadiusInMeter: true,
-                    color: primaryBlue.withOpacity(0.1),
-                    borderColor: primaryBlue.withOpacity(0.3),
+                    color: primaryBlue.withValues(alpha: 0.1),
+                    borderColor: primaryBlue.withValues(alpha: 0.3),
                     borderStrokeWidth: 2,
                   ),
                 ],
@@ -194,7 +194,7 @@ class _MapScreenState extends State<MapScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: userLocationColor.withOpacity(0.2),
+                          color: userLocationColor.withValues(alpha: 0.2),
                           border: Border.all(
                             color: userLocationColor,
                             width: 2,
@@ -469,7 +469,6 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget _buildGPSButton(LocationProvider locationProvider) {
-    final hasLocation = locationProvider.hasLocation;
     final isGPSLocation = locationProvider.currentLocationSource == LocationSource.gps;
 
     return FloatingActionButton(
@@ -751,13 +750,6 @@ class _MapScreenState extends State<MapScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      store.name ?? store.retailerName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
                       '${store.street}, ${store.zipCode} ${store.city}',
                       style: TextStyle(
                         fontSize: 14,
@@ -861,13 +853,6 @@ class _MapScreenState extends State<MapScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      store.name ?? store.retailerName,
-                      style: TextStyle(
-                        fontSize: ResponsiveHelper.getTitleSize(context),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                     Text(
                       '${store.street}, ${store.zipCode} ${store.city}',
                       style: TextStyle(

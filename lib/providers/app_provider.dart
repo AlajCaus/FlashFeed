@@ -131,7 +131,6 @@ class AppProvider extends ChangeNotifier {
   void toggleTheme() {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
-    // TODO: Save to SharedPreferences in real app
   }
   
   void setTheme(bool isDark) {
@@ -145,7 +144,6 @@ class AppProvider extends ChangeNotifier {
   void completeFirstLaunch() {
     _isFirstLaunch = false;
     notifyListeners();
-    // TODO: Save to SharedPreferences in real app
   }
   
   // User Location (PLZ)

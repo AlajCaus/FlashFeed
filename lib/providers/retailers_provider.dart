@@ -841,7 +841,6 @@ class RetailersProvider extends ChangeNotifier {
   
   // Note: These methods are currently unused but kept for future retailer name normalization
   // They handle regional variations in retailer names (e.g., EDEKA Nord vs EDEKA Südbayern)
-  // TODO: Integrate into store search and matching logic when needed
   
   // ============ Ende ============
   

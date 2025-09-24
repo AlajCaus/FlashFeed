@@ -57,14 +57,31 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
                 SizedBox(width: ResponsiveHelper.space3),
-                Text(
-                  'FlashFeed',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: ResponsiveHelper.getHeadlineSize(context),
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto',
-                  ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'FlashFeed',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: ResponsiveHelper.getHeadlineSize(context),
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Roboto',
+                        height: 1.0,
+                      ),
+                    ),
+                    Text(
+                      'made by Janina Böhmer',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: ResponsiveHelper.getHeadlineSize(context) * 0.5,
+                        fontWeight: FontWeight.normal,
+                        fontFamily: 'Roboto',
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -118,7 +118,6 @@ class ErrorStateWidget extends StatelessWidget {
         iconColor = warningOrange;
         break;
       case ErrorType.general:
-      default:
         iconData = Icons.error_outline;
         iconColor = errorRed;
     }
@@ -126,7 +125,7 @@ class ErrorStateWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: iconColor.withOpacity(0.1),
+        color: iconColor.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -148,7 +147,6 @@ class ErrorStateWidget extends StatelessWidget {
       case ErrorType.region:
         return 'Nicht in Ihrer Region verfügbar';
       case ErrorType.general:
-      default:
         return 'Ein Fehler ist aufgetreten';
     }
   }
@@ -164,7 +162,6 @@ class ErrorStateWidget extends StatelessWidget {
       case ErrorType.region:
         return 'In Ihrer Region sind aktuell keine Händler oder Angebote verfügbar.';
       case ErrorType.general:
-      default:
         return 'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es erneut.';
     }
   }
@@ -194,10 +191,10 @@ class ErrorStateWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: Colors.blue.withOpacity(0.3),
+          color: Colors.blue.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

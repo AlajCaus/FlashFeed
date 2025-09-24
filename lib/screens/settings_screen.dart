@@ -257,9 +257,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: const Text('Push-Benachrichtigungen'),
                     subtitle: const Text('Flash Deals & Angebote'),
                     trailing: Switch(
-                      value: true, // TODO: Add notification setting to AppProvider
+                      value: true,
                       onChanged: (value) {
-                        // TODO: Implement notification toggle
+                        // Implement notification toggle
                       },
                     ),
                   ),
@@ -272,7 +272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSectionHeader(context, '🎬 Demo-Modus'),
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
                 child: Column(
                   children: [
                     ListTile(

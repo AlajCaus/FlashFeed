@@ -720,37 +720,6 @@ Gefunden mit FlashFeed!
     );
   }
   
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Obst & Gemüse':
-        return Icons.eco;
-      case 'Milchprodukte':
-        return Icons.egg;
-      case 'Fleisch & Wurst':
-        return Icons.restaurant;
-      case 'Brot & Backwaren':
-        return Icons.bakery_dining;
-      case 'Getränke':
-        return Icons.local_drink;
-      case 'Süßwaren':
-        return Icons.cookie;
-      case 'Tiefkühl':
-        return Icons.ac_unit;
-      case 'Konserven':
-        return Icons.kitchen;
-      case 'Drogerie':
-        return Icons.favorite;
-      case 'Haushalt':
-        return Icons.cleaning_services;
-      case 'Bio-Produkte':
-        return Icons.spa;
-      case 'Fertiggerichte':
-        return Icons.microwave;
-      default:
-        return Icons.category;
-    }
-  }
-  
   String _formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
