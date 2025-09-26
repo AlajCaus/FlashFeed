@@ -2,6 +2,7 @@
 // Tests for multi-term search, fuzzy search, category-aware search,
 // and enhanced search suggestions
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/services/search_service.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
@@ -482,7 +483,7 @@ void main() {
           ).toList();
         
         // Log the count for reference (can be used to update expected value)
-        print('Seed 42 generates ${bioObstOffers.length} Bio-Obst offers');
+        debugPrint('Seed 42 generates ${bioObstOffers.length} Bio-Obst offers');
         
         // Search should find exactly the same number
         final results = offersProvider.performAdvancedSearch('Obst Bio');
@@ -532,7 +533,7 @@ void main() {
           })
           .toList();
         
-        print('Seed 42 generates ${milchInSearchableText.length} offers with "milch" in searchable text');
+        debugPrint('Seed 42 generates ${milchInSearchableText.length} offers with "milch" in searchable text');
         
         // Search should find exactly the same
         final results = searchService.multiTermSearch(

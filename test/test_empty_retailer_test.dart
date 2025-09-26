@@ -1,4 +1,5 @@
 // Isolierter Test für empty retailer edge case
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/providers/location_provider.dart';
 import 'package:flashfeed/services/mock_data_service.dart';
@@ -20,20 +21,20 @@ void main() {
 
     try {
       // Quick test without loading all providers
-      print('Setting invalid PLZ 00000...');
+      debugPrint('Setting invalid PLZ 00000...');
       final result = await locationProvider.setUserPLZ('00000')
         .timeout(Duration(seconds: 2), onTimeout: () {
-          print('setUserPLZ timeout!');
+          debugPrint('setUserPLZ timeout!');
           return false;
         });
 
-      print('setUserPLZ result: $result');
-      print('Available retailers: ${locationProvider.availableRetailersInRegion}');
+      debugPrint('setUserPLZ result: $result');
+      debugPrint('Available retailers: ${locationProvider.availableRetailersInRegion}');
 
       // Expectations
       expect(locationProvider.availableRetailersInRegion.isEmpty, isTrue);
 
-      print('Test passed!');
+      debugPrint('Test passed!');
     } finally {
       // Cleanup
       mockDataService.dispose();

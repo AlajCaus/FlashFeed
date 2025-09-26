@@ -52,7 +52,6 @@ class _OfferFilterBarState extends State<OfferFilterBar> {
   
   void _loadCurrentFilters() {
     // final offersProvider = context.read<OffersProvider>(); // Currently unused
-    // TODO: Load current filter state from provider
     // This would require extending OffersProvider with getter methods
   }
   

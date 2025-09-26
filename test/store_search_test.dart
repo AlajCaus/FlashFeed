@@ -330,7 +330,6 @@ void main() {
         // Currently returns all results
         expect(allResults.length, greaterThanOrEqualTo(0));
         
-        // TODO: When pagination is implemented:
         // - Test loading first page (20 items)
         // - Test loading more items
         // - Test hasMore flag

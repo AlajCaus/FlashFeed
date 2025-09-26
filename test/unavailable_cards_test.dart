@@ -39,16 +39,16 @@ void main() {
               'Available retailers: ${allRetailers.map((r) => r.displayName).join(", ")}'
             ),
           );
-          print('⚠️ GLOBUS not found, using fallback: ${regionalRetailer.displayName}');
+          debugPrint('⚠️ GLOBUS not found, using fallback: ${regionalRetailer.displayName}');
           return regionalRetailer;
         },
       );
       
       // Debug output for test verification
-      print('🧪 Test Retailer: ${testRetailer.displayName} (id: ${testRetailer.id})');
-      print('   Regional restrictions: ${testRetailer.availablePLZRanges.isNotEmpty}');
+      debugPrint('🧪 Test Retailer: ${testRetailer.displayName} (id: ${testRetailer.id})');
+      debugPrint('   Regional restrictions: ${testRetailer.availablePLZRanges.isNotEmpty}');
       if (testRetailer.availablePLZRanges.isNotEmpty) {
-        print('   Available regions: ${testRetailer.availableRegions.join(", ")}');
+        debugPrint('   Available regions: ${testRetailer.availableRegions.join(", ")}');
       }
       
       // Get alternative retailers (nationwide ones)
@@ -121,12 +121,12 @@ void main() {
       if (textFinder.evaluate().isEmpty) {
         // Print all text widgets to debug
         final allTexts = find.byType(Text).evaluate();
-        print('❌ Expected message not found: "$expectedMessage"');
-        print('📝 All Text widgets in the tree:');
+        debugPrint('❌ Expected message not found: "$expectedMessage"');
+        debugPrint('📝 All Text widgets in the tree:');
         for (final widget in allTexts) {
           final text = (widget.widget as Text).data;
           if (text != null && text.contains('10115')) {
-            print('   - "$text"');
+            debugPrint('   - "$text"');
           }
         }
       }
@@ -233,9 +233,9 @@ void main() {
       );
       
       // Debug output for test verification
-      print('🧪 Test Offer: ${testOffer.productName} from ${testOffer.retailer}');
-      print('   Price: €${(testOffer.price).toStringAsFixed(2)}');
-      print('   Regional retailer: ${regionalRetailer.displayName}');
+      debugPrint('🧪 Test Offer: ${testOffer.productName} from ${testOffer.retailer}');
+      debugPrint('   Price: €${(testOffer.price).toStringAsFixed(2)}');
+      debugPrint('   Regional retailer: ${regionalRetailer.displayName}');
       
       // Find alternative offers from nationwide retailers
       final nationwideRetailers = mockDataService.retailers
@@ -252,10 +252,10 @@ void main() {
       
       // Debug alternative offers
       if (alternativeOffers.isNotEmpty) {
-        print('   Alternative offers:');
+        debugPrint('   Alternative offers:');
         for (var i = 0; i < alternativeOffers.length; i++) {
           final alt = alternativeOffers[i];
-          print('     ${i+1}. ${alt.productName} bei ${alt.retailer} - €${alt.price.toStringAsFixed(2)}');
+          debugPrint('     ${i+1}. ${alt.productName} bei ${alt.retailer} - €${alt.price.toStringAsFixed(2)}');
         }
       }
     });
@@ -289,12 +289,12 @@ void main() {
       // Debug output if not found
       if (productNameFinder.evaluate().isEmpty) {
         final allTexts = find.byType(Text).evaluate();
-        print('❌ Product name not found: "${testOffer.productName}"');
-        print('📝 All Text widgets in the tree:');
+        debugPrint('❌ Product name not found: "${testOffer.productName}"');
+        debugPrint('📝 All Text widgets in the tree:');
         for (final widget in allTexts) {
           final text = (widget.widget as Text).data;
           if (text != null) {
-            print('   - "$text"');
+            debugPrint('   - "$text"');
           }
         }
       }
@@ -354,13 +354,13 @@ void main() {
       
       // Debug output if not found
       if (priceFinder.evaluate().isEmpty) {
-        print('❌ Price not found: "$expectedPrice"');
-        print('   Looking for price widgets with €...');
+        debugPrint('❌ Price not found: "$expectedPrice"');
+        debugPrint('   Looking for price widgets with €...');
         final allTexts = find.byType(Text).evaluate();
         for (final widget in allTexts) {
           final text = (widget.widget as Text).data;
           if (text != null && text.startsWith('€')) {
-            print('   Found price text: "$text"');
+            debugPrint('   Found price text: "$text"');
           }
         }
       }
@@ -402,13 +402,13 @@ void main() {
         // Debug output for alternative offers
         final altTextFinder = find.textContaining(firstAlt.productName);
         if (altTextFinder.evaluate().isEmpty) {
-          print('❌ Alternative offer not found: "$expectedText"');
-          print('📝 Looking for alternative offer texts:');
+          debugPrint('❌ Alternative offer not found: "$expectedText"');
+          debugPrint('📝 Looking for alternative offer texts:');
           final allTexts = find.byType(Text).evaluate();
           for (final widget in allTexts) {
             final text = (widget.widget as Text).data;
             if (text != null && (text.contains('bei') || text.contains('€'))) {
-              print('   - "$text"');
+              debugPrint('   - "$text"');
             }
           }
         }
@@ -417,7 +417,7 @@ void main() {
         expect(find.text(expectedPrice), findsWidgets);
       } else {
         // If no alternatives, test should still pass but log warning
-        print('⚠️ No alternative offers available for testing');
+        debugPrint('⚠️ No alternative offers available for testing');
       }
     });
     
@@ -476,13 +476,13 @@ void main() {
       
       // Debug output if not found
       if (textFinder.evaluate().isEmpty) {
-        print('❌ Unavailability reason not found: "$expectedText"');
-        print('📝 Looking for text widgets with "bietet dieses Angebot"...');
+        debugPrint('❌ Unavailability reason not found: "$expectedText"');
+        debugPrint('📝 Looking for text widgets with "bietet dieses Angebot"...');
         final allTexts = find.byType(Text).evaluate();
         for (final widget in allTexts) {
           final text = (widget.widget as Text).data;
           if (text != null && text.contains('bietet dieses Angebot')) {
-            print('   Found: "$text"');
+            debugPrint('   Found: "$text"');
           }
         }
       }

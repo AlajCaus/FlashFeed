@@ -126,7 +126,7 @@ class RetailerLogo extends StatelessWidget {
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           // Debug print for troubleshooting
-          print('Failed to load logo: $logoUrl for $displayName');
+          debugPrint('Failed to load logo: $logoUrl for $displayName');
           return _buildFallbackLogo(displayName, primaryColor);
         },
       );
@@ -136,7 +136,7 @@ class RetailerLogo extends StatelessWidget {
         logoUrl.substring(1), // Remove leading /
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
-          print('Failed to load logo: $logoUrl for $displayName');
+          debugPrint('Failed to load logo: $logoUrl for $displayName');
           return _buildFallbackLogo(displayName, primaryColor);
         },
       );

@@ -1,4 +1,5 @@
 // Isolierter Test für die Fehleranalyse
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flashfeed/providers/location_provider.dart';
 import 'package:flashfeed/providers/flash_deals_provider.dart';
@@ -39,14 +40,14 @@ void main() {
           .map((d) => d.retailer)
           .toSet();
 
-      print('Available retailers in Berlin: $availableRetailers');
-      print('Flash deal retailers: $flashDealRetailers');
-      print('Flash deals count: ${flashDealsProvider.flashDeals.length}');
+      debugPrint('Available retailers in Berlin: $availableRetailers');
+      debugPrint('Flash deal retailers: $flashDealRetailers');
+      debugPrint('Flash deals count: ${flashDealsProvider.flashDeals.length}');
 
       // Test assertion
       final difference = flashDealRetailers.difference(availableRetailers);
       if (difference.isNotEmpty) {
-        print('ERROR: Flash deal retailers not in region: $difference');
+        debugPrint('ERROR: Flash deal retailers not in region: $difference');
       }
 
       expect(flashDealRetailers.difference(availableRetailers).isEmpty, isTrue,
