@@ -138,19 +138,37 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
           key: _scaffoldKey,
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: const CustomAppBar(),
-          body: Stack(
-            children: [
-              isDesktop ? _buildDesktopLayout() : _buildMobileTabletLayout(),
-              if (_showPLZHint)
-                PLZHintOverlay(
-                  onOpenSettings: () {
-                    setState(() {
-                      _showPLZHint = false;
-                    });
-                    _showSettingsOverlay(context);
-                  },
-                ),
-            ],
+          body: GestureDetector(
+            onTap: () {
+              // Hide hint overlay on any tap
+              if (_showPLZHint) {
+                setState(() {
+                  _showPLZHint = false;
+                });
+              }
+            },
+            child: Stack(
+              children: [
+                isDesktop ? _buildDesktopLayout() : _buildMobileTabletLayout(),
+                if (_showPLZHint)
+                  IgnorePointer(
+                    ignoring: false,
+                    child: PLZHintOverlay(
+                      onOpenSettings: () {
+                        setState(() {
+                          _showPLZHint = false;
+                        });
+                        _showSettingsOverlay(context);
+                      },
+                      onUserInteraction: () {
+                        setState(() {
+                          _showPLZHint = false;
+                        });
+                      },
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },

@@ -3,10 +3,12 @@ import 'dart:async';
 
 class PLZHintOverlay extends StatefulWidget {
   final VoidCallback onOpenSettings;
+  final VoidCallback? onUserInteraction;
 
   const PLZHintOverlay({
     super.key,
     required this.onOpenSettings,
+    this.onUserInteraction,
   });
 
   @override
@@ -52,15 +54,35 @@ class _PLZHintOverlayState extends State<PLZHintOverlay>
       if (mounted) {
         // Start animation
         _animationController.forward();
+        _setupInteractionListeners();
       }
     });
 
-    // Auto-hide after 20 seconds
+    // Auto-hide after 20 seconds (keep at 20 seconds as requested)
     _autoHideTimer = Timer(const Duration(seconds: 20, milliseconds: 400), () {
       if (mounted && _isVisible) {
         _hideOverlay();
       }
     });
+  }
+
+  void _setupInteractionListeners() {
+    // Add scroll listener to detect any scrolling
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Find any Scrollable widget in the tree
+      final scrollableContext = context.findAncestorStateOfType<ScrollableState>();
+      if (scrollableContext != null) {
+        scrollableContext.position.addListener(_onUserScroll);
+      }
+    });
+  }
+
+  void _onUserScroll() {
+    // Hide overlay immediately on scroll
+    if (mounted && _isVisible) {
+      _hideOverlay();
+      widget.onUserInteraction?.call();
+    }
   }
 
   void _hideOverlay() {
@@ -77,15 +99,17 @@ class _PLZHintOverlayState extends State<PLZHintOverlay>
   void dispose() {
     _autoHideTimer?.cancel();
     _animationController.dispose();
+    // Remove scroll listener if it exists
+    final scrollableContext = context.findAncestorStateOfType<ScrollableState>();
+    if (scrollableContext != null) {
+      scrollableContext.position.removeListener(_onUserScroll);
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     if (!_isVisible) return const SizedBox.shrink();
-
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -100,8 +124,7 @@ class _PLZHintOverlayState extends State<PLZHintOverlay>
                 Positioned(
                   top: 255, // Positioniert beim blauen PLZ-Panel
                   left: 140, // Links vom PLZ-Button positioniert
-                  child: Container(
-                    child: Row(
+                  child: Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -163,7 +186,6 @@ class _PLZHintOverlayState extends State<PLZHintOverlay>
                         ),
                       ],
                     ),
-                  ),
                 ),
               ],
             ),
