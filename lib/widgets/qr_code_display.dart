@@ -109,7 +109,7 @@ class _QrCodeDisplayState extends State<QrCodeDisplay>
               end: Alignment.bottomRight,
               colors: [
                 theme.colorScheme.surface,
-                theme.colorScheme.surface.withOpacity(0.95),
+                theme.colorScheme.surface.withValues(alpha: 0.95),
               ],
             ),
           ),
@@ -128,7 +128,7 @@ class _QrCodeDisplayState extends State<QrCodeDisplay>
               Text(
                 'QR-Code scannen für schnellen Zugriff',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -142,7 +142,7 @@ class _QrCodeDisplayState extends State<QrCodeDisplay>
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -177,7 +177,7 @@ class _QrCodeDisplayState extends State<QrCodeDisplay>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
@@ -186,7 +186,7 @@ class _QrCodeDisplayState extends State<QrCodeDisplay>
                         _demoUrl,
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontFamily: 'monospace',
-                          color: theme.colorScheme.onSurface.withOpacity(0.8),
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -218,7 +218,7 @@ class _QrCodeDisplayState extends State<QrCodeDisplay>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                  color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -268,16 +268,16 @@ class _QrCodeDisplayState extends State<QrCodeDisplay>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.4)),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
         label,
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: color.withOpacity(0.9),
+          color: color.withValues(alpha: 0.9),
         ),
       ),
     );
