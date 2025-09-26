@@ -106,7 +106,56 @@ class _MapScreenState extends State<MapScreen> {
 
       // Initialize all stores for the map
       await retailersProvider.initializeStores();
+
+      // Listen for location changes and center map accordingly
+      locationProvider.addListener(_onLocationChanged);
     });
+  }
+
+  @override
+  void dispose() {
+    // Remove listener when disposing
+    // Use try-catch to handle potential disposal issues
+    try {
+      final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+      locationProvider.removeListener(_onLocationChanged);
+    } catch (e) {
+      debugPrint('Map: Error removing location listener: $e');
+    }
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  void _onLocationChanged() {
+    if (!mounted || !_isMapReady) return;
+
+    final locationProvider = context.read<LocationProvider>();
+
+    // If location has changed and we have valid coordinates
+    if (locationProvider.hasLocation) {
+      final newCenter = LatLng(
+        locationProvider.latitude!,
+        locationProvider.longitude!,
+      );
+
+      // Check if the new location is significantly different from current center
+      final currentCenter = _mapController.camera.center;
+      final distance = _calculateDistance(
+        currentCenter.latitude,
+        currentCenter.longitude,
+        newCenter.latitude,
+        newCenter.longitude,
+      );
+
+      // Only move map if location changed by more than 1km
+      if (distance > 1.0) {
+        debugPrint('📍 Map: Centering to new location - PLZ: ${locationProvider.postalCode}');
+        _mapController.move(newCenter, 14.0);
+
+        // Also reload stores for new location
+        context.read<RetailersProvider>().initializeStores();
+      }
+    }
   }
 
   @override
