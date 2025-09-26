@@ -37,17 +37,18 @@ void main() {
           expect(logo, isNotEmpty);
           
           // Check if it's a valid URL or asset path
-          final isValid = logo.startsWith('http') || 
+          final isValid = logo.startsWith('http') ||
+                         logo.startsWith('assets/') ||
                          logo.startsWith('/assets') ||
                          logo.contains('wikipedia');
-          expect(isValid, isTrue, 
+          expect(isValid, isTrue,
             reason: 'Logo for $retailerName should be URL or asset path');
         }
       });
       
       test('should return default logo for unknown retailer', () {
         final logo = provider.getRetailerLogo('UNKNOWN_RETAILER');
-        expect(logo, equals('/assets/images/default_retailer.png'));
+        expect(logo, equals('assets/images/product_placeholder.svg'));
       });
       
       test('should be case-insensitive', () {

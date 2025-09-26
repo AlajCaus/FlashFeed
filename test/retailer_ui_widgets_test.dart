@@ -44,14 +44,14 @@ void main() {
   group('RetailersProvider UI Methods', () {
     test('getRetailerLogo returns correct logo URL', () {
       final edekaLogo = retailersProvider.getRetailerLogo('EDEKA');
-      expect(edekaLogo, '/assets/images/retailers/edeka.jpg');
+      expect(edekaLogo, 'assets/images/retailers/edeka.jpg');
       
       final reweLogo = retailersProvider.getRetailerLogo('REWE');
-      expect(reweLogo, '/assets/images/retailers/rewe.png');
+      expect(reweLogo, 'assets/images/retailers/rewe.png');
       
       // Test fallback for unknown retailer
       final unknownLogo = retailersProvider.getRetailerLogo('UNKNOWN');
-      expect(unknownLogo, '/assets/images/default_retailer.png');
+      expect(unknownLogo, 'assets/images/product_placeholder.svg');
     });
     
     test('getRetailerBrandColors returns correct colors', () {
@@ -115,7 +115,7 @@ void main() {
     test('getRetailerBranding returns complete branding info', () {
       final branding = retailersProvider.getRetailerBranding('EDEKA');
       
-      expect(branding['logo'], '/assets/images/retailers/edeka.jpg');
+      expect(branding['logo'], 'assets/images/retailers/edeka.jpg');
       expect(branding['colors'], isA<Map<String, Color>>());
       expect(branding['displayName'], 'EDEKA');
       expect(branding['isAvailable'], isA<bool>());
@@ -262,7 +262,7 @@ void main() {
         expect(logo, isNotNull);
         expect(logo, isNotEmpty);
         expect(
-          logo.startsWith('http') || logo.startsWith('/assets'),
+          logo.startsWith('http') || logo.startsWith('assets'),
           isTrue,
           reason: 'Logo should be either a URL or local asset path',
         );

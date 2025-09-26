@@ -123,10 +123,10 @@ void main() {
       test('should get retailer logo with fallback', () {
         final logo = provider.getRetailerLogo('EDEKA');
         expect(logo, isNotEmpty);
-        
+
         // Non-existent retailer should return fallback
         final fallbackLogo = provider.getRetailerLogo('NonExistent');
-        expect(fallbackLogo, contains('default_retailer'));
+        expect(fallbackLogo, equals('assets/images/product_placeholder.svg'));
       });
       
       test('should get retailer brand colors', () {

@@ -247,14 +247,14 @@ void main() {
         offersProvider.searchOffers('test2', immediate: true);
         offersProvider.searchOffers('test3', immediate: true);
         final initialEntries = offersProvider.cacheStatistics['entries'];
-        
+
         // Act: Simulate memory pressure
         offersProvider.onMemoryPressure();
-        
+
         // Assert: Cache reduced
-        expect(offersProvider.cacheStatistics['entries'], 
+        expect(offersProvider.cacheStatistics['entries'],
                lessThanOrEqualTo(initialEntries));
-      });
+      }, timeout: const Timeout(Duration(seconds: 5)));
       
       test('should clean up resources on dispose', () {
         // Arrange: Create new provider
