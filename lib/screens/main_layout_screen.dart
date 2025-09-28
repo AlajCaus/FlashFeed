@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../theme/app_theme.dart';
 import '../widgets/custom_app_bar.dart';
-import '../widgets/plz_hint_overlay.dart';
 
 import 'offers_screen.dart';
 import 'map_screen.dart';
@@ -32,7 +31,6 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isInitialized = false;
-  bool _showPLZHint = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
   @override
@@ -138,38 +136,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
           key: _scaffoldKey,
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: const CustomAppBar(),
-          body: GestureDetector(
-            onTap: () {
-              // Hide hint overlay on any tap
-              if (_showPLZHint) {
-                setState(() {
-                  _showPLZHint = false;
-                });
-              }
-            },
-            child: Stack(
-              children: [
-                isDesktop ? _buildDesktopLayout() : _buildMobileTabletLayout(),
-                if (_showPLZHint)
-                  IgnorePointer(
-                    ignoring: false,
-                    child: PLZHintOverlay(
-                      onOpenSettings: () {
-                        setState(() {
-                          _showPLZHint = false;
-                        });
-                        _showSettingsOverlay(context);
-                      },
-                      onUserInteraction: () {
-                        setState(() {
-                          _showPLZHint = false;
-                        });
-                      },
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          body: isDesktop ? _buildDesktopLayout() : _buildMobileTabletLayout(),
         );
       },
     );
@@ -321,12 +288,6 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
     return const FlashDealsScreen();
   }
 
-  void _showSettingsOverlay(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => _SettingsOverlay(),
-    );
-  }
 }
 
 class _SettingsOverlay extends StatelessWidget {
