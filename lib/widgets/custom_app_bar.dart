@@ -44,20 +44,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             // Logo + App Name
             Row(
               children: [
-                Container(
-                  width: ResponsiveHelper.isMobile(context) ? 28 : 32,
-                  height: ResponsiveHelper.isMobile(context) ? 28 : 32,
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                SizedBox(
+                  width: ResponsiveHelper.isMobile(context) ? 40 : 48,
+                  height: ResponsiveHelper.isMobile(context) ? 40 : 48,
                   child: SvgPicture.asset(
                     'assets/images/logo.svg',
-                    colorFilter: const ColorFilter.mode(
-                      Color(0xFF2E8B57),
-                      BlendMode.srcIn,
-                    ),
+                    fit: BoxFit.contain,
                   ),
                 ),
                 SizedBox(width: ResponsiveHelper.space3),

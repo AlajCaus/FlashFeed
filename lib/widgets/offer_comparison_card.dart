@@ -208,9 +208,13 @@ class OfferComparisonCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: const Color(0xFFF5F5F5),
                               borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFE0E0E0),
+                                width: 1,
+                              ),
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(7),
                               child: primaryOffer.thumbnailUrl != null
                                   ? Builder(
                                       builder: (context) {
@@ -251,8 +255,8 @@ class OfferComparisonCard extends StatelessWidget {
                                             );
                                           },
                                         );
-                                    },
-                                  )
+                                      },
+                                    )
                                   : Center(
                                       child: RetailerLogo(
                                         retailerName: primaryOffer.retailer,

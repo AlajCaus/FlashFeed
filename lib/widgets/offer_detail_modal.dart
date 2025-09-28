@@ -441,22 +441,26 @@ Gefunden mit FlashFeed!
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F5F5),
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFE0E0E0),
+                          width: 1,
+                        ),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(11),
                         child: widget.offer.thumbnailUrl != null && widget.offer.thumbnailUrl!.isNotEmpty
                             ? Image.asset(
                                 widget.offer.thumbnailUrl!,
                                 width: double.infinity,
                                 height: double.infinity,
-                                fit: BoxFit.contain,
+                                fit: BoxFit.cover,
                                 errorBuilder: (context, assetError, stackTrace) {
                                   // If asset fails, try network
                                   return Image.network(
                                     widget.offer.thumbnailUrl!,
                                     width: double.infinity,
                                     height: double.infinity,
-                                    fit: BoxFit.contain,
+                                    fit: BoxFit.cover,
                                     loadingBuilder: (context, child, loadingProgress) {
                                       if (loadingProgress == null) return child;
                                       return Center(
