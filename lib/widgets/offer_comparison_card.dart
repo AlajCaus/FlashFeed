@@ -135,20 +135,13 @@ class OfferComparisonCard extends StatelessWidget {
     if (discountPercent == null || discountPercent == 0) {
       return const SizedBox.shrink();
     }
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: secondaryOrange,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        '-${discountPercent.toInt()}%',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-        ),
+
+    return Text(
+      '-${discountPercent.toInt()}%',
+      style: const TextStyle(
+        color: Color(0xFFDC143C),  // Crimson red color
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
       ),
     );
   }
