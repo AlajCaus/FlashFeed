@@ -109,7 +109,9 @@ class _FlashDealsStatisticsState extends State<FlashDealsStatistics>
               Text(
                 'Updates alle 1 Sek',
                 style: TextStyle(
-                  color: textSecondary,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[300]
+                      : textSecondary,
                   fontSize: 11,
                 ),
               ),

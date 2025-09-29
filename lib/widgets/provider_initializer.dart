@@ -45,27 +45,29 @@ class _ProviderInitializerState extends State<ProviderInitializer> {
     final retailersProvider = context.read<RetailersProvider>();
     final userProvider = context.read<UserProvider>();
 
-    // Check for Demo Mode and auto-login as Premium
-    final demoService = DemoService();
-    if (demoService.isDemoMode) {
-      debugPrint('🎬 Demo Mode detected - activating Premium features');
-      // Auto-login as Premium user for demo
-      userProvider.loginUser(
-        'demo-user',
-        'Demo User',
-        tier: UserTier.premium,
-      );
-      userProvider.upgradeToPremium();
-    } else {
-      // Default Demo setup: Free user with only EDEKA
-      debugPrint('🛒 Demo Mode: Starting as Free user with EDEKA');
-      userProvider.loginUser(
-        'demo-user',
-        'Demo User',
-        tier: UserTier.free,
-      );
-      // selectedRetailers is already set to ['EDEKA'] by default
-    }
+    // Check for Demo Mode and auto-login - defer to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final demoService = DemoService();
+      if (demoService.isDemoMode) {
+        debugPrint('🎬 Demo Mode detected - activating Premium features');
+        // Auto-login as Premium user for demo
+        userProvider.loginUser(
+          'demo-user',
+          'Demo User',
+          tier: UserTier.premium,
+        );
+        userProvider.upgradeToPremium();
+      } else {
+        // Default Demo setup: Free user with only EDEKA
+        debugPrint('🛒 Demo Mode: Starting as Free user with EDEKA');
+        userProvider.loginUser(
+          'demo-user',
+          'Demo User',
+          tier: UserTier.free,
+        );
+        // selectedRetailers is already set to ['EDEKA'] by default
+      }
+    });
 
     // Register cross-provider callbacks for location-based updates
     // This sets up the communication channels between providers

@@ -365,15 +365,17 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget _buildRadiusFilter() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: 240,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey[850] : Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(38),
+            color: Colors.black.withAlpha(isDark ? 100 : 38),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -384,7 +386,11 @@ class _MapScreenState extends State<MapScreen> {
         children: [
           Text(
             'Umkreis: ${_radiusKm.toStringAsFixed(0)} km',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.white : null,
+            ),
           ),
           Slider(
             value: _radiusKm,
@@ -402,8 +408,20 @@ class _MapScreenState extends State<MapScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('1km', style: TextStyle(fontSize: 12, color: textSecondary)),
-              Text('20km', style: TextStyle(fontSize: 12, color: textSecondary)),
+              Text(
+                '1km',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.white : textSecondary,
+                ),
+              ),
+              Text(
+                '20km',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.white : textSecondary,
+                ),
+              ),
             ],
           ),
         ],

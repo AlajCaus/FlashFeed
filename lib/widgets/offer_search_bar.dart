@@ -187,7 +187,9 @@ class _OfferSearchBarState extends State<OfferSearchBar> with SingleTickerProvid
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[850]
+                : Colors.white,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withAlpha(13),
@@ -270,7 +272,11 @@ class _OfferSearchBarState extends State<OfferSearchBar> with SingleTickerProvid
               // Filter Button
               Container(
                 decoration: BoxDecoration(
-                  color: offersProvider.hasActiveFilters ? primaryGreen : Colors.white,
+                  color: offersProvider.hasActiveFilters
+                      ? primaryGreen
+                      : (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[700]
+                          : Colors.white),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: offersProvider.hasActiveFilters ? primaryGreen : borderColor,
@@ -281,7 +287,11 @@ class _OfferSearchBarState extends State<OfferSearchBar> with SingleTickerProvid
                     IconButton(
                       icon: Icon(
                         Icons.filter_list,
-                        color: offersProvider.hasActiveFilters ? Colors.white : textSecondary,
+                        color: offersProvider.hasActiveFilters
+                            ? Colors.white
+                            : (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : textSecondary),
                       ),
                       onPressed: widget.onFilterTap,
                     ),
@@ -312,7 +322,9 @@ class _OfferSearchBarState extends State<OfferSearchBar> with SingleTickerProvid
               maxHeight: MediaQuery.of(context).size.height * 0.4,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withAlpha(25),

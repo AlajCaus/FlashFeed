@@ -76,7 +76,9 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
     var flashDeals = flashDealsProvider.flashDeals;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.grey[900]
+          : const Color(0xFFFAFAFA),
       body: _buildContentArea(flashDealsProvider, flashDeals, userProvider),
     );
   }
@@ -158,7 +160,9 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                         TextButton(
                           onPressed: () => _showUpgradeDialog(context),
                           style: TextButton.styleFrom(
-                            foregroundColor: Colors.orange.shade700,
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.orange.shade600,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             textStyle: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           child: const Text('Premium'),
@@ -402,20 +406,13 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Discount
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
+                      // Discount - styled like offer cards (red text on white)
+                      Text(
+                        '-${deal.discountPercentage}%',
+                        style: TextStyle(
                           color: primaryRed,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '-${deal.discountPercentage}%',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: isVerySmall ? 11 : 12,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          fontSize: isVerySmall ? 13 : 14,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -429,6 +426,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                         style: TextStyle(
                           fontSize: isVerySmall ? 13 : 14,
                           fontWeight: FontWeight.w600,
+                          color: Colors.black,
                           decoration: isExpired ? TextDecoration.lineThrough : null,
                         ),
                         maxLines: 2,
@@ -446,7 +444,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                         '${deal.originalPrice.toStringAsFixed(2)}€',
                         style: TextStyle(
                           fontSize: isVerySmall ? 11 : 12,
-                          color: Colors.grey,
+                          color: Colors.grey[600],
                           decoration: TextDecoration.lineThrough,
                         ),
                       ),
@@ -467,7 +465,7 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                     '${deal.retailer} • ${deal.storeName}',
                     style: TextStyle(
                       fontSize: isVerySmall ? 10 : 11,
-                      color: Colors.grey[600],
+                      color: Colors.grey[800],
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -606,7 +604,10 @@ class _FlashDealsScreenState extends State<FlashDealsScreen>
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: primaryGreen),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryGreen,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Premium aktivieren'),
           ),
         ],

@@ -213,14 +213,16 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
   }
   
   Widget _buildPanelContainer(Widget child, String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey[850] : Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -233,7 +235,9 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
             height: 48,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryGreen.withAlpha(25),
+              color: isDark
+                ? AppTheme.primaryGreen.withAlpha(40)
+                : AppTheme.primaryGreen.withAlpha(25),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(12),
               ),
@@ -242,16 +246,16 @@ class _MainLayoutScreenState extends State<MainLayoutScreen>
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E8B57),
+                    color: isDark ? Colors.white : const Color(0xFF2E8B57),
                   ),
                 ),
               ],
             ),
           ),
-          
+
           // Panel Content
           Expanded(child: child),
         ],

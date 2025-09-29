@@ -418,7 +418,10 @@ class _OffersScreenState extends State<OffersScreen> {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: primaryGreen),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryGreen,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Premium aktivieren'),
           ),
         ],
@@ -436,7 +439,9 @@ class _OffersScreenState extends State<OffersScreen> {
     };
     
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? Colors.grey[900]
+          : const Color(0xFFFAFAFA),
       body: Column(
         children: [
           // Search Bar with Filter Button (Task 10.3)
@@ -449,7 +454,9 @@ class _OffersScreenState extends State<OffersScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: userProvider.isPremium ? Colors.green.shade50 : Colors.orange.shade50,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? (userProvider.isPremium ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1))
+                  : (userProvider.isPremium ? Colors.green.shade50 : Colors.orange.shade50),
               border: Border(
                 bottom: BorderSide(
                   color: userProvider.isPremium ? Colors.green.shade200 : Colors.orange.shade200,
@@ -519,7 +526,9 @@ class _OffersScreenState extends State<OffersScreen> {
           if (offersProvider.hasActiveFilters)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.white,
               child: Row(
                 children: [
                   Text(
@@ -547,18 +556,31 @@ class _OffersScreenState extends State<OffersScreen> {
             height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[850]
+                  : Colors.white,
               border: Border(
                 bottom: BorderSide(color: borderColor),
               ),
             ),
             child: Row(
               children: [
-                const Icon(Icons.sort, size: 20, color: textSecondary),
+                Icon(
+                  Icons.sort,
+                  size: 20,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : textSecondary,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Sortierung:',
-                  style: TextStyle(fontSize: 14, color: textSecondary),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : textSecondary,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 TextButton.icon(

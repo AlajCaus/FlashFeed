@@ -28,7 +28,9 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
         provider.maxRemainingMinutes != null;
 
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).brightness == Brightness.dark
+          ? Colors.grey[850]
+          : Colors.white,
       child: Column(
         children: [
           // Filter Toggle Bar
@@ -50,12 +52,20 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
                   },
                   icon: Icon(
                     _showFilters ? Icons.filter_alt : Icons.filter_alt_outlined,
-                    color: hasActiveFilters ? primaryGreen : textSecondary,
+                    color: hasActiveFilters
+                        ? primaryGreen
+                        : (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[300]
+                            : textSecondary),
                   ),
                   label: Text(
                     'Filter ${hasActiveFilters ? '(${_countActiveFilters(provider)})' : ''}',
                     style: TextStyle(
-                      color: hasActiveFilters ? primaryGreen : textSecondary,
+                      color: hasActiveFilters
+                          ? primaryGreen
+                          : (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[300]
+                              : textSecondary),
                       fontWeight: hasActiveFilters ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
@@ -116,9 +126,15 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[850]
+                      : Colors.grey.shade50,
                   border: Border(
-                    bottom: BorderSide(color: Colors.grey.shade300),
+                    bottom: BorderSide(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[700]!
+                          : Colors.grey.shade300,
+                    ),
                   ),
                 ),
                 child: Column(
@@ -171,9 +187,15 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Dringlichkeit',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -205,11 +227,19 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
       selectedColor: color.withValues(alpha: 0.2),
       checkmarkColor: color,
       labelStyle: TextStyle(
-        color: isSelected ? color : textSecondary,
+        color: isSelected
+            ? color
+            : (Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[300]
+                : Colors.black87),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       side: BorderSide(
-        color: isSelected ? color : Colors.grey.shade300,
+        color: isSelected
+            ? color
+            : (Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[600]!
+                : Colors.grey.shade300),
         width: isSelected ? 2 : 1,
       ),
     );
@@ -223,15 +253,25 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Händler',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
         ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[600]!
+                  : Colors.grey.shade300,
+            ),
             borderRadius: BorderRadius.circular(8),
           ),
           child: DropdownButton<String?>(
@@ -265,9 +305,15 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Verbleibende Zeit',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+              ),
             ),
             Text(
               provider.maxRemainingMinutes != null
@@ -304,8 +350,24 @@ class _FlashDealsFilterBarState extends State<FlashDealsFilterBar> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('5 Min', style: TextStyle(fontSize: 12, color: textSecondary)),
-            Text('120 Min+', style: TextStyle(fontSize: 12, color: textSecondary)),
+            Text(
+              '5 Min',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : textSecondary,
+              ),
+            ),
+            Text(
+              '120 Min+',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : textSecondary,
+              ),
+            ),
           ],
         ),
       ],
