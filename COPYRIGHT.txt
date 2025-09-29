@@ -1,0 +1,6 @@
+FlashFeed Web Application
+© 2025 Janina Böhmer - All Rights Reserved
+
+This is a compiled build for demonstration purposes only.
+The source code is proprietary and not included in this distribution.
+Any unauthorized use, reproduction, or distribution is strictly prohibited.
